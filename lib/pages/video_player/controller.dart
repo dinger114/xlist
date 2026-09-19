@@ -149,6 +149,9 @@ class VideoPlayerController extends SuperController {
     await updateProgress();
 
     // 初始化播放器
+    // 先挂监听再 open，否则 ready 事件在监听前已错过，通知栏拿不到 MediaItem
+    _initStreamListeners();
+
     try {
       _sourceUrl = await StrmHelper.resolvePlayUrl(object.value, name);
       httpHeaders.value = StrmHelper.getHeaders(object.value, _sourceUrl);
@@ -170,9 +173,6 @@ class VideoPlayerController extends SuperController {
       SmartDialog.showToast(e.toString());
       return;
     }
-
-    // 监听播放器状态
-    _initStreamListeners();
 
     // 画中画：视频页允许在离开时自动进入 PiP
     PipHelper.onVideoPageEnter();

@@ -116,6 +116,10 @@ class AudioPlayerController extends GetxController
     // 更新播放进度
     await updateProgress();
 
+    // 先挂监听再 open，否则 ready 事件在监听前已错过，
+    // 通知栏 MediaItem 永远不会设置（metadata null -> 远古样式通知）
+    _initStreamListeners();
+
     // 初始化播放器
     _sourceUrl = object.value.rawUrl ?? '';
     await PlayerHelper.setOption(player,
@@ -124,9 +128,6 @@ class AudioPlayerController extends GetxController
     if (currentPos.value.inMilliseconds > 0) {
       await player.seek(currentPos.value);
     }
-
-    // 监听播放器状态
-    _initStreamListeners();
 
     // 加入最近浏览
     await CommonUtils.addRecent(object.value, path, name);
