@@ -27,7 +27,7 @@ jobs:
       matrix:
         target: [apk, appbundle]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # 在 setup 之前改版本号：pub get 与 gradle 都会读到新值。
       # versionCode 必须递增，否则 Android 不允许覆盖安装（装新版会失败）。
@@ -53,7 +53,7 @@ jobs:
             --obfuscate --split-debug-info=./symbols
 
       - name: Upload ${{ matrix.target }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: xlist-${{ matrix.target }}
           path: ${{ matrix.target == 'apk'
@@ -63,7 +63,7 @@ jobs:
           retention-days: 30
 
       - name: Upload debug symbols
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: xlist-symbols-${{ matrix.target }}
           path: symbols/
@@ -79,13 +79,13 @@ jobs:
     permissions:
       contents: write   # 创建 Release 需要
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           path: artifacts
 
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           files: |
             artifacts/xlist-apk/*.apk
