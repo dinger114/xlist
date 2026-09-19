@@ -27,8 +27,8 @@ class XlistApp extends StatelessWidget {
       splitScreenMode: true,
       builder: (context, child) => GetMaterialApp(
         title: 'Xlist',
-        theme: Themes.light as ThemeData?,
-        darkTheme: Themes.dark as ThemeData?,
+        theme: Themes.light,
+        darkTheme: Themes.dark,
         themeMode: ThemeMode.light,
         home: SplashPage(),
         initialBinding: SplashBinding(),
