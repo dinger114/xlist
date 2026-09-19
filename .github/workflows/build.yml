@@ -1,0 +1,94 @@
+name: Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    tags: ['v*']
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+# 默认只读；release job 单独提权，避免 build job 拿到写权限
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [apk, appbundle]
+    steps:
+      - uses: actions/checkout@v4
+
+      # 在 setup 之前改版本号：pub get 与 gradle 都会读到新值。
+      # versionCode 必须递增，否则 Android 不允许覆盖安装（装新版会失败）。
+      # 所以 + 后面的 build number 也要用 run_number，不能写死 +1。
+      - name: Bump version
+        run: |
+          sed -i "s/^version:.*/version: 1.0.${{ github.run_number }}+${{ github.run_number }}/" pubspec.yaml
+          grep ^version pubspec.yaml
+
+      - uses: ./.github/actions/setup-flutter
+        with:
+          run-build-runner: 'true'
+
+      # 只构建 arm64-v8a（abiFilters 见 android/app/build.gradle）。
+      # -Pdisable-abi-filtering=true 必需：Flutter Gradle Plugin 否则会用
+      # PLATFORM_ABI_LIST 覆盖工程里设的 abiFilters。
+      # --obfuscate + split-debug-info 缩小产物体积，symbols 供还原崩溃栈。
+      - name: Build ${{ matrix.target }}
+        run: |
+          flutter build ${{ matrix.target }} \
+            --release \
+            -Pdisable-abi-filtering=true \
+            --obfuscate --split-debug-info=./symbols
+
+      - name: Upload ${{ matrix.target }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: xlist-${{ matrix.target }}
+          path: ${{ matrix.target == 'apk'
+            && 'build/app/outputs/flutter-apk/*.apk'
+            || 'build/app/outputs/bundle/release/*.aab' }}
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload debug symbols
+        uses: actions/upload-artifact@v4
+        with:
+          name: xlist-symbols-${{ matrix.target }}
+          path: symbols/
+          if-no-files-found: ignore
+          retention-days: 90
+
+  release:
+    name: Publish release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write   # 创建 Release 需要
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/xlist-apk/*.apk
+            artifacts/xlist-appbundle/*.aab
+          body_path: CHANGELOG.md
+          generate_release_notes: true

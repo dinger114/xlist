@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'web/**'
+  pull_request:
+    branches: [master]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'web/**'
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  format:
+    name: dart format
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      # dart format 不需要 Flutter SDK，装 Dart 即可（省掉几百 MB 下载）。
+      # 版本必须与 Flutter 3.47.5 内置的 Dart 一致，否则格式化规则可能不同。
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: 3.13.4
+
+      - name: Verify formatting
+        run: dart format --output=none --set-exit-if-changed lib test
+
+  analyze-test:
+    name: Analyze & Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup-flutter
+        with:
+          run-build-runner: 'true'
+
+      # --no-fatal-infos --no-fatal-warnings 表示只有 error 才返回非零，
+      # 不需要 `|| true` + grep 兜底。
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
+
+      - name: Run tests
+        # --no-pub 必需：否则 pub 的解析日志会混进 stdout，
+        # 让 test-results.json 不是纯 JSON，test-reporter 解析失败。
+        run: flutter test --no-pub --coverage --machine > test-results.json
+
+      - name: Publish test report
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Flutter Tests
+          path: test-results.json
+          reporter: flutter-json
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-lcov
+          path: coverage/lcov.info
+          if-no-files-found: ignore
+          retention-days: 14

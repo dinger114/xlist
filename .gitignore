@@ -44,3 +44,9 @@ app.*.map.json
 
 # AGP problems report (build artifact)
 /android/build/
+
+# 混淆符号（--split-debug-info 输出，本地构建产物）
+/symbols/
+
+# 测试覆盖率产物
+/coverage/
