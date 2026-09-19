@@ -76,6 +76,9 @@ class VideoPlayerController extends SuperController {
   late final XVideoController videoController;
   final audioHandler = PlayerNotificationService.to.audioHandler;
 
+  // 全屏状态
+  final isFullScreen = false.obs;
+
   // 播放地址（重试用）
   String _sourceUrl = '';
 
@@ -276,6 +279,26 @@ class VideoPlayerController extends SuperController {
       player.seek(Duration.zero);
       player.play();
       return;
+    }
+  }
+
+  /// 切换全屏（横屏 + 沉浸式）
+  Future<void> toggleFullScreen() async {
+    if (isFullScreen.value) {
+      // 退出全屏
+      isFullScreen.value = false;
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+      ]);
+      await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    } else {
+      // 进入全屏（横屏）
+      isFullScreen.value = true;
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeRight,
+        DeviceOrientation.landscapeLeft,
+      ]);
+      await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     }
   }
 
@@ -642,6 +665,11 @@ class VideoPlayerController extends SuperController {
     super.onClose();
 
     PipHelper.onVideoPageExit();
+    if (isFullScreen.value) {
+      isFullScreen.value = false;
+      SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    }
     _timer?.cancel();
     _currentPosSubs?.cancel();
     for (final sub in _subscriptions) {

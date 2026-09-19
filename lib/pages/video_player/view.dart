@@ -147,7 +147,7 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
               showPlaylist: controller.showPlaylist.value,
               showTimedText: controller.showTimedText.value,
               playerTitle: controller.currentName.value,
-              isFullScreen: false,
+              isFullScreen: controller.isFullScreen.value,
             ),
           ),
         ),
@@ -403,7 +403,7 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
   }
 
   Widget _buildPageInfo() {
-    if (controller.object.value.rawUrl == null) {
+    if (controller.isLoading.value) {
       return Column(
         children: [
           SizedBox(height: 600.h),
@@ -429,10 +429,13 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
-      navigationBar: _buildNavigationBar(),
-      backgroundColor: CommonUtils.backgroundColor,
-      child: Obx(() => _buildPageInfo()),
+    return Obx(
+      () => CupertinoPageScaffold(
+        navigationBar:
+            controller.isFullScreen.value ? null : _buildNavigationBar(),
+        backgroundColor: CommonUtils.backgroundColor,
+        child: Obx(() => _buildPageInfo()),
+      ),
     );
   }
 }

@@ -25,7 +25,9 @@ class MainActivity : AudioServiceActivity() {
                         result.success(true)
                     }
                     "enterPip" -> {
-                        enterPipMode()
+                        val w = call.argument<Double>("ratioW") ?: 16.0
+                        val h = call.argument<Double>("ratioH") ?: 9.0
+                        enterPipMode(w, h)
                         result.success(true)
                     }
                     "isPipAvailable" -> {
@@ -45,11 +47,15 @@ class MainActivity : AudioServiceActivity() {
         }
     }
 
-    private fun enterPipMode() {
+    private fun enterPipMode(ratioW: Double = 16.0, ratioH: Double = 9.0) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         try {
+            val rational = Rational(
+                (ratioW * 100).toInt(),
+                (ratioH * 100).toInt()
+            )
             val params = PictureInPictureParams.Builder()
-                .setAspectRatio(Rational(PIP_ASPECT_WIDTH, PIP_ASPECT_HEIGHT))
+                .setAspectRatio(rational)
                 .build()
             enterPictureInPictureMode(params)
         } catch (e: Exception) {

@@ -16,6 +16,7 @@ import 'package:xlist/core/player/x_player_state.dart';
 import 'package:xlist/core/player/x_player_track.dart';
 import 'package:xlist/components/player/slider.dart';
 import 'package:xlist/components/player/error_state.dart';
+import 'package:xlist/helper/pip_helper.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 double speed = 1.0;
@@ -971,11 +972,19 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
                             ),
                           )
                         : Container(),
+                    // 按钮 - 画中画
+                    _buildPlayStateBtn(
+                      Icons.picture_in_picture_alt,
+                      () {
+                        PipHelper.enterPip();
+                      },
+                    ),
                     // 按钮 - 全屏/退出全屏
                     _buildPlayStateBtn(
                       Icons.fullscreen,
                       () {
-                        SmartDialog.showToast('toast_fullscreen_hint'.tr);
+                        final _vp = Get.find<VideoPlayerController>();
+                        _vp.toggleFullScreen();
                       },
                     ),
                     SizedBox(width: 7),
