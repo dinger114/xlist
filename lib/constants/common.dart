@@ -68,10 +68,14 @@ class FileType {
   /// [type] 文件类型
   static getIcon(int type, String name) {
     if (type == FileType.FOLDER) return FontAwesomeIcons.solidFolder.data;
-    if (PreviewHelper.isImage(name)) return FontAwesomeIcons.solidFileImage.data;
-    if (PreviewHelper.isVideo(name)) return FontAwesomeIcons.solidFileVideo.data;
-    if (PreviewHelper.isAudio(name)) return FontAwesomeIcons.solidFileAudio.data;
-    if (PreviewHelper.isDocument(name)) return FontAwesomeIcons.solidFileLines.data;
+    if (PreviewHelper.isImage(name))
+      return FontAwesomeIcons.solidFileImage.data;
+    if (PreviewHelper.isVideo(name))
+      return FontAwesomeIcons.solidFileVideo.data;
+    if (PreviewHelper.isAudio(name))
+      return FontAwesomeIcons.solidFileAudio.data;
+    if (PreviewHelper.isDocument(name))
+      return FontAwesomeIcons.solidFileLines.data;
 
     return FileTypeIcons[type];
   }

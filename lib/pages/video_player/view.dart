@@ -447,10 +447,10 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
     return Obx(
       () => CupertinoPageScaffold(
         // 全屏和 PiP 都不要导航栏：PiP 窗口很小，标题栏会占掉一条画面
-        navigationBar: (controller.isFullScreen.value ||
-                controller.isInPip.value)
-            ? null
-            : _buildNavigationBar(),
+        navigationBar:
+            (controller.isFullScreen.value || controller.isInPip.value)
+                ? null
+                : _buildNavigationBar(),
         backgroundColor: CommonUtils.backgroundColor,
         child: Obx(() => _buildPageInfo()),
       ),

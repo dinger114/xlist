@@ -67,8 +67,7 @@ class CommonUtils {
   static double get navIconSize => isPad ? 25 : 70.sp;
 
   /// 是否为平板
-  static bool get isPad =>
-      MediaQuery.of(Get.context!).size.shortestSide >= 600;
+  static bool get isPad => MediaQuery.of(Get.context!).size.shortestSide >= 600;
 
   /// 获取导航栏返回按钮
   static Widget get backButton => CupertinoButton(

@@ -31,23 +31,14 @@ jobs:
       - name: Generate code
         run: dart run build_runner build --delete-conflicting-outputs
 
+      # 只构建 arm64-v8a（abiFilters 见 android/app/build.gradle）。
+      # -Pdisable-abi-filtering=true 必需：Flutter Gradle Plugin 否则会用
+      # PLATFORM_ABI_LIST 覆盖工程里设的 abiFilters。
       - name: Build APK
-        run: flutter build apk --release --split-per-abi
+        run: flutter build apk --release -Pdisable-abi-filtering=true
 
       - name: Upload APK (arm64-v8a)
         uses: actions/upload-artifact@v4
         with:
           name: xlist-arm64-v8a
-          path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
-
-      - name: Upload APK (armeabi-v7a)
-        uses: actions/upload-artifact@v4
-        with:
-          name: xlist-armeabi-v7a
-          path: build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
-
-      - name: Upload APK (x86_64)
-        uses: actions/upload-artifact@v4
-        with:
-          name: xlist-x86_64
-          path: build/app/outputs/flutter-apk/app-x86_64-release.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
