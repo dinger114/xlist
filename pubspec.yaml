@@ -40,9 +40,9 @@ dependencies:
   vivysub_utils: ^0.2.0
   path_provider: ^2.0.15
   in_app_review: ^2.0.6
-  audio_service: ^0.18.10
+  audio_service: ^0.18.19
   code_text_field: ^1.1.0
-  adaptive_dialog: ^2.1.0
+  adaptive_dialog: ^2.8.3
   dismissible_page: ^1.0.1
   pull_down_button: ^0.9.1
   device_info_plus: ^12.1.0
@@ -60,7 +60,7 @@ dependencies:
   flutter_phoenix: ^1.1.0
   flutter_slidable: ^3.0.0
   flutter_screenutil: ^5.6.0
-  flutter_downloader: ^1.10.2
+  flutter_downloader: ^1.12.1
   flutter_smart_dialog: ^4.7.1
   flutter_inappwebview: ^6.0.0
   flutter_native_splash: ^2.2.19

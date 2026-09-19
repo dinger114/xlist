@@ -51,6 +51,12 @@ android {
     buildTypes {
         release {
             signingConfig signingConfigs.debug
+            // AGP 9 起 release 默认启用 R8（minifyEnabled 默认 true），
+            // 必须显式挂上 keep 规则，否则 Room/WorkManager 反射实例化失败。
+            minifyEnabled true
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
+                    'proguard-rules.pro'
         }
     }
 }

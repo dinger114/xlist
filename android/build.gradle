@@ -32,6 +32,12 @@ subprojects {
             if (androidExt.namespace == null) {
                 androidExt.namespace = project.group.toString()
             }
+            // AGP 9 起 AAR metadata 校验更严：插件若把 compileSdk 钉在旧版本
+            // (dynamic_color=31 / audio_session,audio_service=33)，消费方编译就会
+            // 失败。这里统一抬到 app 的 compileSdk，避免 fork 每个插件。
+            if (project.plugins.hasPlugin('com.android.library')) {
+                androidExt.compileSdkVersion 37
+            }
             // Align Kotlin jvmTarget with Java compatibility to avoid
             // "Inconsistent JVM Target Compatibility" build failures in
             // old plugins whose java target is 1.8 but kotlin defaults to 17.
