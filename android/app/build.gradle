@@ -24,7 +24,7 @@ if (flutterVersionName == null) {
 
 android {
     namespace "io.xlist"
-    compileSdkVersion 36
+    compileSdkVersion 37
     ndkVersion flutter.ndkVersion
 
     compileOptions {

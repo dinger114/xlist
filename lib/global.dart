@@ -46,17 +46,10 @@ class Global {
     final isFirstOpen = Get.find<PreferencesStorage>().isFirstOpen;
     if (isFirstOpen.val == true) {
       isFirstOpen.val = false;
-
-      // IOS 请求联网弹窗
-      try {
-        if (GetPlatform.isIOS) DioService.to.dio.get('https://xlist.site');
-      } catch (e) {}
     }
 
     // 通知权限 (Android 13+)
-    if (GetPlatform.isAndroid || GetPlatform.isIOS) {
-      AppPermissionHelper.requestNotification();
-    }
+    AppPermissionHelper.requestNotification();
 
     // Theme
     Get.changeThemeMode(ThemeModeMap[Get.find<CommonStorage>().themeMode.val]!);

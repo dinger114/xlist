@@ -5,7 +5,6 @@ class BrowserService extends GetxService {
   static BrowserService get to => Get.find();
 
   late final InAppBrowser _inAppBrowser;
-  late final ChromeSafariBrowser _chromeSafariBrowser;
 
   @override
   void onInit() {
@@ -13,32 +12,12 @@ class BrowserService extends GetxService {
 
     // Init
     _inAppBrowser = DeupInAppBrowser();
-    _chromeSafariBrowser = DeupChromeSafariBrowser();
   }
 
   // Open Browser
   open(String url) {
-    // Android
-    if (GetPlatform.isAndroid) {
-      _inAppBrowser.openUrlRequest(urlRequest: URLRequest(url: WebUri(url)));
-    }
-
-    // IOS
-    if (GetPlatform.isIOS) {
-      _chromeSafariBrowser.open(url: WebUri(url));
-    }
+    _inAppBrowser.openUrlRequest(urlRequest: URLRequest(url: WebUri(url)));
   }
-}
-
-class DeupChromeSafariBrowser extends ChromeSafariBrowser {
-  @override
-  void onOpened() {}
-
-  // @override
-  // void onCompletedInitialLoad() {}
-
-  @override
-  void onClosed() {}
 }
 
 class DeupInAppBrowser extends InAppBrowser {

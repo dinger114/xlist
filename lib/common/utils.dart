@@ -68,7 +68,6 @@ class CommonUtils {
 
   /// 是否为平板
   static bool get isPad =>
-      DeviceInfoService.to.isIpad ||
       MediaQuery.of(Get.context!).size.shortestSide >= 600;
 
   /// 获取导航栏返回按钮
