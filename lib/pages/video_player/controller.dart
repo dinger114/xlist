@@ -79,10 +79,14 @@ class VideoPlayerController extends SuperController {
   // 全屏状态
   final isFullScreen = false.obs;
 
+  // 画中画状态（PiP 窗口很小，需要切到纯视频布局）
+  final isInPip = false.obs;
+
   // 播放地址（重试用）
   String _sourceUrl = '';
 
   StreamSubscription? _currentPosSubs;
+  StreamSubscription? _pipSubs;
   final List<StreamSubscription> _subscriptions = [];
   Timer? _timer;
   int _progressId = 0; // 进度表 ID
@@ -179,6 +183,9 @@ class VideoPlayerController extends SuperController {
 
     // 画中画：视频页允许在离开时自动进入 PiP
     PipHelper.onVideoPageEnter();
+    _pipSubs = PipHelper.onPipChanged.listen((inPip) {
+      isInPip.value = inPip;
+    });
 
     // 加入最近浏览
     await CommonUtils.addRecent(object.value, path, name);
@@ -672,6 +679,7 @@ class VideoPlayerController extends SuperController {
     }
     _timer?.cancel();
     _currentPosSubs?.cancel();
+    _pipSubs?.cancel();
     for (final sub in _subscriptions) {
       sub.cancel();
     }

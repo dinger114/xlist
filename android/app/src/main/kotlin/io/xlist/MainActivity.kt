@@ -51,6 +51,18 @@ class MainActivity : AudioServiceActivity() {
     }
 
     /**
+     * PiP 进出时通知 Flutter，让 UI 切换到纯视频布局
+     * （PiP 窗口很小，不能保留右侧简介/播放列表栏）。
+     */
+    override fun onPictureInPictureModeChanged(
+        isInPictureInPictureMode: Boolean,
+        newConfig: android.content.res.Configuration,
+    ) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+        methodChannel?.invokeMethod("onPipChanged", isInPictureInPictureMode)
+    }
+
+    /**
      * 把当前 PiP 参数同步给系统。
      * API 31+ 用 setAutoEnterEnabled，Home 手势由系统直接接管（无跳变）；
      * 参数必须在每次变化时重新提交，否则系统沿用旧值。

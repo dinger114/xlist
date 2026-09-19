@@ -135,20 +135,22 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
                   ),
           ),
         ),
-        // 自定义控制面板
+        // 自定义控制面板（PiP 下不显示：窗口太小，且系统自带控制）
         Positioned.fill(
           child: Obx(
-            () => DefaultPanel(
-              player: controller.player,
-              subtitles: controller.subtitles.value,
-              subtitleNameList: controller.subtitleNameList.value,
-              audioTracks: controller.audioTracks.value,
-              subtitleTracks: controller.subtitleTracks.value,
-              showPlaylist: controller.showPlaylist.value,
-              showTimedText: controller.showTimedText.value,
-              playerTitle: controller.currentName.value,
-              isFullScreen: controller.isFullScreen.value,
-            ),
+            () => controller.isInPip.value
+                ? const SizedBox.shrink()
+                : DefaultPanel(
+                    player: controller.player,
+                    subtitles: controller.subtitles.value,
+                    subtitleNameList: controller.subtitleNameList.value,
+                    audioTracks: controller.audioTracks.value,
+                    subtitleTracks: controller.subtitleTracks.value,
+                    showPlaylist: controller.showPlaylist.value,
+                    showTimedText: controller.showTimedText.value,
+                    playerTitle: controller.currentName.value,
+                    isFullScreen: controller.isFullScreen.value,
+                  ),
           ),
         ),
       ],
@@ -402,6 +404,12 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
     );
   }
 
+  // 纯视频布局：铺满容器，不显示简介/播放列表栏
+  // 用于全屏和画中画（PiP 窗口很小，侧边栏会挤掉画面）
+  Widget _buildPureVideoInfo(Widget videoPlayer) {
+    return SizedBox.expand(child: videoPlayer);
+  }
+
   Widget _buildPageInfo() {
     if (controller.isLoading.value) {
       return Column(
@@ -415,14 +423,18 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
     final videoPlayer = _buildVideoPlayer();
     return OrientationBuilder(
       builder: (context, orientation) {
-        return Obx(
-          () => orientation == Orientation.portrait
+        return Obx(() {
+          // 全屏 / 画中画：只要视频画面
+          if (controller.isFullScreen.value || controller.isInPip.value) {
+            return _buildPureVideoInfo(videoPlayer);
+          }
+          return orientation == Orientation.portrait
               ? DefaultTabController(
                   length: 2,
                   child: _buildPortraitInfo(videoPlayer),
                 )
-              : _buildLandscapeInfo(videoPlayer),
-        );
+              : _buildLandscapeInfo(videoPlayer);
+        });
       },
     );
   }

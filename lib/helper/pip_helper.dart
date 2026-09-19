@@ -12,8 +12,30 @@ class PipHelper {
 
   static bool? _available;
 
+  /// PiP 进出通知（原生 onPictureInPictureModeChanged 回调）。
+  /// true = 已进入 PiP，false = 已退出。
+  static final StreamController<bool> _pipChangedController =
+      StreamController<bool>.broadcast();
+
+  /// 监听 PiP 进出，用于切换纯视频布局
+  static Stream<bool> get onPipChanged => _pipChangedController.stream;
+
+  static bool _handlerInstalled = false;
+
+  static void _ensureHandler() {
+    if (_handlerInstalled) return;
+    _handlerInstalled = true;
+    _channel.setMethodCallHandler((call) async {
+      if (call.method == 'onPipChanged') {
+        _pipChangedController.add(call.arguments == true);
+      }
+      return null;
+    });
+  }
+
   /// PiP 是否可用（Android 8.0+）
   static Future<bool> get isAvailable async {
+    _ensureHandler();
     if (_available != null) return _available!;
     try {
       _available = await _channel.invokeMethod<bool>('isPipAvailable') ?? false;
