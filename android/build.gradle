@@ -35,6 +35,16 @@ subprojects {
             if (androidExt.namespace == null) {
                 androidExt.namespace = project.group.toString()
             }
+            // Align Kotlin jvmTarget with Java compatibility to avoid
+            // "Inconsistent JVM Target Compatibility" build failures in
+            // old plugins whose java target is 1.8 but kotlin defaults to 17.
+            androidExt.compileOptions {
+                sourceCompatibility JavaVersion.VERSION_17
+                targetCompatibility JavaVersion.VERSION_17
+            }
+            androidExt.kotlinOptions {
+                jvmTarget = '17'
+            }
         }
     }
     project.evaluationDependsOn(':app')
