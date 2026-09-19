@@ -20,7 +20,7 @@ splash:
 icons:
 	dart run flutter_launcher_icons
 
-release-apk:
+release-android:
 	flutter build apk \
 		-v --no-tree-shake-icons \
 		--release \
@@ -32,9 +32,6 @@ release-aab:
 		--release \
 		--obfuscate --split-debug-info=./symbols
 
-release-ios:
-	flutter build ios -v --release
-
 help:
 	@echo "make build: run build_runner build"
 	@echo "make build-watch: run build_runner watch"
@@ -42,6 +39,5 @@ help:
 	@echo "make json-models: generate json models"
 	@echo "make splash: generate splash screen"
 	@echo "make icons: generate app icons"
-	@echo "make release-apk: build release apk"
+	@echo "make release-android: build release apk"
 	@echo "make release-aab: build release aab"
-	@echo "make release-ios: build release ios"
