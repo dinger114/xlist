@@ -120,6 +120,9 @@ class AudioPlayerController extends GetxController
     // 通知栏 MediaItem 永远不会设置（metadata null -> 远古样式通知）
     _initStreamListeners();
 
+    // 立即设置 MediaItem，保证标题第一时间上通知
+    _playerNotificationHandler();
+
     // 初始化播放器
     _sourceUrl = object.value.rawUrl ?? '';
     await PlayerHelper.setOption(player,
@@ -160,8 +163,8 @@ class AudioPlayerController extends GetxController
     }));
 
     _subscriptions.add(player.stateStream.listen((state) {
-      if (state == XPlayerState.ready) {
-        if (duration.value.inMilliseconds > 0) _playerNotificationHandler();
+      if (state == XPlayerState.ready || state == XPlayerState.playing) {
+        _playerNotificationHandler();
       }
 
       if (state == XPlayerState.completed) {
