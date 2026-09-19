@@ -993,8 +993,11 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
                     // 按钮 - 画中画
                     _buildPlayStateBtn(
                       Icons.picture_in_picture_alt,
-                      () {
-                        PipHelper.enterPip();
+                      () async {
+                        final ok = await PipHelper.enterPip();
+                        if (!ok && mounted) {
+                          SmartDialog.showToast('toast_pip_fail'.tr);
+                        }
                       },
                     ),
                     // 按钮 - 全屏/退出全屏

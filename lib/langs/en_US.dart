@@ -217,6 +217,7 @@ const Map<String, String> en_US = {
   'player_buffering': 'Buffering...',
   'player_retry': 'Click to retry',
   'toast_fullscreen_hint': 'Please use in fullscreen mode',
+  'toast_pip_fail': 'Failed to enter picture-in-picture',
 
   // Error
   'no_data': 'No data',

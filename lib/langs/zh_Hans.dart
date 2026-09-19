@@ -206,6 +206,7 @@ const Map<String, String> zh_Hans = {
   'player_buffering': '正在缓冲...',
   'player_retry': '点击重试',
   'toast_fullscreen_hint': '请在全屏模式下使用',
+  'toast_pip_fail': '画中画进入失败，请查看日志',
 
   // 暂无数据
   'no_data': '暂无数据',
