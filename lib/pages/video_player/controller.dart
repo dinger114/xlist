@@ -174,6 +174,9 @@ class VideoPlayerController extends SuperController {
     // 监听播放器状态
     _initStreamListeners();
 
+    // 画中画：视频页允许在离开时自动进入 PiP
+    PipHelper.onVideoPageEnter();
+
     // 加入最近浏览
     await CommonUtils.addRecent(object.value, path, name);
 
@@ -638,6 +641,7 @@ class VideoPlayerController extends SuperController {
   void onClose() {
     super.onClose();
 
+    PipHelper.onVideoPageExit();
     _timer?.cancel();
     _currentPosSubs?.cancel();
     for (final sub in _subscriptions) {
