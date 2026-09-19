@@ -106,6 +106,9 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
             controller: controller.videoController.raw,
             fit: BoxFit.cover,
             fill: Colors.black,
+            // 用 Xlist 自己的 DefaultPanel，不要 media_kit 自带控制层
+            // （自带层含标题/时间条，PiP 下没有面板遮挡会露出来）
+            controls: NoVideoControls,
           ),
         ),
         // 视频封面（播放前显示）
@@ -443,8 +446,11 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
   Widget build(BuildContext context) {
     return Obx(
       () => CupertinoPageScaffold(
-        navigationBar:
-            controller.isFullScreen.value ? null : _buildNavigationBar(),
+        // 全屏和 PiP 都不要导航栏：PiP 窗口很小，标题栏会占掉一条画面
+        navigationBar: (controller.isFullScreen.value ||
+                controller.isInPip.value)
+            ? null
+            : _buildNavigationBar(),
         backgroundColor: CommonUtils.backgroundColor,
         child: Obx(() => _buildPageInfo()),
       ),
