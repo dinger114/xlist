@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
-import 'package:fijkplayer/fijkplayer.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -15,7 +14,9 @@ import 'package:xlist/storages/index.dart';
 import 'package:xlist/services/index.dart';
 import 'package:xlist/constants/index.dart';
 import 'package:xlist/repositorys/index.dart';
-import 'package:xlist/helper/fijk_helper.dart';
+import 'package:xlist/helper/player_helper.dart';
+import 'package:xlist/core/player/x_player_state.dart';
+import 'package:xlist/core/player/media_kit_player.dart';
 import 'package:xlist/database/entity/index.dart';
 
 class AudioPlayerController extends GetxController
@@ -40,7 +41,7 @@ class AudioPlayerController extends GetxController
   // 当前播放音频
   final currentName = ''.obs;
   final currentIndex = 0.obs;
-  final FijkPlayer player = FijkPlayer();
+  late final MediaKitPlayer player;
   final audioHandler = PlayerNotificationService.to.audioHandler;
   late TabController tabController;
 
@@ -54,10 +55,11 @@ class AudioPlayerController extends GetxController
   Timer? _timerProgress;
   int _progressId = 0; // 进度表 ID
   final timerDuration = Duration.zero.obs;
-  StreamSubscription? _currentPosSubs;
-  StreamSubscription? _bufferPosSubs;
-  StreamSubscription? _bufferingSubs;
+  final List<StreamSubscription> _subscriptions = [];
   MediaItem? _mediaItem;
+
+  // 播放地址（重试用）
+  String _sourceUrl = '';
 
   @override
   void onInit() async {
@@ -77,11 +79,18 @@ class AudioPlayerController extends GetxController
     currentName.value = name;
     currentIndex.value = objects.indexWhere((o) => o.name == name); // 当前播放文件下标
 
+    // 创建播放器
+    player = MediaKitPlayer();
+
     // PlayerNotificationService
     audioHandler.initializeStreamController(player, objects.length > 1, false);
     audioHandler.playbackState.addStream(audioHandler.streamController.stream);
     audioHandler.setVideoFunctions(
-        player.start, player.pause, player.seekTo, player.stop);
+      player.play,
+      player.pause,
+      (ms) => player.seek(Duration(milliseconds: ms)),
+      player.stop,
+    );
 
     // 获取文件信息
     if (file.isEmpty) {
@@ -108,29 +117,16 @@ class AudioPlayerController extends GetxController
     await updateProgress();
 
     // 初始化播放器
-    await FijkHelper.setFijkOption(player,
+    _sourceUrl = object.value.rawUrl ?? '';
+    await PlayerHelper.setOption(player,
         isAudioOnly: true, headers: httpHeaders);
-    await player.setOption(FijkOption.playerCategory, 'seek-at-start',
-        currentPos.value.inMilliseconds);
-    await player.setDataSource(object.value.rawUrl ?? '', autoPlay: true);
+    await player.open(_sourceUrl, headers: httpHeaders, autoPlay: true);
+    if (currentPos.value.inMilliseconds > 0) {
+      await player.seek(currentPos.value);
+    }
 
-    // Listener
-    player.addListener(_fijkValueListener);
-
-    // 监听播放进度
-    _currentPosSubs = player.onCurrentPosUpdate.listen((v) {
-      currentPos.value = v;
-    });
-
-    _bufferPosSubs = player.onBufferPosUpdate.listen((v) {
-      bufferPos.value = v;
-    });
-
-    _bufferingSubs = player.onBufferStateUpdate.listen((v) {
-      Future.delayed(Duration(milliseconds: 1000), () {
-        audioHandler.updatePlaybackState(player);
-      });
-    });
+    // 监听播放器状态
+    _initStreamListeners();
 
     // 加入最近浏览
     await CommonUtils.addRecent(object.value, path, name);
@@ -140,67 +136,84 @@ class AudioPlayerController extends GetxController
     isLoading.value = false;
   }
 
-  void _fijkValueListener() async {
-    FijkValue value = player.value;
-    isPlaying.value = value.state == FijkState.started;
+  void _initStreamListeners() {
+    _subscriptions.add(player.playingStream.listen((playing) {
+      isPlaying.value = playing;
+      Future.delayed(Duration(milliseconds: 1000), () {
+        audioHandler.updatePlaybackState();
+      });
+    }));
 
-    // 获取视频的总长度
-    if (value.duration != duration.value) {
-      duration.value = value.duration;
-    }
-
-    // Android 有些情况下会拿不到播放时间, 特殊处理一下
-    if (_mediaItem != null && _mediaItem!.duration != value.duration) {
-      _playerNotificationHandler();
-    }
-
-    // 播放预加载完成
-    if (value.state == FijkState.prepared) {
-      if (value.duration.inMilliseconds > 0) _playerNotificationHandler();
-    }
-
-    // 播放完成
-    if (value.state == FijkState.completed) {
-      currentPos.value = Duration.zero;
-
-      // 更新播放进度 - 重置
-      await DatabaseService.to.database.progressDao.updateProgress(
-        ProgressEntity(
-          id: _progressId,
-          serverId: serverId.value,
-          path: path,
-          name: currentName.value,
-          currentPos: currentPos.value.inMilliseconds,
-        ),
-      );
-
-      // 根据播放模式切换下一首
-      switch (playMode.value) {
-        case PlayMode.SINGLE_LOOP:
-          player.seekTo(0);
-          player.start();
-          break;
-        case PlayMode.LIST_LOOP:
-          if (objects.length == 1) {
-            player.seekTo(0);
-            player.start();
-          } else {
-            currentIndex.value == objects.length - 1
-                ? changePlaylist(0)
-                : changePlaylist(currentIndex.value + 1);
-          }
-          break;
-        case PlayMode.SHUFFLE:
-          if (objects.length == 1) {
-            player.seekTo(0);
-            player.start();
-          } else {
-            changePlaylist(CommonUtils.randomInt(0, objects.length - 1));
-          }
-          break;
-        default:
-          break;
+    _subscriptions.add(player.durationStream.listen((dur) {
+      if (dur != duration.value) {
+        duration.value = dur;
       }
+    }));
+
+    _subscriptions.add(player.positionStream.listen((pos) {
+      currentPos.value = pos;
+    }));
+
+    _subscriptions.add(player.bufferStream.listen((buf) {
+      bufferPos.value = buf;
+    }));
+
+    _subscriptions.add(player.stateStream.listen((state) {
+      if (state == XPlayerState.ready) {
+        if (duration.value.inMilliseconds > 0) _playerNotificationHandler();
+      }
+
+      if (state == XPlayerState.completed) {
+        _onCompleted();
+      }
+    }));
+
+    _subscriptions.add(player.errorStream.listen((err) {
+      SmartDialog.showToast('toast_play_error'.tr);
+    }));
+  }
+
+  /// 播放完成
+  void _onCompleted() {
+    currentPos.value = Duration.zero;
+
+    // 更新播放进度 - 重置
+    DatabaseService.to.database.progressDao.updateProgress(
+      ProgressEntity(
+        id: _progressId,
+        serverId: serverId.value,
+        path: path,
+        name: currentName.value,
+        currentPos: currentPos.value.inMilliseconds,
+      ),
+    );
+
+    // 根据播放模式切换下一首
+    switch (playMode.value) {
+      case PlayMode.SINGLE_LOOP:
+        player.seek(Duration.zero);
+        player.play();
+        break;
+      case PlayMode.LIST_LOOP:
+        if (objects.length == 1) {
+          player.seek(Duration.zero);
+          player.play();
+        } else {
+          currentIndex.value == objects.length - 1
+              ? changePlaylist(0)
+              : changePlaylist(currentIndex.value + 1);
+        }
+        break;
+      case PlayMode.SHUFFLE:
+        if (objects.length == 1) {
+          player.seek(Duration.zero);
+          player.play();
+        } else {
+          changePlaylist(CommonUtils.randomInt(0, objects.length - 1));
+        }
+        break;
+      default:
+        break;
     }
   }
 
@@ -209,7 +222,7 @@ class AudioPlayerController extends GetxController
     _mediaItem = MediaItem(
       id: '${path}${currentName.value}',
       title: CommonUtils.formatFileNme(currentName.value),
-      duration: player.value.duration,
+      duration: duration.value,
       artUri: object.value.thumb != null && object.value.thumb!.isNotEmpty
           ? Uri.parse(object.value.thumb!)
           : Uri.parse('https://s2.loli.net/2023/07/05/viCwFoLceMtAB3m.jpg'),
@@ -244,20 +257,33 @@ class AudioPlayerController extends GetxController
 
     // 重置播放器信息
     SmartDialog.dismiss();
-    player.reset().then((value) async {
-      currentPos.value = Duration.zero;
-      await updateProgress(); // 更新播放进度
+    currentPos.value = Duration.zero;
+    await updateProgress(); // 更新播放进度
 
-      // 初始化播放器
-      await FijkHelper.setFijkOption(player,
-          isAudioOnly: true, headers: httpHeaders);
-      await player.setOption(FijkOption.playerCategory, 'seek-at-start',
-          currentPos.value.inMilliseconds);
-      await player.setDataSource(object.value.rawUrl ?? '', autoPlay: true);
+    // 初始化播放器
+    _sourceUrl = object.value.rawUrl ?? '';
+    await PlayerHelper.setOption(player,
+        isAudioOnly: true, headers: httpHeaders);
+    await player.open(_sourceUrl, headers: httpHeaders, autoPlay: true);
+    if (currentPos.value.inMilliseconds > 0) {
+      await player.seek(currentPos.value);
+    }
 
-      // 加入最近浏览
-      await CommonUtils.addRecent(object.value, path, _object.name!);
-    });
+    // 加入最近浏览
+    await CommonUtils.addRecent(object.value, path, _object.name!);
+  }
+
+  /// 重试播放
+  void retryPlay() async {
+    if (_sourceUrl.isEmpty) return;
+    try {
+      await player.open(_sourceUrl, headers: httpHeaders, autoPlay: true);
+      if (currentPos.value.inMilliseconds > 0) {
+        await player.seek(currentPos.value);
+      }
+    } catch (e) {
+      SmartDialog.showToast(e.toString());
+    }
   }
 
   /// 定时关闭
@@ -321,7 +347,7 @@ class AudioPlayerController extends GetxController
       cancelLabel: 'cancel'.tr,
     );
     if (value == null) return;
-    player.setSpeed(value);
+    player.setRate(value);
     SmartDialog.showToast('toast_switch_success'.tr);
   }
 
@@ -389,13 +415,12 @@ class AudioPlayerController extends GetxController
 
     _timer?.cancel();
     _timerProgress?.cancel();
-    _currentPosSubs?.cancel();
-    _bufferPosSubs?.cancel();
-    _bufferingSubs?.cancel();
+    for (final sub in _subscriptions) {
+      sub.cancel();
+    }
     audioHandler.streamController.add(PlaybackState());
     audioHandler.streamController.close();
-    player.removeListener(_fijkValueListener);
-    player.release();
+    player.dispose();
 
     DownloadService.to.unbindBackgroundIsolate();
   }

@@ -4,10 +4,10 @@ import 'package:path/path.dart' as p;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:fijkplayer/fijkplayer.dart';
 import 'package:audio_wave/audio_wave.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 import 'package:pull_down_button/pull_down_button.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -15,7 +15,7 @@ import 'package:xlist/gen/index.dart';
 import 'package:xlist/helper/index.dart';
 import 'package:xlist/common/index.dart';
 import 'package:xlist/pages/video_player/index.dart';
-import 'package:xlist/components/fijkplayer/default_panel.dart';
+import 'package:xlist/components/player/default_panel.dart';
 
 class VideoPlayerPage extends GetView<VideoPlayerController> {
   const VideoPlayerPage({Key? key}) : super(key: key);
@@ -32,7 +32,7 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
 
     // 切换字幕
     if (controller.subtitleNameList.isNotEmpty ||
-        controller.timedTextTracks.isNotEmpty) {
+        controller.subtitleTracks.isNotEmpty) {
       items.add(PullDownMenuItem(
         title: 'video_switch_subtitle'.tr,
         onTap: () => controller.changeSubtitle(),
@@ -90,52 +90,74 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
     );
   }
 
-  /// FijkView
+  /// media_kit Video + 自定义面板覆盖层
   /// [imageProvider] 视频封面
-  Widget _buildFijkView({ImageProvider? imageProvider}) {
+  Widget _buildVideoView({ImageProvider? imageProvider}) {
     // 音频封面特殊处理一下
     if (imageProvider == null && PreviewHelper.isAudio(controller.name)) {
       imageProvider = Assets.common.logo.image().image;
     }
 
-    return FijkView(
-      player: controller.player,
-      key: controller.fijkViewKey,
-      cover: imageProvider,
-      fit: FijkFit.cover,
-      color: Colors.black,
-      panelBuilder: (FijkPlayer player, FijkData data, BuildContext context,
-          Size viewSize, Rect texturePos) {
-        return Obx(
-          () => FijkDefaultPanel(
-            player: player,
-            buildContext: context,
-            viewSize: viewSize,
-            texturePos: texturePos,
-            subtitles: controller.subtitles.value,
-            subtitleNameList: controller.subtitleNameList.value,
-            audioTracks: controller.audioTracks.value,
-            timedTextTracks: controller.timedTextTracks.value,
-            showPlaylist: controller.showPlaylist.value,
-            showTimedText: controller.showTimedText.value,
-            playerTitle: controller.currentName.value,
+    return Stack(
+      children: [
+        // 视频画面
+        Positioned.fill(
+          child: Video(
+            controller: controller.videoController.raw,
+            fit: BoxFit.cover,
+            fill: Colors.black,
           ),
-        );
-      },
+        ),
+        // 视频封面（播放前显示）
+        Positioned.fill(
+          child: Obx(
+            () => controller.thumbnail.isEmpty && imageProvider == null
+                ? SizedBox.shrink()
+                : AnimatedOpacity(
+                    opacity: controller.isPlaying.value ||
+                            controller.currentPos.value > Duration.zero
+                        ? 0.0
+                        : 1.0,
+                    duration: Duration(milliseconds: 300),
+                    child: Container(
+                      color: Colors.black,
+                      child: imageProvider != null
+                          ? Image(image: imageProvider, fit: BoxFit.cover)
+                          : CachedNetworkImage(
+                              imageUrl: controller.thumbnail.value,
+                              cacheKey: '${controller.path}${controller.name}',
+                              httpHeaders: controller.httpHeaders,
+                              fit: BoxFit.cover,
+                              errorWidget: (c, u, e) =>
+                                  Container(color: Colors.black),
+                            ),
+                    ),
+                  ),
+          ),
+        ),
+        // 自定义控制面板
+        Positioned.fill(
+          child: Obx(
+            () => DefaultPanel(
+              player: controller.player,
+              subtitles: controller.subtitles.value,
+              subtitleNameList: controller.subtitleNameList.value,
+              audioTracks: controller.audioTracks.value,
+              subtitleTracks: controller.subtitleTracks.value,
+              showPlaylist: controller.showPlaylist.value,
+              showTimedText: controller.showTimedText.value,
+              playerTitle: controller.currentName.value,
+              isFullScreen: false,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
-  // 视频播放器
+  // 视频播放器容器
   Widget _buildVideoPlayer() {
-    if (controller.thumbnail.isEmpty) return _buildFijkView();
-    return CachedNetworkImage(
-      imageUrl: controller.thumbnail.value,
-      cacheKey: '${controller.path}${controller.name}',
-      httpHeaders: controller.httpHeaders,
-      imageBuilder: (context, imageProvider) =>
-          _buildFijkView(imageProvider: imageProvider),
-      errorWidget: (context, url, error) => _buildFijkView(),
-    );
+    return _buildVideoView();
   }
 
   /// ListTile

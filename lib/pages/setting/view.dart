@@ -25,7 +25,7 @@ class SettingPage extends GetView<SettingController> {
       leading: CupertinoButton(
         padding: EdgeInsets.zero,
         alignment: Alignment.centerLeft,
-        child: Icon(FontAwesomeIcons.xmark, size: CommonUtils.navIconSize),
+        child: Icon(FontAwesomeIcons.xmark.data, size: CommonUtils.navIconSize),
         onPressed: () => Get.back(),
       ),
       middle: Text('setting'.tr),
@@ -237,8 +237,7 @@ class SettingPage extends GetView<SettingController> {
                 header: Container(
                   padding: EdgeInsets.only(left: 15),
                   alignment: Alignment.centerLeft,
-                  child: Text(
-                      'settings_backup'.tr,
+                  child: Text('settings_backup'.tr,
                       style: Get.textTheme.bodySmall),
                 ),
                 children: [
@@ -303,8 +302,7 @@ class SettingPage extends GetView<SettingController> {
                 header: Container(
                   padding: EdgeInsets.only(left: 15),
                   alignment: Alignment.centerLeft,
-                  child: Text(
-                      'settings_data_storage'.tr,
+                  child: Text('settings_data_storage'.tr,
                       style: Get.textTheme.bodySmall),
                 ),
                 children: [
@@ -340,8 +338,8 @@ class SettingPage extends GetView<SettingController> {
                     title: 'settings_preferences_path'.tr,
                     icon: CupertinoIcons.gear_alt,
                     onTap: () {
-                      Clipboard.setData(
-                          ClipboardData(text: controller.preferencesPath.value));
+                      Clipboard.setData(ClipboardData(
+                          text: controller.preferencesPath.value));
                       SmartDialog.showToast('toast_copy_success'.tr);
                     },
                     trailing: Row(

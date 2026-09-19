@@ -34,12 +34,12 @@ class DirectoryController extends GetxController {
   final String srcDir = Get.arguments['srcDir'] ?? '';
   final ObjectModel srcObject = Get.arguments['srcObject'] ?? ObjectModel();
   // 批量项 (可选): [{srcDir: String, name: String}]
-  final List<Map<String, String>> srcItems = (Get.arguments['srcItems']
-              as List?)
-          ?.map<Map<String, String>>(
-              (e) => {'srcDir': e['srcDir'] ?? '', 'name': e['name'] ?? ''})
-          .toList() ??
-      const [];
+  final List<Map<String, String>> srcItems =
+      (Get.arguments['srcItems'] as List?)
+              ?.map<Map<String, String>>(
+                  (e) => {'srcDir': e['srcDir'] ?? '', 'name': e['name'] ?? ''})
+              .toList() ??
+          const [];
 
   // ScrollController
   final ScrollController scrollController = ScrollController();

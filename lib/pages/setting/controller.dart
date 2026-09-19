@@ -105,8 +105,9 @@ class SettingController extends GetxController {
 
       final path = dir.startsWith('/') ? dir : '/$dir';
       final now = DateTime.now();
-      final ts = '${now.year}${now.month.toString().padLeft(2,'0')}${now.day.toString().padLeft(2,'0')}_'
-          '${now.hour.toString().padLeft(2,'0')}${now.minute.toString().padLeft(2,'0')}';
+      final ts =
+          '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}_'
+          '${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}';
 
       // 备份主数据库
       final dbBytes = await dbFile.readAsBytes();
@@ -116,10 +117,14 @@ class SettingController extends GetxController {
       // 同时备份 WAL 日志（WAL 模式的关键数据）
       if (await walFile.exists()) {
         final walBytes = await walFile.readAsBytes();
-        await dio.put('${url}dav$path/xlist_backup_latest.db-wal', data: walBytes);
+        await dio.put('${url}dav$path/xlist_backup_latest.db-wal',
+            data: walBytes);
       }
 
-      final totalKB = ((dbBytes.length + (await walFile.exists() ? await walFile.length() : 0)) / 1024).toStringAsFixed(0);
+      final totalKB = ((dbBytes.length +
+                  (await walFile.exists() ? await walFile.length() : 0)) /
+              1024)
+          .toStringAsFixed(0);
       SmartDialog.dismiss();
       SmartDialog.showToast('备份成功 ${totalKB}KB ($ts)');
     } catch (e) {
@@ -170,15 +175,20 @@ class SettingController extends GetxController {
       // 2. 清理 WAL/SHM 日志文件，避免旧数据残留
       final dbFile = File(databasePath.value);
       final walFile = File('${databasePath.value}-wal');
-      try { await walFile.delete(); } catch (_) {}
-      try { await File('${databasePath.value}-shm').delete(); } catch (_) {}
+      try {
+        await walFile.delete();
+      } catch (_) {}
+      try {
+        await File('${databasePath.value}-shm').delete();
+      } catch (_) {}
 
       // 3. 覆盖数据库文件（flush: true 强制写入磁盘）
       await dbFile.writeAsBytes(response.data, flush: true);
 
       // 3b. 恢复 WAL 文件（如果备份中包含）
       try {
-        final walResp = await dio.get('${url}dav$path/xlist_backup_latest.db-wal',
+        final walResp = await dio.get(
+            '${url}dav$path/xlist_backup_latest.db-wal',
             options: Options(responseType: ResponseType.bytes));
         await walFile.writeAsBytes(walResp.data, flush: true);
       } catch (_) {
@@ -192,7 +202,8 @@ class SettingController extends GetxController {
       }
 
       SmartDialog.dismiss();
-      SmartDialog.showToast('恢复成功(${(writtenSize/1024).toStringAsFixed(0)}KB)，正在重启...');
+      SmartDialog.showToast(
+          '恢复成功(${(writtenSize / 1024).toStringAsFixed(0)}KB)，正在重启...');
       // 5. 硬重启（确保 Floor 重新加载数据库）
       await Future.delayed(const Duration(seconds: 3));
       exit(0);

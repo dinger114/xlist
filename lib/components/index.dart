@@ -1,8 +1,8 @@
 export 'toast_component.dart';
 export 'search_component.dart';
 
-export 'fijkplayer/slider.dart';
-export 'fijkplayer/default_panel.dart';
+export 'player/slider.dart';
+export 'player/default_panel.dart';
 
 export 'object_list/object_list_component.dart';
 export 'object_grid/object_grid_component.dart';

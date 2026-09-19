@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.9.24'
+    ext.kotlin_version = '2.2.20'
     repositories {
         google()
         mavenCentral()
@@ -24,7 +24,19 @@ rootProject.buildDir = '../build'
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 }
+// AGP 8 requires a namespace; some discontinued plugins never migrated.
+// Inject it from the plugin's group so we don't have to fork them.
+// Register the afterEvaluate hook BEFORE evaluationDependsOn forces ':app'
+// to be evaluated (afterEvaluate on an evaluated project throws).
 subprojects {
+    afterEvaluate { project ->
+        if (project.hasProperty('android')) {
+            def androidExt = project.android
+            if (androidExt.namespace == null) {
+                androidExt.namespace = project.group.toString()
+            }
+        }
+    }
     project.evaluationDependsOn(':app')
 }
 

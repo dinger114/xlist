@@ -199,12 +199,13 @@ const Map<String, String> zh_Hans = {
   'setting_premium_support': '支持开发者',
   'setting_premium_support_description': '帮助开发者更好的维护软件, 为您提供更好的体验',
 
-  'fijkplayer_subtitle': '字幕',
-  'fijkplayer_subtitle_close': '关闭字幕',
-  'fijkplayer_audio_track': '音轨',
-  'fijkplayer_next': '下一集',
-  'fijkplayer_buffering': '正在缓冲...',
-  'fijkplayer_retry': '点击重试',
+  'player_subtitle': '字幕',
+  'player_subtitle_close': '关闭字幕',
+  'player_audio_track': '音轨',
+  'player_next': '下一集',
+  'player_buffering': '正在缓冲...',
+  'player_retry': '点击重试',
+  'toast_fullscreen_hint': '请在全屏模式下使用',
 
   // 暂无数据
   'no_data': '暂无数据',

@@ -210,12 +210,13 @@ const Map<String, String> en_US = {
   'setting_premium_support_description':
       'Help developers to better maintain the software and provide you with a better experience',
 
-  'fijkplayer_subtitle': 'Subtitle',
-  'fijkplayer_subtitle_close': 'Close subtitles',
-  'fijkplayer_audio_track': 'Audio',
-  'fijkplayer_next': 'Next',
-  'fijkplayer_buffering': 'Buffering...',
-  'fijkplayer_retry': 'Click to retry',
+  'player_subtitle': 'Subtitle',
+  'player_subtitle_close': 'Close subtitles',
+  'player_audio_track': 'Audio',
+  'player_next': 'Next',
+  'player_buffering': 'Buffering...',
+  'player_retry': 'Click to retry',
+  'toast_fullscreen_hint': 'Please use in fullscreen mode',
 
   // Error
   'no_data': 'No data',

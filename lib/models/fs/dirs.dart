@@ -6,9 +6,12 @@ part 'dirs.g.dart';
 class FsDirsModel {
   FsDirsModel();
 
-  @JsonKey(name: 'name') String? name;
-  @JsonKey(name: 'modified') DateTime? modified;
-  
-  factory FsDirsModel.fromJson(Map<String,dynamic> json) => _$FsDirsModelFromJson(json);
+  @JsonKey(name: 'name')
+  String? name;
+  @JsonKey(name: 'modified')
+  DateTime? modified;
+
+  factory FsDirsModel.fromJson(Map<String, dynamic> json) =>
+      _$FsDirsModelFromJson(json);
   Map<String, dynamic> toJson() => _$FsDirsModelToJson(this);
 }

@@ -2,12 +2,13 @@ import 'dart:math';
 import 'dart:async';
 
 import 'package:get/get.dart';
-import 'package:fijkplayer/fijkplayer.dart';
 import 'package:audio_service/audio_service.dart';
 
 import 'package:xlist/constants/index.dart';
 import 'package:xlist/pages/audio_player/index.dart';
 import 'package:xlist/pages/video_player/index.dart';
+import 'package:xlist/core/player/x_player.dart';
+import 'package:xlist/core/player/x_player_state.dart';
 
 // PlayerNotificationService https://pub.dev/packages/audio_service
 class PlayerNotificationService extends GetxService {
@@ -36,18 +37,17 @@ class PlayerNotificationHandler extends BaseAudioHandler
     with QueueHandler, SeekHandler {
   late StreamController<PlaybackState> streamController;
 
-  // Convert fijkplayer state into audio_service state.
-  static final FIJK_TO_PROCESSING_STATE = {
-    FijkState.idle: AudioProcessingState.idle,
-    FijkState.initialized: AudioProcessingState.idle,
-    FijkState.asyncPreparing: AudioProcessingState.buffering,
-    FijkState.prepared: AudioProcessingState.ready,
-    FijkState.started: AudioProcessingState.ready,
-    FijkState.paused: AudioProcessingState.ready,
-    FijkState.stopped: AudioProcessingState.ready,
-    FijkState.error: AudioProcessingState.error,
-    FijkState.end: AudioProcessingState.completed,
-    FijkState.completed: AudioProcessingState.completed,
+  // XPlayerState → audio_service state
+  static final X_TO_PROCESSING_STATE = {
+    XPlayerState.idle: AudioProcessingState.idle,
+    XPlayerState.loading: AudioProcessingState.buffering,
+    XPlayerState.ready: AudioProcessingState.ready,
+    XPlayerState.playing: AudioProcessingState.ready,
+    XPlayerState.paused: AudioProcessingState.ready,
+    XPlayerState.buffering: AudioProcessingState.buffering,
+    XPlayerState.stopped: AudioProcessingState.ready,
+    XPlayerState.error: AudioProcessingState.error,
+    XPlayerState.completed: AudioProcessingState.completed,
   };
 
   Function? _play;
@@ -57,6 +57,8 @@ class PlayerNotificationHandler extends BaseAudioHandler
 
   bool? _isVideo;
   bool? _isPlaylist;
+  XPlayer? _player;
+  final List<StreamSubscription> _subs = [];
 
   void setVideoFunctions(
       Function play, Function pause, Function seek, Function stop) {
@@ -131,16 +133,26 @@ class PlayerNotificationHandler extends BaseAudioHandler
     } catch (e) {}
   }
 
-  /// Initialise our stream controller and start listening to fijkplayer events.
-  /// [player] is the fijkplayer instance.
+  /// Initialise our stream controller and start listening to player events.
+  /// [player] is the XPlayer instance.
   void initializeStreamController(
-      FijkPlayer player, bool isPlaylist, bool isVideo) {
+      XPlayer player, bool isPlaylist, bool isVideo) {
     _isVideo = isVideo;
     _isPlaylist = isPlaylist;
-    void _fijkValueListener() => updatePlaybackState(player);
-    void startStream() => player.addListener(_fijkValueListener);
+    _player = player;
+
+    void startStream() {
+      _subs.add(player.stateStream.listen((_) => updatePlaybackState()));
+      _subs.add(player.playingStream.listen((_) => updatePlaybackState()));
+      _subs.add(player.positionStream.listen((_) => updatePlaybackState()));
+      _subs.add(player.bufferStream.listen((_) => updatePlaybackState()));
+    }
+
     void stopStream() {
-      player.removeListener(_fijkValueListener);
+      for (final sub in _subs) {
+        sub.cancel();
+      }
+      _subs.clear();
       streamController.close();
     }
 
@@ -153,16 +165,14 @@ class PlayerNotificationHandler extends BaseAudioHandler
     );
   }
 
-  /// Broadcast media item changes.
-  /// [player] is the fijkplayer instance.
-  void updatePlaybackState(FijkPlayer player) {
-    bool _isPlaying() => player.value.state == FijkState.started;
+  /// Broadcast playback state.
+  void updatePlaybackState([_]) {
+    final player = _player;
+    if (player == null) return;
 
-    // AudioProcessingState
     AudioProcessingState _processingState() {
       if (player.isBuffering) return AudioProcessingState.buffering;
-      return FIJK_TO_PROCESSING_STATE[player.value.state] ??
-          AudioProcessingState.idle;
+      return X_TO_PROCESSING_STATE[player.state] ?? AudioProcessingState.idle;
     }
 
     streamController.add(PlaybackState(
@@ -170,7 +180,7 @@ class PlayerNotificationHandler extends BaseAudioHandler
         _isPlaylist ?? false
             ? MediaControl.skipToPrevious
             : MediaControl.rewind,
-        if (_isPlaying()) MediaControl.pause else MediaControl.play,
+        if (player.isPlaying) MediaControl.pause else MediaControl.play,
         MediaControl.stop,
         _isPlaylist ?? false
             ? MediaControl.skipToNext
@@ -183,10 +193,10 @@ class PlayerNotificationHandler extends BaseAudioHandler
       },
       androidCompactActionIndices: const [0, 1, 3],
       processingState: _processingState(),
-      playing: _isPlaying(),
-      updatePosition: player.currentPos,
-      bufferedPosition: player.bufferPos,
-      speed: player.value.speed,
+      playing: player.isPlaying,
+      updatePosition: player.position,
+      bufferedPosition: player.buffer,
+      speed: 1.0,
     ));
   }
 }

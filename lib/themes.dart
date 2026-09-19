@@ -11,7 +11,6 @@ class Themes {
   ).copyWith(
     splashColor: Colors.transparent,
     highlightColor: Colors.transparent,
-    splashFactory: NoSplash.splashFactory,
   );
 
   // Dark
@@ -22,9 +21,5 @@ class Themes {
   ).copyWith(
     splashColor: Colors.transparent,
     highlightColor: Colors.transparent,
-    splashFactory: NoSplash.splashFactory,
-    cupertinoOverrideTheme: CupertinoThemeData(
-      textTheme: CupertinoTextThemeData(),
-    ),
   );
 }

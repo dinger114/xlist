@@ -182,7 +182,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
   }
 
   /// 播放进度
-  Widget _buildFijkSlider() {
+  Widget _buildXSlider() {
     // 计算进度时间
     double duration = controller.duration.value.inMilliseconds.toDouble();
     double currentValue = controller.seekPos > 0
@@ -197,8 +197,8 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
     cacheValue = max(cacheValue, 0);
 
     if (controller.duration.value.inMilliseconds == 0) {
-      return NewFijkSlider(
-        colors: NewFijkSliderColors(
+      return XSlider(
+        colors: XSliderColors(
           cursorColor: Get.theme.primaryColor,
           playedColor: Get.theme.primaryColor,
         ),
@@ -208,8 +208,8 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
       );
     }
 
-    return NewFijkSlider(
-      colors: NewFijkSliderColors(
+    return XSlider(
+      colors: XSliderColors(
         cursorColor: Get.theme.primaryColor,
         playedColor: Get.theme.primaryColor,
       ),
@@ -222,7 +222,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
       },
       onChangeEnd: (v) {
         if (controller.seekPos.toInt() == -1) return;
-        controller.player.seekTo(v.toInt());
+        controller.player.seek(Duration(milliseconds: v.toInt()));
         controller.currentPos.value = Duration(
           milliseconds: controller.seekPos.toInt(),
         );
@@ -244,7 +244,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
             padding: EdgeInsets.only(left: 50.w),
             child: Obx(
               () => Text(
-                FijkHelper.formatDuration(controller.currentPos.value),
+                PlayerHelper.formatDuration(controller.currentPos.value),
               ),
             ),
           ),
@@ -254,7 +254,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
             padding: EdgeInsets.only(right: 50.w),
             child: Obx(
               () => Text(
-                FijkHelper.formatDuration(controller.duration.value),
+                PlayerHelper.formatDuration(controller.duration.value),
               ),
             ),
           ),
@@ -306,7 +306,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
             onPressed: () {
               controller.isPlaying.value
                   ? controller.player.pause()
-                  : controller.player.start();
+                  : controller.player.play();
             },
           ),
           CupertinoButton(
@@ -355,7 +355,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
             Container(
               height: 30.h,
               padding: EdgeInsets.symmetric(horizontal: 50.w),
-              child: Obx(() => _buildFijkSlider()),
+              child: Obx(() => _buildXSlider()),
             ),
             _buildDuration(),
             Expanded(

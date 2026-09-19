@@ -212,8 +212,7 @@ class SearchPage extends GetView<SearchController> {
       okLabel: 'confirm'.tr,
       cancelLabel: 'cancel'.tr,
       textFields: [
-        DialogTextField(
-            hintText: 'dialog_rename_hint'.tr, initialText: s.name),
+        DialogTextField(hintText: 'dialog_rename_hint'.tr, initialText: s.name),
       ],
     );
     if (data == null || data.isEmpty) return;
@@ -590,12 +589,16 @@ class SearchPage extends GetView<SearchController> {
               action(
                 CupertinoIcons.pencil,
                 'rename'.tr,
-                isOne && PermissionHelper.canRename(user) ? _renameSingle : null,
+                isOne && PermissionHelper.canRename(user)
+                    ? _renameSingle
+                    : null,
               ),
               action(
                 CupertinoIcons.trash,
                 'delete'.tr,
-                hasAny && PermissionHelper.canDelete(user) ? _batchDelete : null,
+                hasAny && PermissionHelper.canDelete(user)
+                    ? _batchDelete
+                    : null,
               ),
             ],
           ),
