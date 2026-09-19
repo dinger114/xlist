@@ -1,5 +1,5 @@
 name: Setup Flutter
-description: Java + Flutter SDK + Gradle/pub caches + pub get + build_runner
+description: Java + Flutter SDK + caches + pub get + build_runner
 
 inputs:
   flutter-version:
@@ -8,22 +8,24 @@ inputs:
   run-build-runner:
     description: Whether to run build_runner (needed when .g.dart files are used)
     default: 'true'
+  cache-gradle:
+    description: Enable Gradle dependency caching (only useful for Android builds)
+    default: 'false'
 
 runs:
   using: composite
   steps:
-    # setup-java 的 cache: gradle 自带 maven/gradle 缓存（含 gradle wrapper 发行包），
-    # 无需再手写 actions/cache。
+    # cache-gradle 只在真的跑 Android 构建时才开：CI job 不碰 Gradle，
+    # 开了会因 ~/.gradle 不存在而报 Path Validation Error。
     - name: Setup Java 17
       uses: actions/setup-java@v6
       with:
         distribution: temurin
         java-version: '17'
-        cache: gradle
+        cache: ${{ inputs.cache-gradle == 'true' && 'gradle' || '' }}
 
-    # subosito/flutter-action 自带 pub 依赖缓存（日志中会看到
-    # "Cache pub dependencies"），因此不再手写 actions/cache 缓存 ~/.pub-cache
-    # —— 那一步会因路径不存在而报 Path Validation Error。
+    # subosito/flutter-action 自带 Flutter SDK 与 pub 依赖两级缓存
+    # （日志里的 "Cache Flutter" / "Cache pub dependencies"），无需手写 actions/cache。
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
