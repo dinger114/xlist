@@ -273,6 +273,17 @@ class AudioPlayerController extends GetxController
     await CommonUtils.addRecent(object.value, path, _object.name!);
   }
 
+  /// 播放/暂停切换（乐观更新 UI，由 playingStream 校正）
+  void togglePlay() {
+    if (isPlaying.value) {
+      isPlaying.value = false;
+      player.pause();
+    } else {
+      isPlaying.value = true;
+      player.play();
+    }
+  }
+
   /// 重试播放
   void retryPlay() async {
     if (_sourceUrl.isEmpty) return;

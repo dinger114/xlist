@@ -303,11 +303,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
                 color: Get.isDarkMode ? Colors.white : Colors.black87,
               ),
             ),
-            onPressed: () {
-              controller.isPlaying.value
-                  ? controller.player.pause()
-                  : controller.player.play();
-            },
+            onPressed: controller.togglePlay,
           ),
           CupertinoButton(
             alignment: Alignment.centerRight,

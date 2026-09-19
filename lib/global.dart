@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_storage/get_storage.dart';
 
+import 'package:xlist/helper/index.dart';
 import 'package:xlist/services/index.dart';
 import 'package:xlist/storages/index.dart';
 import 'package:xlist/constants/index.dart';
@@ -50,6 +51,11 @@ class Global {
       try {
         if (GetPlatform.isIOS) DioService.to.dio.get('https://xlist.site');
       } catch (e) {}
+    }
+
+    // 通知权限 (Android 13+)
+    if (GetPlatform.isAndroid || GetPlatform.isIOS) {
+      AppPermissionHelper.requestNotification();
     }
 
     // Theme
