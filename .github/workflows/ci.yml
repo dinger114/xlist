@@ -25,24 +25,8 @@ permissions:
   pull-requests: write
 
 jobs:
-  format:
-    name: dart format
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-
-      # dart format 不需要 Flutter SDK，装 Dart 即可（省掉几百 MB 下载）。
-      # 版本必须与 Flutter 3.47.5 内置的 Dart 一致，否则格式化规则可能不同。
-      - uses: dart-lang/setup-dart@v1
-        with:
-          sdk: 3.13.4
-
-      - name: Verify formatting
-        run: dart format --output=none --set-exit-if-changed lib test
-
   analyze-test:
-    name: Analyze & Test
+    name: Format, Analyze & Test
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -52,10 +36,17 @@ jobs:
         with:
           run-build-runner: 'true'
 
+      # 必须在 setup（含 flutter pub get）之后跑。
+      # dart format 会读 analysis_options.yaml 里的 package:flutter_lints，
+      # 没有 .dart_tool/package_config.json 就解析不到，格式化规则不同，
+      # 会误报 67 个文件「格式不对」（实测）。
+      - name: Verify formatting
+        run: dart format --output=none --set-exit-if-changed lib test
+
       # --no-fatal-infos --no-fatal-warnings 表示只有 error 才返回非零，
       # 不需要 `|| true` + grep 兜底。
       - name: Analyze
-        run: flutter analyze --no-fatal-infos --no-fatal-warnings
+        run: flutter analyze --no-pub --no-fatal-infos --no-fatal-warnings
 
       - name: Run tests
         # --no-pub 必需：否则 pub 的解析日志会混进 stdout，
