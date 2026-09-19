@@ -71,6 +71,7 @@ class _DefaultPanelState extends State<DefaultPanel>
   Animation<Offset>? _animation;
 
   final List<StreamSubscription> _subs = [];
+  int _lastSubtitleRebuildMs = 0;
 
   @override
   void initState() {
@@ -115,7 +116,12 @@ class _DefaultPanelState extends State<DefaultPanel>
 
     _subs.add(player.positionStream.listen((pos) {
       if (!mounted) return;
-      setState(() => _currentPos = pos);
+      _currentPos = pos;
+      // 外层面板只用 position 渲染字幕：节流到 500ms，避免高频整层重绘
+      final now = DateTime.now().millisecondsSinceEpoch;
+      if (now - _lastSubtitleRebuildMs < 500) return;
+      _lastSubtitleRebuildMs = now;
+      setState(() {});
     }));
   }
 
@@ -471,6 +477,9 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
   Timer? _hideTimer;
   bool _hideStuff = true;
 
+  /// UI 隐藏时驱动吸底进度条的最小化重建
+  final ValueNotifier<double> bottomProgress = ValueNotifier<double>(0);
+
   bool _hideSpeedStu = true;
   double _speed = speed;
 
@@ -509,6 +518,7 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
   void dispose() {
     super.dispose();
     _hideTimer?.cancel();
+    bottomProgress.dispose();
 
     _positionSubs?.cancel();
     _bufferSubs?.cancel();
@@ -525,20 +535,23 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
 
     _positionSubs = player.positionStream.listen((v) {
       if (!mounted) return;
-      setState(() {
-        _currentPos = v;
-        // 处理重开后状态对不上的问题
-        _playing = true;
-        _prepared = true;
-        _buffering = false;
-      });
+      // 位置流高频触发：只在 UI 可见或拖动中才重绘整个面板，
+      // UI 隐藏时静默更新值，吸底进度条由独立的 ValueListenable 驱动。
+      _currentPos = v;
+      if (!_prepared) _prepared = true;
+      if (!_playing) _playing = true;
+      if (!_hideStuff || _isHorizontalMove) {
+        setState(() {});
+      } else {
+        bottomProgress.value = v.inMilliseconds.toDouble();
+      }
     });
 
     _bufferSubs = player.bufferStream.listen((v) {
       if (!mounted) return;
-      setState(() {
-        _bufferPos = v;
-      });
+      _bufferPos = v;
+      if (_hideStuff && !_isHorizontalMove) return; // UI 隐藏时无需重绘
+      setState(() {});
     });
 
     _bufferingSubs = player.bufferingStream.listen((v) {
@@ -717,6 +730,9 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
       _hideStuff = !_hideStuff;
       if (_hideStuff == true) {
         _hideSpeedStu = true;
+      } else {
+        // UI 重新可见，恢复整面板重绘路径
+        bottomProgress.value = _currentPos.inMilliseconds.toDouble();
       }
     });
   }
@@ -724,10 +740,12 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
   void _startHideTimer() {
     _hideTimer?.cancel();
     _hideTimer = Timer(const Duration(seconds: 5), () {
+      if (!mounted) return;
       setState(() {
         _hideStuff = true;
         _hideSpeedStu = true;
       });
+      bottomProgress.value = _currentPos.inMilliseconds.toDouble();
     });
   }
 
@@ -994,22 +1012,34 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
               ),
             ),
           ),
-          // 隐藏进度条，ui隐藏时出现
+          // 隐藏进度条，ui隐藏时出现（ValueListenableBuilder 驱动，避免整面板重绘）
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
-            child: _hideStuff &&
+            child: (_hideStuff &&
                     _duration.inMilliseconds != 0 &&
-                    !widget.isFullScreen
+                    !widget.isFullScreen)
                 ? Container(
                     alignment: Alignment.bottomLeft,
                     height: 1.5,
                     color: Colors.transparent,
-                    child: Container(
-                      color: Get.theme.primaryColor,
-                      width: curBottomProW is double ? curBottomProW : 0,
-                      height: 1.5,
+                    child: ValueListenableBuilder<double>(
+                      valueListenable: bottomProgress,
+                      builder: (context, posMs, _) {
+                        final ratio = _duration.inMilliseconds == 0
+                            ? 0.0
+                            : (posMs / _duration.inMilliseconds)
+                                .clamp(0.0, 1.0);
+                        return FractionallySizedBox(
+                          alignment: Alignment.centerLeft,
+                          widthFactor: ratio,
+                          child: Container(
+                            color: Get.theme.primaryColor,
+                            height: 1.5,
+                          ),
+                        );
+                      },
                     ),
                   )
                 : Container(),
