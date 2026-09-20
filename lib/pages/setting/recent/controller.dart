@@ -16,39 +16,34 @@ class RecentController extends GetxController {
   static const pageSize = 20;
   final isEmpty = true.obs; // 是否为空
   final serverId = Get.find<UserStorage>().serverId.val;
-  List<RecentEntity> get recentList => pagingController.itemList!; // 最近浏览数据
+
+  /// 最近浏览数据（来自 PagingState，只读）
+  List<RecentEntity> get recentList => pagingController.value.items ?? const [];
 
   ScrollController scrollController = ScrollController();
-  final PagingController<int, RecentEntity> pagingController =
-      PagingController(firstPageKey: 0);
 
-  @override
-  void onInit() async {
-    pagingController.addPageRequestListener((currentPage) {
-      getRecentListData(currentPage);
-    });
-
-    super.onInit();
-  }
-
-  /// 获取最近浏览数据
-  /// [currentIndex] 当前游标
-  Future<void> getRecentListData(int currentIndex) async {
-    try {
-      final _recentList = await DatabaseService.to.database.recentDao
-          .findRecentByServerId(serverId, pageSize, currentIndex);
-
+  /// infinite_scroll_pagination 5.x 起：分页参数改为构造函数注入，
+  /// itemList/appendPage/appendLastPage/addPageRequestListener 均已移除。
+  /// 这里保持原有「按 offset 分页、取到不满一页即结束」的语义。
+  late final PagingController<int, RecentEntity> pagingController =
+      PagingController<int, RecentEntity>(
+    getNextPageKey: (state) {
+      final pages = state.pages;
+      // 上一页不满 pageSize，说明已到末页（与原 isLastPage 判断一致）
+      if (pages != null && pages.isNotEmpty && pages.last.length < pageSize) {
+        return null;
+      }
+      // 下一页 key = 已取条数（即 SQL offset），与原 currentIndex 语义一致
+      return (pages ?? const []).fold<int>(0, (sum, p) => sum + p.length);
+    },
+    fetchPage: (offset) async {
+      final list = await DatabaseService.to.database.recentDao
+          .findRecentByServerId(serverId, pageSize, offset);
       // 判断是否为空
-      if (currentIndex == 0) isEmpty.value = _recentList.isEmpty;
-      final isLastPage = _recentList.length < pageSize;
-      isLastPage
-          ? pagingController.appendLastPage(_recentList)
-          : pagingController.appendPage(
-              _recentList, currentIndex + _recentList.length);
-    } catch (e) {
-      SmartDialog.showToast(e.toString());
-    }
-  }
+      if (offset == 0) isEmpty.value = list.isEmpty;
+      return list;
+    },
+  );
 
   /// 删除最近浏览
   /// [entity] 最近浏览实体
@@ -64,8 +59,9 @@ class RecentController extends GetxController {
 
     try {
       await DatabaseService.to.database.recentDao.deleteRecentById(entity.id!);
-      recentList.remove(entity);
-      pagingController.notifyListeners();
+      // 5.x 的 items 是 unmodifiable，不能就地 remove，改为过滤后写回 state
+      pagingController.value =
+          pagingController.value.filterItems((e) => e.id != entity.id);
 
       isEmpty.value = recentList.isEmpty;
       SmartDialog.showToast('toast_remove_success'.tr);
@@ -91,11 +87,10 @@ class RecentController extends GetxController {
       await DatabaseService.to.database.progressDao
           .deleteProgressByServerId(_id);
 
-      // 清空数据
-      recentList.clear();
-      pagingController.notifyListeners();
+      // 清空数据：直接 reset state（等价于清空列表并回到首页）
+      pagingController.refresh();
 
-      isEmpty.value = recentList.isEmpty;
+      isEmpty.value = true;
       SmartDialog.showToast('toast_remove_success_all'.tr);
     } catch (e) {
       SmartDialog.showToast(e.toString());
