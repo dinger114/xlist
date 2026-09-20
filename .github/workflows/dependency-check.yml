@@ -2,7 +2,10 @@ name: Dependency Update Check
 
 # Dependabot 只按 pubspec.yaml 的约束版本开 PR；`flutter pub outdated` 还能
 # 发现被约束卡住的可升级项、以及已停更（discontinued）的包。
-# 这里每周跑一次，把结果贴到 job summary 和 issue 里。
+# 这里每周一跑一次，结果写进 job summary 并留 artifact。
+#
+# 注意：本仓库 issues 是关闭的（has_issues=false），所以不在这里建 issue，
+# 结果通过 run summary 查看。
 on:
   workflow_dispatch:
   schedule:
@@ -16,7 +19,6 @@ on:
 
 permissions:
   contents: read
-  issues: write
 
 jobs:
   outdated:
@@ -35,41 +37,23 @@ jobs:
         run: |
           flutter pub outdated --no-dev-dependencies > outdated.txt || true
           echo "=== 摘要 ==="
-          tail -20 outdated.txt
+          tail -25 outdated.txt
 
       - name: Write job summary
         run: |
           {
             echo "## 依赖更新检测"
             echo
+            echo "由 \`dependency-check\` workflow 生成（每周一 09:00 CST）。"
+            echo
             echo '```'
             cat outdated.txt
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Comment on tracking issue
-        if: github.event_name == 'schedule'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          TITLE="chore: 依赖更新追踪"
-          # 找已有 issue，没有就建一个
-          NUM=$(gh issue list --state open --search "$TITLE in:title" \
-                  --json number,title \
-                  --jq ".[] | select(.title == \"$TITLE\") | .number" | head -1)
-
-          BODY=$(mktemp)
-          {
-            echo "自动检测（$(date -u +%Y-%m-%d)）— 由 \`dependency-check\` workflow 更新。"
-            echo
-            echo '```'
-            cat outdated.txt
-            echo '```'
-          } > "$BODY"
-
-          if [ -z "$NUM" ]; then
-            gh issue create --title "$TITLE" --body-file "$BODY"
-          else
-            gh issue comment "$NUM" --body-file "$BODY"
-          fi
+      - name: Upload report
+        uses: actions/upload-artifact@v7
+        with:
+          name: pub-outdated
+          path: outdated.txt
+          retention-days: 90
