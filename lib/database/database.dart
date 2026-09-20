@@ -5,7 +5,7 @@ import 'package:sqflite/sqflite.dart' as sqflite;
 import 'package:xlist/database/dao/index.dart';
 import 'package:xlist/database/entity/index.dart';
 
-part 'database.g.dart'; // the generated code will be there
+part 'database.floor.dart'; // the generated code will be there
 
 @Database(version: 3, entities: [
   ServerEntity,
