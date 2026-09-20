@@ -412,15 +412,18 @@ class ObjectHelper {
     required String pageTag,
     String password = '',
   }) async {
-    FilePickerResult? result = await FilePicker.pickFiles();
-    if (result != null) {
+    // file_picker 12+：FilePickerResult 已移除，pickFiles() 直接返回
+    // List<PlatformFile>（取消返回空列表，而不是 null）。
+    // 上传语义是单选，故用 pickFile() 拿单个文件（allowMultiple 已废弃）。
+    final file = await FilePicker.pickFile();
+    if (file != null) {
       try {
         SmartDialog.showLoading(msg: 'toast_upload_loading'.tr);
 
         // 上传文件
         final response = await ObjectRepository.put(
-          fileData: File(result.files.single.path!).readAsBytesSync(),
-          fileName: result.files.single.name,
+          fileData: File(file.path!).readAsBytesSync(),
+          fileName: file.name,
           remotePath: path,
           password: password,
         );
