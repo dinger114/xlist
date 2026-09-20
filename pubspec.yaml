@@ -52,16 +52,16 @@ dependencies:
   modal_bottom_sheet: ^3.0.0-pre
   image_gallery_saver_plus: ^5.1.1
   font_awesome_flutter: ^11.0.0
-  cached_network_image: ^3.2.3
+  cached_network_image: ^3.4.1
   subtitle_wrapper_package: ^2.1.1
   infinite_scroll_pagination: ^4.0.0
   syncfusion_flutter_pdfviewer: ^33.2.13
   flutter_svg: ^2.3.0
   flutter_phoenix: ^1.1.0
-  flutter_slidable: ^3.0.0
+  flutter_slidable: ^4.0.3
   flutter_screenutil: ^5.6.0
   flutter_downloader: ^1.12.1
-  flutter_smart_dialog: ^4.7.1
+  flutter_smart_dialog: ^4.9.8+10
   flutter_inappwebview: ^6.0.0
   flutter_native_splash: ^2.2.19
   flutter_keyboard_visibility: ^7.0.1
