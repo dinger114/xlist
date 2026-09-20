@@ -170,6 +170,13 @@ class PlayerNotificationHandler extends BaseAudioHandler
     final player = _player;
     if (player == null) return;
 
+    // stopStream() 在最后一个监听者取消时会 close() 这个 controller，
+    // 但调用方（如 audio_player/controller.dart 的 playingStream 监听）
+    // 会用 Future.delayed 延迟 1s 再回调进来。等定时器触发时 controller
+    // 可能已经关闭，此时 add() 会抛 "Bad state: Cannot add event after
+    // closing"（表现为关闭播放器后日志里的未捕获异常）。提前退出。
+    if (streamController.isClosed) return;
+
     AudioProcessingState _processingState() {
       if (player.isBuffering) return AudioProcessingState.buffering;
       return X_TO_PROCESSING_STATE[player.state] ?? AudioProcessingState.idle;
