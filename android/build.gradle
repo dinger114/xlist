@@ -21,6 +21,23 @@ rootProject.buildDir = '../build'
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 }
+
+// AGP 9 下的坑：file_picker 11+ 之类的插件带 Kotlin 源码，却用 `isAgp9OrAbove`
+// 判断跳过了 apply plugin: 'org.jetbrains.kotlin.android'，默认指望 AGP 9 的
+// 内建 Kotlin。本工程 android.builtInKotlin=false（置 true 会让 9 个各自 apply
+// KGP 的插件冲突），内建 Kotlin 并不存在，于是 FilePickerPlugin.kt 根本没被编译，
+// GeneratedPluginRegistrant 就报 "cannot find symbol: class FilePickerPlugin"。
+// 给「有 kotlin 源码但未应用 kotlin 插件」的插件补上。必须在下面的 afterEvaluate
+// 之前生效。
+subprojects {
+    project.plugins.withId('com.android.library') {
+        def ktSrc = new File(project.projectDir, 'src/main/kotlin')
+        if (ktSrc.directory && !project.plugins.hasPlugin('org.jetbrains.kotlin.android')) {
+            project.pluginManager.apply('org.jetbrains.kotlin.android')
+        }
+    }
+}
+
 // AGP 8 requires a namespace; some discontinued plugins never migrated.
 // Inject it from the plugin's group so we don't have to fork them.
 // Register the afterEvaluate hook BEFORE evaluationDependsOn forces ':app'
@@ -45,8 +62,11 @@ subprojects {
                 sourceCompatibility JavaVersion.VERSION_17
                 targetCompatibility JavaVersion.VERSION_17
             }
-            androidExt.kotlinOptions {
-                jvmTarget = '17'
+            // 只有真正应用了 Kotlin 插件的模块才有 kotlinOptions。
+            if (project.plugins.hasPlugin('org.jetbrains.kotlin.android')) {
+                androidExt.kotlinOptions {
+                    jvmTarget = '17'
+                }
             }
         }
     }

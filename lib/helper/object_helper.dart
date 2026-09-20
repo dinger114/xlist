@@ -412,7 +412,7 @@ class ObjectHelper {
     required String pageTag,
     String password = '',
   }) async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    FilePickerResult? result = await FilePicker.pickFiles();
     if (result != null) {
       try {
         SmartDialog.showLoading(msg: 'toast_upload_loading'.tr);
