@@ -1,0 +1,63 @@
+name: Dependabot auto-merge
+
+# 只在 Dependabot 的 PR 上跑，且只做「读元数据 + 等 CI + 合并」，
+# 不 checkout / 不执行 PR 里的代码（第三方依赖的代码不配拿到写权限 token）。
+# 因此用 pull_request 而非 pull_request_target。
+on:
+  pull_request:
+    branches: [master]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: dependabot-merge-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  auto-merge:
+    # 缺了这行会连第三方 PR 一起处理
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Fetch Dependabot metadata
+        id: meta
+        uses: dependabot/fetch-metadata@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # 未分组的大版本升级（可能含破坏性变更）留给人看，不自动合并
+      - name: Skip major updates
+        if: steps.meta.outputs.update-type == 'version-update:semver-major'
+        run: |
+          echo "::notice::Major 更新（${{ steps.meta.outputs.dependency-names }}）需人工评审，跳过自动合并。"
+
+      # 本仓库 master 没有分支保护，`gh pr merge --auto` 会立刻合并、
+      # 不会等 CI。所以这里显式等 PR 的检查跑完再合并 —— CI 红了就不会合并。
+      - name: Wait for CI to pass, then merge
+        if: steps.meta.outputs.update-type != 'version-update:semver-major'
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          # CI 的 check 注册到 PR 上有延迟，先等它出现（最多 ~3 分钟）
+          for i in $(seq 1 18); do
+            count=$(gh pr checks "$PR_URL" --json name --jq 'length' 2>/dev/null || echo 0)
+            if [ "$count" -gt 0 ]; then
+              echo "检测到 $count 个检查，开始等待完成…"
+              break
+            fi
+            echo "等待检查注册… ($i/18)"
+            sleep 10
+          done
+
+          # 有任何检查失败就非零退出，直接不合并
+          gh pr checks "$PR_URL" --watch --fail-fast
+
+          echo "检查全部通过，合并 ${{ steps.meta.outputs.update-type }} 更新：${{ steps.meta.outputs.dependency-names }}"
+          gh pr merge "$PR_URL" --squash --delete-branch

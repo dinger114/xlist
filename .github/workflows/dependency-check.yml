@@ -1,0 +1,75 @@
+name: Dependency Update Check
+
+# Dependabot 只按 pubspec.yaml 的约束版本开 PR；`flutter pub outdated` 还能
+# 发现被约束卡住的可升级项、以及已停更（discontinued）的包。
+# 这里每周跑一次，把结果贴到 job summary 和 issue 里。
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 1 * * 1'   # 每周一 09:00 CST
+  push:
+    branches: [master]
+    paths:
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - '.github/workflows/dependency-check.yml'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  outdated:
+    name: flutter pub outdated
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: ./.github/actions/setup-flutter
+        with:
+          run-build-runner: 'false'
+
+      # pub outdated 在有可升级项时返回非零，加 || true 以免整个 job 失败
+      - name: Check outdated
+        run: |
+          flutter pub outdated --no-dev-dependencies > outdated.txt || true
+          echo "=== 摘要 ==="
+          tail -20 outdated.txt
+
+      - name: Write job summary
+        run: |
+          {
+            echo "## 依赖更新检测"
+            echo
+            echo '```'
+            cat outdated.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment on tracking issue
+        if: github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TITLE="chore: 依赖更新追踪"
+          # 找已有 issue，没有就建一个
+          NUM=$(gh issue list --state open --search "$TITLE in:title" \
+                  --json number,title \
+                  --jq ".[] | select(.title == \"$TITLE\") | .number" | head -1)
+
+          BODY=$(mktemp)
+          {
+            echo "自动检测（$(date -u +%Y-%m-%d)）— 由 \`dependency-check\` workflow 更新。"
+            echo
+            echo '```'
+            cat outdated.txt
+            echo '```'
+          } > "$BODY"
+
+          if [ -z "$NUM" ]; then
+            gh issue create --title "$TITLE" --body-file "$BODY"
+          else
+            gh issue comment "$NUM" --body-file "$BODY"
+          fi

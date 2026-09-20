@@ -1,0 +1,48 @@
+version: 2
+
+updates:
+  - package-ecosystem: "pub"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Shanghai"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "chore(deps)"
+    labels:
+      - "dependencies"
+    # minor + patch 合并成一个 PR，减少逐个点合并的负担；
+    # major 仍单独开 PR，必须人工评审（可能含破坏性变更）。
+    groups:
+      pub-minor-patch:
+        applies-to: version-updates
+        update-types:
+          - "minor"
+          - "patch"
+      pub-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  # 保持 Actions 自身也是最新的（我们刚把一批 action 升到最新 major，
+  # 有这条以后就不用手动盯了）
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Shanghai"
+    commit-message:
+      prefix: "chore(ci)"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    groups:
+      actions-minor-patch:
+        applies-to: version-updates
+        update-types:
+          - "minor"
+          - "patch"
