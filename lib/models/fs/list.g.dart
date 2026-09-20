@@ -10,7 +10,7 @@ FsListModel _$FsListModelFromJson(Map<String, dynamic> json) => FsListModel()
   ..content = (json['content'] as List<dynamic>?)
       ?.map((e) => ObjectModel.fromJson(e as Map<String, dynamic>))
       .toList()
-  ..total = json['total'] as int?
+  ..total = (json['total'] as num?)?.toInt()
   ..readme = json['readme'] as String?
   ..write = json['write'] as bool?
   ..provider = json['provider'] as String?;

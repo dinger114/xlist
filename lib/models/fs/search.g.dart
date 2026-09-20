@@ -11,8 +11,8 @@ FsSearchModel _$FsSearchModelFromJson(Map<String, dynamic> json) =>
       ..name = json['name'] as String?
       ..parent = json['parent'] as String?
       ..isDir = json['is_dir'] as bool?
-      ..type = json['type'] as int?
-      ..size = json['size'] as int?;
+      ..type = (json['type'] as num?)?.toInt()
+      ..size = (json['size'] as num?)?.toInt();
 
 Map<String, dynamic> _$FsSearchModelToJson(FsSearchModel instance) =>
     <String, dynamic>{
