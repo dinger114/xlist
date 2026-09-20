@@ -18,3 +18,4 @@ class Repository {
     return DioService.to.dio.post(path, data: data, options: options);
   }
 }
+// protection test
