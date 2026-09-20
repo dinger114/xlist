@@ -8,13 +8,13 @@ part of 'object.dart';
 
 ObjectModel _$ObjectModelFromJson(Map<String, dynamic> json) => ObjectModel()
   ..name = json['name'] as String?
-  ..type = json['type'] as int?
+  ..type = (json['type'] as num?)?.toInt()
   ..thumb = json['thumb'] as String?
   ..isDir = json['is_dir'] as bool?
   ..modified = json['modified'] == null
       ? null
       : DateTime.parse(json['modified'] as String)
-  ..size = json['size'] as int?
+  ..size = (json['size'] as num?)?.toInt()
   ..sign = json['sign'] as String?
   ..rawUrl = json['raw_url'] as String?
   ..readme = json['readme'] as String?

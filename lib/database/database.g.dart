@@ -6,21 +6,32 @@ part of 'database.dart';
 // FloorGenerator
 // **************************************************************************
 
+abstract class $XlistDatabaseBuilderContract {
+  /// Adds migrations to the builder.
+  $XlistDatabaseBuilderContract addMigrations(List<Migration> migrations);
+
+  /// Adds a database [Callback] to the builder.
+  $XlistDatabaseBuilderContract addCallback(Callback callback);
+
+  /// Creates the database and initializes it.
+  Future<XlistDatabase> build();
+}
+
 // ignore: avoid_classes_with_only_static_members
 class $FloorXlistDatabase {
   /// Creates a database builder for a persistent database.
   /// Once a database is built, you should keep a reference to it and re-use it.
-  static _$XlistDatabaseBuilder databaseBuilder(String name) =>
+  static $XlistDatabaseBuilderContract databaseBuilder(String name) =>
       _$XlistDatabaseBuilder(name);
 
   /// Creates a database builder for an in memory database.
   /// Information stored in an in memory database disappears when the process is killed.
   /// Once a database is built, you should keep a reference to it and re-use it.
-  static _$XlistDatabaseBuilder inMemoryDatabaseBuilder() =>
+  static $XlistDatabaseBuilderContract inMemoryDatabaseBuilder() =>
       _$XlistDatabaseBuilder(null);
 }
 
-class _$XlistDatabaseBuilder {
+class _$XlistDatabaseBuilder implements $XlistDatabaseBuilderContract {
   _$XlistDatabaseBuilder(this.name);
 
   final String? name;
@@ -29,19 +40,19 @@ class _$XlistDatabaseBuilder {
 
   Callback? _callback;
 
-  /// Adds migrations to the builder.
-  _$XlistDatabaseBuilder addMigrations(List<Migration> migrations) {
+  @override
+  $XlistDatabaseBuilderContract addMigrations(List<Migration> migrations) {
     _migrations.addAll(migrations);
     return this;
   }
 
-  /// Adds a database [Callback] to the builder.
-  _$XlistDatabaseBuilder addCallback(Callback callback) {
+  @override
+  $XlistDatabaseBuilderContract addCallback(Callback callback) {
     _callback = callback;
     return this;
   }
 
-  /// Creates the database and initializes it.
+  @override
   Future<XlistDatabase> build() async {
     final path = name != null
         ? await sqfliteDatabaseFactory.getDatabasePath(name!)
