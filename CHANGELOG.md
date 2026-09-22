@@ -100,17 +100,34 @@
 
 ### Bug Fixes
 
-- **修复视频播放控制栏变灰块、音量/亮度手势失效**（真机 Pixel 6 Pro 实测）。
-  `DefaultPanel.build` 返回的是 `Positioned.fill(...)`，但调用处是
-  `Stack > Positioned.fill > Obx > DefaultPanel`，中间隔了一层 `Obx`。
-  `Positioned` 的父级必须**直接**是 `Stack`，隔了之后 `ParentDataWidget`
-  断言失败：`Incorrect use of ParentDataWidget ... MultiChildLayoutParentData`。
-  debug 下是红屏，**release 下 Flutter 的 `ErrorWidget` 是个灰色方块** ——
-  所以表现为控制栏灰块且其子树上手势全部失效。
-  改为 `build` 返回 `Stack`（铺满交由调用处的 `Positioned.fill`），
-  并新增 `test/components/player/default_panel_test.dart` 用真实层级
-  （`Stack>Positioned.fill>Obx>DefaultPanel` + `navigatorKey: Get.key` 接线）
-  守住该断言（已验证：还原此 bug 该测试即失败）
+- **修复视频播放控制栏变灰块**（真机 Pixel 6 Pro 实测）。
+  面板里用了 `Ink`/`InkWell`，而 `Ink` 会 `Material.of(context)`；播放页根是
+  `CupertinoPageScaffold`，**不提供 `Material` 祖先**，于是 `Material.of`
+  末尾的 `return controller!` 抛 `Null check operator used on a null value`
+  （那句会说明原因的 assert 被 release 剥离了，所以只剩裸的 null check）。
+  面板每秒随播放位置重建一次，于是每帧抛一次；`Ink` 所在的底部控制栏被
+  release 的 `ErrorWidget`（灰色方块）顶替。
+  迁移前无此问题：面板由 fijk 的 `panelBuilder` 提供，fijk 内部自带
+  `Material`；media_kit 迁移后改成自己 `Stack` 挂 `DefaultPanel`，这层祖先丢了。
+  修法：`DefaultPanel.build` 包一层 `Material(type: MaterialType.transparency)`
+  （提供 ink controller 但不画底色）。
+  另修正 `DefaultPanel.build` 不应返回 `Positioned.fill`：调用处是
+  `Stack > Positioned.fill > Obx > DefaultPanel`，中间隔了 `Obx`，而
+  `Positioned` 的父级必须**直接**是 `Stack`，否则 `ParentDataWidget` 断言失败。
+  这一项是**独立**的真实缺陷（debug 下红屏），但 release 会剥离 assert，
+  所以它**不是**灰块的原因 —— 两个问题都已修。
+  新增 `test/components/player/default_panel_test.dart`，实测有效：撤掉任一修复
+  对应用例即失败
+
+- **修复播放页左半屏上下滑调亮度完全无反应、音量一上手就跳满**。
+  fijkplayer 迁移到 media_kit 时（`d635029`）这两项能力随插件一起被删除但
+  **没有替代**：`FijkPlugin.setScreenBrightness` 的亮度分支被整段删掉（左半屏
+  上下滑彻底无反应）；音量从系统音量（`AudioManager.STREAM_MUSIC`）换成了
+  `player.setVolume()`（mpv 内部音量），且基准值读取
+  （`FijkVolume.getVol()`）被写死成 `1.0`（不读当前值）。
+  新增 `io.xlist/system_ui` 通道 + `lib/helper/system_ui_helper.dart`，
+  按 fijk 原语义补回系统音量与**当前窗口亮度**的控制（两者都不需要运行时权限），
+  并在拖动开始时读取当前值作为基准
 
 - **修复 alist 的 HLS（m3u8）一直转圈加载不出来**。
   `PlayerHelper.setOption` 原为 m3u8 设 `cache-secs=120`。实测该站点的分段是
@@ -127,6 +144,11 @@
   把 mpv 后端日志经 `debugPrint` 打到 logcat。此前 media_kit 的诊断走 `print`，
   release 下被丢弃，导致播放类故障只能靠猜。与 `Global.routeLog` 同思路，
   平时保持默认日志级别、零开销
+- 同一开关下挂 `FlutterError.onError`，把**每一次**框架异常连同堆栈经
+  `debugPrint` 输出（前缀 `XLIST_ERR`）。Flutter 原生只对首个异常打印完整
+  信息，之后一律退化成 `Another exception was thrown: Instance of 'SV<void>'`
+  （混淆后的错误对象），且 logcat 缓冲会滚掉首个 dump —— 控制栏灰块的定位
+  就是靠这个钩子才拿到真实堆栈
 
 ## [1.1.0](https://github.com/dinger114/xlist/releases/tag/v1.1.0) - 2026-09-22
 

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -17,14 +18,15 @@ import 'package:xlist/core/player/x_player_track.dart';
 /// 变成灰色方块**、音量与亮度手势失效。release 下 Flutter 的 `ErrorWidget`
 /// 就是灰色方块，所以「灰块 + 子树上手势失效」= 面板在挂载时抛异常被顶替。
 ///
-/// 根因：`DefaultPanel.build` 返回 `Positioned.fill(...)`，但调用处是
-/// `Stack > Positioned.fill > Obx > DefaultPanel`，中间隔了 `Obx`。
-/// `Positioned` 的父级必须**直接**是 `Stack`，否则 `ParentDataWidget` 断言失败
-/// （拿到的是 Scaffold 的 `MultiChildLayoutParentData`）。
+/// 根因（真机 release 实测）：面板里用了 `Ink`/`InkWell`，而 `Ink` 会
+/// `Material.of(context)`；页面根是 `CupertinoPageScaffold`，**不提供 Material
+/// 祖先**，于是 `Material.of` 末尾的 `return controller!` 抛
+///   Null check operator used on a null value
+/// （那句会说明原因的 assert 被 release 剥离了）。面板每秒随播放位置重建，
+/// 于是每帧抛一次，`Ink` 所在的底部控制栏渲染成灰块、手势层一并失效。
 ///
-/// 真机上首次异常的完整堆栈拿不到 —— Flutter 只对第一个异常打印堆栈，之后
-/// 一律退化成 `Another exception was thrown: <错误对象>`（设备上刷了 2106 条
-/// 匿名异常，看不到栈）。所以这个用例存在的意义就是**在测试里保住这个断言**。
+/// 因此**壳必须是 `CupertinoPageScaffold`**：用 `Scaffold` 会自带 Material，
+/// 把 bug 掩盖掉（实测过）。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -35,9 +37,10 @@ void main() {
         builder: (context, child) => MaterialApp(
           navigatorKey: Get.key,
           navigatorObservers: [GetObserver(null, Get.routing)],
-          // 真机上 DefaultPanel 位于视频页的 Scaffold 内，Ink 等
-          // material widget 需要 Material 祖先，测试必须一致。
-          home: Scaffold(body: child!),
+          // 必须复刻真机的页面根：`video_player/view.dart` 用的是
+          // `CupertinoPageScaffold` —— 它**不**提供 Material 祖先。
+          // 换成 `Scaffold` 会自带 Material，把本用例要守的 bug 掩盖掉。
+          home: CupertinoPageScaffold(child: child!),
         ),
         child: child,
       );
