@@ -19,6 +19,13 @@ class Global {
   static bool get isProfile => kProfileMode;
   static bool get isDebug => kDebugMode;
 
+  /// 路由日志开关（排查路由问题时设为 true）。
+  ///
+  /// 与 `isDebug` 分开：真机验证跑的是 release，需要能在 release 包里打开；
+  /// 平时保持 false，避免刷屏。打开后 `XLIST_GEN` / `XLIST_ROUTE` 会经
+  /// debugPrint 进 logcat（`print` 在 release 下会被丢弃，读不到）。
+  static const bool routeLog = bool.fromEnvironment('XLIST_ROUTE_LOG');
+
   // 运行初始化
   static Future<void> init() async {
     // Init FlutterBinding
