@@ -2,6 +2,45 @@
 
 ## [1.3.0] - 待定
 
+### Dependencies（material_ui 解封）
+
+- `flex_color_scheme` 8.4.0 → **9.0.0**
+- `cached_network_image` 3.4.1 → **4.0.0**
+- `flutter_smart_dialog` 4.9.8+10 → **5.3.0**
+- `dynamic_color` 1.7.0 → **2.1.0**（解除 `dependency_overrides` 里的钉子）
+- `animations` 2.0.11 → **3.0.0**
+- 这 5 个包自以上版本起改用独立的 `material_ui` / `cupertino_ui` 包，此前被
+  钉在旧版本无法升级
+
+### Changed
+
+- 新增 `lib/components/theme_bridge.dart`：**主题 + 本地化桥接层**，挂在
+  `MaterialApp.builder` 上，为已迁 material_ui 的包补上 material_ui 版主题与
+  `MaterialLocalizations`。主壳仍是 flutter/material —— 本项目约 50 个直接依赖
+  （media_kit / adaptive_dialog / infinite_scroll_pagination / syncfusion /
+  photo_view …）尚未迁 material_ui，所以**不能**把 60 个文件全量换 import
+- `lib/themes.dart` 改为同时提供两套主题：`muiLight`/`muiDark`（flex9 产出，
+  供 material_ui 侧）与 `light`/`dark`（转换而来，供主壳与 flutter 侧），
+  两套同源同色
+
+### Bug Fixes
+
+- 修复 smart_dialog 5.3 弹 **dialog** 抛 `No MaterialLocalizations found.`：
+  该版本的 dialog 走 material_ui 的 `MaterialLocalizations.of`，而主壳挂的是
+  flutter 版的 delegate。桥接层补 `mui.GlobalMaterialLocalizations.delegate`
+- 修复桥接层**遮蔽**上文本地化的问题：`Localizations` 是 `InheritedWidget`，
+  只挂 mui delegate 会让层内的 flutter widget（`AppBar` 等）也报
+  `No MaterialLocalizations found.`。故桥接层同时挂两侧 delegate，并与主壳
+  共用同一份清单（避免两处漂移）
+- 消除 FlexColorScheme 的 `primaryLightRef/secondaryLightRef is null` 警告
+
+### Tests
+
+- 测试基线 150 → 166：新增 `test/main_wiring_test.dart`（按 `main.dart` 的真实
+  接线验证 toast / dialog / loading 与 mui 主题可达）与
+  `test/components/theme_bridge_test.dart`（桥接回归，含「不架桥时会静默退回
+  fallback 主题」的对照断言）
+
 ### Performance（Phase 4：Android arm64 专项优化）
 
 - **APK 46.1MB → 19.7MB（-57%）**，主因是开启 legacy JNI 打包（见下）
@@ -59,44 +98,57 @@
 
 ## [Unreleased]
 
-### Dependencies（material_ui 解封）
-
-- `flex_color_scheme` 8.4.0 → **9.0.0**
-- `cached_network_image` 3.4.1 → **4.0.0**
-- `flutter_smart_dialog` 4.9.8+10 → **5.3.0**
-- `dynamic_color` 1.7.0 → **2.1.0**（解除 `dependency_overrides` 里的钉子）
-- `animations` 2.0.11 → **3.0.0**
-- 这 5 个包自以上版本起改用独立的 `material_ui` / `cupertino_ui` 包，此前被
-  钉在旧版本无法升级
-
-### Changed
-
-- 新增 `lib/components/theme_bridge.dart`：**主题 + 本地化桥接层**，挂在
-  `MaterialApp.builder` 上，为已迁 material_ui 的包补上 material_ui 版主题与
-  `MaterialLocalizations`。主壳仍是 flutter/material —— 本项目约 50 个直接依赖
-  （media_kit / adaptive_dialog / infinite_scroll_pagination / syncfusion /
-  photo_view …）尚未迁 material_ui，所以**不能**把 60 个文件全量换 import
-- `lib/themes.dart` 改为同时提供两套主题：`muiLight`/`muiDark`（flex9 产出，
-  供 material_ui 侧）与 `light`/`dark`（转换而来，供主壳与 flutter 侧），
-  两套同源同色
-
 ### Bug Fixes
 
-- 修复 smart_dialog 5.3 弹 **dialog** 抛 `No MaterialLocalizations found.`：
-  该版本的 dialog 走 material_ui 的 `MaterialLocalizations.of`，而主壳挂的是
-  flutter 版的 delegate。桥接层补 `mui.GlobalMaterialLocalizations.delegate`
-- 修复桥接层**遮蔽**上文本地化的问题：`Localizations` 是 `InheritedWidget`，
-  只挂 mui delegate 会让层内的 flutter widget（`AppBar` 等）也报
-  `No MaterialLocalizations found.`。故桥接层同时挂两侧 delegate，并与主壳
-  共用同一份清单（避免两处漂移）
-- 消除 FlexColorScheme 的 `primaryLightRef/secondaryLightRef is null` 警告
+- **修复视频播放控制栏变灰块**（真机 Pixel 6 Pro 实测）。
+  面板里用了 `Ink`/`InkWell`，而 `Ink` 会 `Material.of(context)`；播放页根是
+  `CupertinoPageScaffold`，**不提供 `Material` 祖先**，于是 `Material.of`
+  末尾的 `return controller!` 抛 `Null check operator used on a null value`
+  （那句会说明原因的 assert 被 release 剥离了，所以只剩裸的 null check）。
+  面板每秒随播放位置重建一次，于是每帧抛一次；`Ink` 所在的底部控制栏被
+  release 的 `ErrorWidget`（灰色方块）顶替。
+  迁移前无此问题：面板由 fijk 的 `panelBuilder` 提供，fijk 内部自带
+  `Material`；media_kit 迁移后改成自己 `Stack` 挂 `DefaultPanel`，这层祖先丢了。
+  修法：`DefaultPanel.build` 包一层 `Material(type: MaterialType.transparency)`
+  （提供 ink controller 但不画底色）。
+  另修正 `DefaultPanel.build` 不应返回 `Positioned.fill`：调用处是
+  `Stack > Positioned.fill > Obx > DefaultPanel`，中间隔了 `Obx`，而
+  `Positioned` 的父级必须**直接**是 `Stack`，否则 `ParentDataWidget` 断言失败。
+  这一项是**独立**的真实缺陷（debug 下红屏），但 release 会剥离 assert，
+  所以它**不是**灰块的原因 —— 两个问题都已修。
+  新增 `test/components/player/default_panel_test.dart`，实测有效：撤掉任一修复
+  对应用例即失败
 
-### Tests
+- **修复播放页左半屏上下滑调亮度完全无反应、音量一上手就跳满**。
+  fijkplayer 迁移到 media_kit 时（`d635029`）这两项能力随插件一起被删除但
+  **没有替代**：`FijkPlugin.setScreenBrightness` 的亮度分支被整段删掉（左半屏
+  上下滑彻底无反应）；音量从系统音量（`AudioManager.STREAM_MUSIC`）换成了
+  `player.setVolume()`（mpv 内部音量），且基准值读取
+  （`FijkVolume.getVol()`）被写死成 `1.0`（不读当前值）。
+  新增 `io.xlist/system_ui` 通道 + `lib/helper/system_ui_helper.dart`，
+  按 fijk 原语义补回系统音量与**当前窗口亮度**的控制（两者都不需要运行时权限），
+  并在拖动开始时读取当前值作为基准
 
-- 测试基线 150 → 166：新增 `test/main_wiring_test.dart`（按 `main.dart` 的真实
-  接线验证 toast / dialog / loading 与 mui 主题可达）与
-  `test/components/theme_bridge_test.dart`（桥接回归，含「不架桥时会静默退回
-  fallback 主题」的对照断言）
+- **修复 alist 的 HLS（m3u8）一直转圈加载不出来**。
+  `PlayerHelper.setOption` 原为 m3u8 设 `cache-secs=120`。实测该站点的分段是
+  ~22.5MB / 60s（约 3Mbps、1080p），120s 需预缓冲约 45MB，紧贴
+  `demuxer-max-bytes=50MiB` 的上限；码率更高的源则 120s > 50MiB，
+  缓存永远填不满 → 一直转圈。收敛为 `cache-secs=20`（约 7.5MB）并加
+  `cache-pause=yes` / `cache-pause-wait=3`。真机确认可正常播放。
+  注：该 m3u8 的分段文件名为 `*.jpg` 但内容是 MPEG-TS；已验证**不是**原因
+  （libmpv 内嵌的 ffmpeg n6.0 中扩展名白名单只对 `file://` 生效）
+
+### Added
+
+- 新增播放诊断开关 `XLIST_MPV_LOG`（`--dart-define=XLIST_MPV_LOG=true`）：
+  把 mpv 后端日志经 `debugPrint` 打到 logcat。此前 media_kit 的诊断走 `print`，
+  release 下被丢弃，导致播放类故障只能靠猜。与 `Global.routeLog` 同思路，
+  平时保持默认日志级别、零开销
+- 同一开关下挂 `FlutterError.onError`，把**每一次**框架异常连同堆栈经
+  `debugPrint` 输出（前缀 `XLIST_ERR`）。Flutter 原生只对首个异常打印完整
+  信息，之后一律退化成 `Another exception was thrown: Instance of 'SV<void>'`
+  （混淆后的错误对象），且 logcat 缓冲会滚掉首个 dump —— 控制栏灰块的定位
+  就是靠这个钩子才拿到真实堆栈
 
 ## [1.1.0](https://github.com/dinger114/xlist/releases/tag/v1.1.0) - 2026-09-22
 
@@ -142,9 +194,6 @@
     （钉住上面那个崩溃）
   - `get_arguments_wiring_test.dart`：`Get.arguments` 接线（钉住上面那个 null）
 
-## [1.1.0](https://github.com/dinger114/xlist/releases/tag/v1.1.0) - 2026-09-22
-
-### Dependencies
 
 - 移除 `floor_generator` + `json_model`，解开被钉死的 codegen 工具链
   - build_runner 2.4.13 → 2.16.1

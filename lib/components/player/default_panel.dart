@@ -398,7 +398,39 @@ class _DefaultPanelState extends State<DefaultPanel>
       }
     }
 
-    return Positioned.fill(
+    // 注意：**不能**返回 `Positioned.fill`。
+    //
+    // 调用处（`pages/video_player/view.dart`）是
+    //   Stack > Positioned.fill > Obx > DefaultPanel
+    // 中间隔了一层 `Obx`，而 `Positioned` 的父级必须**直接**是 `Stack`
+    // （由 `ParentDataWidget` 的 `debugIsValidRenderObject` 断言）。隔了 Obx 后
+    // ParentData 落到了 `Scaffold` 的 `CustomMultiChildLayout` 上，类型不匹配：
+    //   Incorrect use of ParentDataWidget. ... wants to apply ParentData of type
+    //   StackParentData to a RenderObject ... incompatible type
+    //   MultiChildLayoutParentData
+    // debug 下是红屏 + 断言；**release 下 Flutter 的 ErrorWidget 是个灰色方块**，
+    // 于是表现为「底部控制栏变灰块、音量/亮度手势失效」。
+    // 铺满由调用处的 `Positioned.fill` 负责，这里只返回 `Stack`。
+    // 必须包一层 `Material`。
+    //
+    // 下面 `_buildGestureDetector` 里多处用了 `Ink`/`InkWell`（播放按钮、倍速、
+    // 手势层的按钮），而 `Ink` 会 `Material.of(context)`；页面根是
+    // `CupertinoPageScaffold`，**不提供 `Material` 祖先**。
+    //
+    // 迁移前没有问题：面板由 fijk 的 `panelBuilder` 提供，fijk 的 view/panel
+    // 内部自带 `Material`。media_kit 迁移后改成自己 `Stack` 挂 `DefaultPanel`，
+    // 这层祖先就丢了。
+    //
+    // 失败表现：`Material.of` 末尾是 `return controller!`，而那句会给人看原因的
+    // assert 在 release 被剥离 → 只报裸的
+    //   Null check operator used on a null value
+    // 面板**每秒重建一次**（播放位置 ticker），于是每帧抛一次；`Ink` 所在的
+    // 底部控制栏渲染成灰块（release 的 ErrorWidget），手势层一并失效。
+    //
+    // `MaterialType.transparency`：提供 ink controller 但不画任何底色 ——
+    // 播放器上必须透明，否则会盖住视频画面。
+    return Material(
+      type: MaterialType.transparency,
       child: Stack(
         children: ws,
       ),
@@ -656,7 +688,7 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
     });
   }
 
-  _onVerticalDragStart(detills) {
+  _onVerticalDragStart(detills) async {
     double clientW = MediaQuery.of(context).size.width;
     double curTouchPosX = detills.globalPosition.dx;
 
@@ -667,13 +699,34 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
       isDargVerLeft = (curTouchPosX > (clientW / 2)) ? false : true;
     });
 
-    // 音量（右侧滑动条），亮度在 media_kit 中通过 mpv 属性控制
-    if (!isDargVerLeft!) {
-      varTouchInitSuc = true;
-      updateDargVarVal = 1.0;
-    } else {
-      varTouchInitSuc = true;
-      updateDargVarVal = 1.0;
+    // 右半屏 = 音量，左半屏 = 亮度（沿用 fijk 面板的约定）。
+    // 必须读**当前**值作为基准：media_kit 迁移时这里被写死成 1.0，
+    // 于是一上手就跳满，来回滑还会反复弹到两端。
+    try {
+      if (!isDargVerLeft!) {
+        final v = await SystemUiHelper.getVolume();
+        if (!mounted) return;
+        setState(() {
+          varTouchInitSuc = true;
+          updateDargVarVal = v;
+        });
+      } else {
+        final v = await SystemUiHelper.getBrightness();
+        if (!mounted) return;
+        setState(() {
+          varTouchInitSuc = true;
+          updateDargVarVal = v;
+        });
+      }
+    } catch (e) {
+      // 通道异常（如非 Android 平台）时退回默认值，不能让手势整体失效；
+      // 但要留下痕迹，否则「滑了没反应」无从排查。
+      debugPrint('XLIST_GESTURE 读取当前值失败: $e');
+      if (!mounted) return;
+      setState(() {
+        varTouchInitSuc = true;
+        updateDargVarVal = 1.0;
+      });
     }
   }
 
@@ -700,9 +753,14 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
       updatePrevDy = curDragDy;
       varTouchInitSuc = true;
       updateDargVarVal = dragRange;
-      // 音量（0-100）
+      // 右半屏 → 系统音量；左半屏 → 屏幕亮度。
+      // 亮度的 else 分支在 media_kit 迁移时被整段删掉了（fijk 的
+      // FijkPlugin.setScreenBrightness 随插件一起移除且未替代），
+      // 所以左半屏上下滑此前完全无反应。
       if (!isDargVerLeft!) {
-        player.setVolume(dragRange * 100);
+        SystemUiHelper.setVolume(dragRange);
+      } else {
+        SystemUiHelper.setBrightness(dragRange);
       }
     });
   }

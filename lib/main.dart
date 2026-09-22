@@ -18,6 +18,24 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
 
+  // 已发生的 Flutter 框架异常经 debugPrint 打全（含堆栈）。
+  //
+  // 为什么需要它：真机上播放页会**每帧**刷
+  //   Another exception was thrown: Instance of 'SV<void>'
+  // 但永远拿不到第一个异常的完整信息 —— Flutter 只对「首个」异常打印完整
+  // dump，之后一律退化成错误对象（release 混淆后就是 'SV<void>'）。
+  // 而 logcat 缓冲会滚掉首个 dump，导致无法定位。这里把**每一次**框架异常
+  // 都经 debugPrint 输出（release 下 `print` 会被丢弃，debugPrint 不会）。
+  // 复用 XLIST_MPV_LOG 开关，平时零开销。
+  if (const bool.fromEnvironment('XLIST_MPV_LOG')) {
+    final previous = FlutterError.onError;
+    FlutterError.onError = (details) {
+      debugPrint('XLIST_ERR >>> ${details.exception}');
+      debugPrint('XLIST_ERR stack:\n${details.stack}');
+      previous?.call(details);
+    };
+  }
+
   // 词条注册必须在任何 UI 读取 `.tr` 之前 —— 首页/播放页的标题都是 .tr。
   // GetMaterialApp 原先在 onGenerateRoute/initialRoute 里替我们做这件事
   // （实测其源码：`Get.addTranslations(translations!.keys)`），换成裸
