@@ -1,6 +1,7 @@
 export 'toast_component.dart';
 export 'search_component.dart';
 export 'mini_audio_player_bar.dart';
+export 'theme_bridge.dart';
 
 export 'player/slider.dart';
 export 'player/default_panel.dart';

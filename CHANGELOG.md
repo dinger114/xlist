@@ -2,6 +2,47 @@
 
 ## [Unreleased]
 
+### Dependencies（material_ui 解封）
+
+- `flex_color_scheme` 8.4.0 → **9.0.0**
+- `cached_network_image` 3.4.1 → **4.0.0**
+- `flutter_smart_dialog` 4.9.8+10 → **5.3.0**
+- `dynamic_color` 1.7.0 → **2.1.0**（解除 `dependency_overrides` 里的钉子）
+- `animations` 2.0.11 → **3.0.0**
+- 这 5 个包自以上版本起改用独立的 `material_ui` / `cupertino_ui` 包，此前被
+  钉在旧版本无法升级
+
+### Changed
+
+- 新增 `lib/components/theme_bridge.dart`：**主题 + 本地化桥接层**，挂在
+  `MaterialApp.builder` 上，为已迁 material_ui 的包补上 material_ui 版主题与
+  `MaterialLocalizations`。主壳仍是 flutter/material —— 本项目约 50 个直接依赖
+  （media_kit / adaptive_dialog / infinite_scroll_pagination / syncfusion /
+  photo_view …）尚未迁 material_ui，所以**不能**把 60 个文件全量换 import
+- `lib/themes.dart` 改为同时提供两套主题：`muiLight`/`muiDark`（flex9 产出，
+  供 material_ui 侧）与 `light`/`dark`（转换而来，供主壳与 flutter 侧），
+  两套同源同色
+
+### Bug Fixes
+
+- 修复 smart_dialog 5.3 弹 **dialog** 抛 `No MaterialLocalizations found.`：
+  该版本的 dialog 走 material_ui 的 `MaterialLocalizations.of`，而主壳挂的是
+  flutter 版的 delegate。桥接层补 `mui.GlobalMaterialLocalizations.delegate`
+- 修复桥接层**遮蔽**上文本地化的问题：`Localizations` 是 `InheritedWidget`，
+  只挂 mui delegate 会让层内的 flutter widget（`AppBar` 等）也报
+  `No MaterialLocalizations found.`。故桥接层同时挂两侧 delegate，并与主壳
+  共用同一份清单（避免两处漂移）
+- 消除 FlexColorScheme 的 `primaryLightRef/secondaryLightRef is null` 警告
+
+### Tests
+
+- 测试基线 150 → 166：新增 `test/main_wiring_test.dart`（按 `main.dart` 的真实
+  接线验证 toast / dialog / loading 与 mui 主题可达）与
+  `test/components/theme_bridge_test.dart`（桥接回归，含「不架桥时会静默退回
+  fallback 主题」的对照断言）
+
+## [1.1.0](https://github.com/dinger114/xlist/releases/tag/v1.1.0) - 2026-09-22
+
 ### Changed
 
 - 主壳由 `GetMaterialApp` 换成 `MaterialApp`（`lib/main.dart`），为引入

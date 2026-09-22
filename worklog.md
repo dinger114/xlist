@@ -176,3 +176,92 @@ Phase 1 原计划「路由迁 go_router + 主壳换 MaterialApp.router」。开�
 - Phase 3：解封 material_ui（升 flex_color_scheme 9 / cached_network_image 4 /
   flutter_smart_dialog 5 等 5 包）。主壳已在 Phase 1 换掉，唯一编译冲突
   （`GetMaterialApp.theme:`）已消除。
+
+---
+Phase: 3
+Agent: Hermes (deepseek-v4.1-flash)
+Date: 2026-09-22
+Base commit: 267a7c9
+End commit: （见 PR）
+PR: （见 PR 链接）
+
+## Summary
+
+Phase 3 的目标是**解封 material_ui**：升 5 个此前被钉死的包
+（flex_color_scheme 9 / cached_network_image 4 / flutter_smart_dialog 5 /
+dynamic_color 2 / animations 3）。计划里写的做法是「各文件 import 从
+`flutter/material.dart` 换成 `material_ui/material_ui.dart`」。
+
+**实测发现这个做法是错的**，会静默损坏 UI。原因：
+
+1. `flutter/material.dart` **不** re-export `material_ui`，两套各有自己的
+   `ThemeData` / `ColorScheme` / `MaterialLocalizations`（同名不同类）；
+2. 彼此的 `Theme.of()` 找不到对方时**不抛异常，而是静默返回
+   `ThemeData.fallback()`** —— 实测用可区分颜色验证：跨库读到的 primary 是
+   默认紫 (103,80,164)，不是品牌色 (119,120,220)。这种失败 analyze 抓不到、
+   单测(不比对颜色)也抓不到；
+3. 本项目**只有 5 个包**已迁 material_ui，**约 50 个直接依赖仍用
+   `flutter/material.dart`**（media_kit / adaptive_dialog /
+   infinite_scroll_pagination / syncfusion_flutter_pdfviewer / photo_view /
+   keframe / pull_down_button / easy_refresh / modal_bottom_sheet …，其中
+   syncfusion 一家就 35 个文件）。把我们的 60 个文件换过去 → 那 50 个包全部
+   落进 fallback 主题。
+
+所以改用**双主题桥接**：主壳保持 flutter/material（那 50 个包行为不变），在
+`MaterialApp.builder` 上挂 `ThemeBridge`，给 material_ui 侧补一层主题与本地化。
+5 个包仍然升到 new（这才是「解封」的实质），只是不需要把全项目 import 换掉。
+
+## Tasks Completed
+
+- [x] Task 3.2: cached_network_image 3.4.1 → 4.0.0（material_ui 进树）
+- [x] Task 3.3: flex_color_scheme 8.4.0 → 9.0.0（ThemeData 冲突如期出现，2 处）
+- [x] Task 3.4: flutter_smart_dialog 4.9.8+10 → 5.3.0
+- [x] Task 3.5: dynamic_color 1.7.0 → 2.1.0 + animations 3.0.0
+      （**解除 dependency_overrides 里的钉子**，该钉子本就是为这个冲突打的）
+- [x] 新增 `lib/components/theme_bridge.dart`（主题 + 本地化桥接）
+- [x] `lib/themes.dart` 改为双主题（muiLight/muiDark + light/dark 同源同色）
+- [x] 真机验证
+
+## Metrics
+
+- 测试数：150 → 166（+16）
+- 新增测试文件：2 个（`test/main_wiring_test.dart`、`test/components/theme_bridge_test.dart`）
+- `flutter analyze`：0 error
+- `dart format --set-exit-if-changed lib test`：干净
+- 5 个目标包全部升到预期版本，`material_ui 1.4.0` / `cupertino_ui 1.1.1` 进树
+
+## 本轮抓到并修掉的两个坑（都是实测出来的，不是推演）
+
+1. **只补主题不够：smart_dialog 5.3 的 dialog 抛 `No MaterialLocalizations found.`**
+   该版本的 dialog 走 material_ui 的 `MaterialLocalizations.of`，而主壳挂的是
+   flutter 版 delegate。桥接层补 `mui.GlobalMaterialLocalizations.delegate` 解决。
+   （toast 不受影响 —— 它用 wrap 模式，不依赖 MaterialLocalizations。）
+2. **`Localizations` 是遮蔽而非叠加**：光挂 mui 的 delegate，会让桥接层**之下**的
+   flutter widget（`AppBar`）也报 `No MaterialLocalizations found.`。
+   修法：桥接层同时挂**两侧** delegate，并与主壳共用同一份清单
+   （`ThemeBridge.localizationsDelegates`），避免两处漂移。
+   另外 flutter 的 `Localizations` 会 assert「delegates 里必须有 WidgetsLocalizations」，
+   只挂 mui + Material delegate 会直接 assert 失败。
+
+## 真机验证（Pixel 6 Pro / Android 17，release 包，USB 装机）
+
+- 启动 → `/` → `/homepage`，点导航栏 → `/setting`，全程无异常
+- 主题核对用**颜色**而不是「没崩」：首页 / 设置页截图里品牌色
+  (119,120,220) 分别 1104 / 691 像素，**mui fallback 紫 (103,80,164) 为 0 像素**
+  → 没有任何 widget 掉进 fallback 主题
+- logcat 全程无 `NoSuchMethodError` / `Null check` / `Failed assertion` /
+  `No MaterialLocalizations` / FlexColorScheme WARNING
+
+## 已知覆盖缺口
+
+- 未在真机上遍历所有用到这 5 个包的页面（图片预览、收藏、最近、视频/音频页
+  的封面等），只走了首页与设置页。
+- 真机是亮色主题（app `themeMode` 固定 light），暗色主题只能靠单测断言
+  brightness 与主色一致。
+- 计划 Task 3.6 还写了「发 v1.2.0 / 打 tag / CHANGELOG 里写『退役 GetX、迁
+  go_router、迁 Provider』」—— 那些前提在本方案下不成立（GetX 保留、
+  go_router 未引入、Provider 未迁），故未执行打 tag；CHANGELOG 按实际改动写。
+
+## Next Phase
+
+- Phase 4：Android arm64 专项优化（APK 体积 < 40MB、冷启动、权限清理）。
