@@ -1,5 +1,51 @@
 # Changelog
 
+## [1.1.0](https://github.com/dinger114/xlist/releases/tag/v1.1.0) - 2026-09-22
+
+### Dependencies
+
+- 移除 `floor_generator` + `json_model`，解开被钉死的 codegen 工具链
+  - build_runner 2.4.13 → 2.16.1
+  - flutter_gen 5.9.0 → 5.15.0
+  - json_serializable 6.8.0 → 6.14.1
+  - analyzer 6.x → 14.4.0（dart_style → 3.1.13）
+  - `js` 0.6.7 → 0.7.2；`build_resolvers` / `build_runner_core` 从依赖树消失
+- win32 组 major 升级：`device_info_plus` 13.2.0 / `file_picker` 13.1.0 /
+  `package_info_plus` 10.2.1 / `share_plus` 13.3.0 / `wakelock_plus` 1.8.0 /
+  `syncfusion_flutter_pdfviewer` 34.2.8
+- `infinite_scroll_pagination` 4.1.0 → 5.1.1（5.x 为 API 重写，迁移了 favorite / recent 两页）
+- 移除已过时的 root `build.gradle` Kotlin 兜底（改为 `state.executed` 判断，
+  对子项目求值顺序不再敏感）
+
+### Features
+
+- 音频播放器移出路由：返回上一页不再中断播放，可后台继续
+- 新增底部迷你播放条（`lib/components/mini_audio_player_bar.dart`），
+  挂在 `GetMaterialApp.builder` 覆盖层，用 `Positioned` 吸附底部
+
+### Bug Fixes
+
+- 修复音频播放中按返回键即停止播放（根因：播放器由路由级 controller 持有，
+  页面 pop 触发 `onClose()` 时被 `dispose`）
+- 修复返回后通知栏 / 锁屏媒体控制失效（同上，通知栏原先指向已销毁的页面 controller）
+- 修复音频页不响应「后台播放」开关（该开关此前只作用于视频页，音频页从未读取）
+- 修复 `streamController` 关闭后 `updatePlaybackState` 抛未捕获异常
+- 修复「播完暂停」被误当成单曲循环：抽成纯函数 `nextActionOnCompleted`，
+  用 `CompletedAction` 区分「原地重播」与「停止」（原实现两者都返回 `null`）
+
+### Breaking
+
+- `database.g.dart` → `database.floor.dart`：floor 生成物脱离 build_runner 管理。
+  改动 DB schema（entity 增删字段、加表、改 DAO 签名）时**必须手工同步该文件**，
+  或临时装回 `floor_generator` 生成一次再撤掉。floor 运行时包（^1.5.0）保留。
+
+### 备注
+
+- 以下 5 个包**刻意保持不动**，它们的 major 升级需引入 `material_ui`：
+  `get` / `cached_network_image` 3.4.1 / `flex_color_scheme` 8.4.0 /
+  `flutter_smart_dialog` 4.9.8+10 / `dynamic_color` 1.9.0
+- 测试：37 个用例全绿；`flutter analyze` 0 error
+
 ## [1.0.17](https://github.com/xlist-io/xlist/releases/tag/1.0.17) - 2023-10-25
 
 - 修复安卓复制链接错误
