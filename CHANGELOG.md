@@ -1,5 +1,62 @@
 # Changelog
 
+## [1.3.0] - 待定
+
+### Performance（Phase 4：Android arm64 专项优化）
+
+- **APK 46.1MB → 19.7MB（-57%）**，主因是开启 legacy JNI 打包（见下）
+- 开启 `--tree-shake-icons`：MaterialIcons 1.6MB→7.5KB（-99.5%）、
+  FontAwesome 414KB→2.6KB（-99.4%）、CupertinoIcons 258KB→8.8KB（-96.6%）。
+  Makefile 的 `release-android`/`release-aab` 原本用 `--no-tree-shake-icons`，
+  与 CI 不一致，已统一为开启。全仓无动态构造 `IconData(...codePoint:...)`，
+  无字形被误剥风险
+- 开启 R8 full mode（`android.enableR8.fullMode=true`）
+- 开启资源收缩（`shrinkResources false → true`）
+
+### Changed（体积关键项）
+
+- **`packaging { jniLibs { useLegacyPackaging = true } }`**：这是本次体积
+  下降的**主要**原因。AGP 9 默认 `useLegacyPackaging=false`（即
+  `extractNativeLibs=false`），要求 `.so` 页对齐且**不压缩**存储，于是
+  `libmpv`(11.8MB) / `libflutter`(11.2MB) / `libapp`(12.4MB) 等约 37MB 的
+  native 库全部以 STORED 进包，压缩后体积等于原始体积。改为 deflate 压缩后
+  这部分 37.6MB → 16.5MB。
+  **代价**：安装时解压 `.so` 到 data 目录、占用 ROM 更多、启动略慢。
+  实测冷启动 10 次平均：基线 265ms → 262ms（在噪声内，无可见回退）。
+
+### Android
+
+- 支持 per-app language（Android 13+）：新增
+  `res/xml/locales_config.xml`（en / zh），Activity 挂
+  `android:localeConfig`
+- 清理权限：移除 `READ_PHONE_STATE`、`ACCESS_WIFI_STATE`（全仓 `lib/` 与
+  `android/` 零引用）
+- 删除 `web/` 目录（CI 只构建 Android；`web/` 未被任何 Dart 代码引用，
+  仅在 `ci.yml` 的 `paths-ignore` 里出现过，已一并清理）
+
+### 未做（实测后判定为不值得）
+
+- **Baseline Profile（计划 Task 4.5）**：搭通并实测后**放弃并移除**。
+  原因是收益与 262ms 的启动耗时不相称 —— baseline profile 只 AOT 优化
+  `:app` 里的 Java/Kotlin，而本 app 启动重活全在 Dart 侧（`Global.init()`
+  串行 await GetStorage + 3 个 Storage + 7 个 Service 后才 `runApp`），
+  跑的是 libapp.so 里的 AOT 机器码，profile 覆盖不到；`:app` 侧只有
+  一个 FlutterActivity 空壳。预估收益 3-8ms（约 1-3%），不值得背一个
+  Gradle 子模块。实测 `:app:generateReleaseBaselineProfile` 虽报
+  BUILD SUCCESSFUL，但所有 task 都是 UP-TO-DATE、产物目录为空，
+  实际未产出 profile
+- **`assets/` 压缩（原计划 Task 4.4）**：实测收益极小 —— `assets/` 磁盘
+  仅 140KB，进包后 `flutter_assets` 仅 0.66MB，最大的还是 `NOTICES.Z`
+  (137KB) 与 font_awesome 字体，无可观可减项。AGP 侧的 `shrinkResources`
+  已开启
+
+### 未做（超出本 Phase 范围，留待决策）
+
+- **Impeller 仍为关闭状态**（manifest 里 `EnableImpeller=false`，且仓库未
+  记录关闭原因）。这是冷启动真正的杠杆（Flutter 现默认 Impeller，关掉等于
+  回退 Skia），但属图形后端切换，需真机目视对比渲染效果，本轮无视觉验收
+  手段，未动
+
 ## [Unreleased]
 
 ### Dependencies（material_ui 解封）

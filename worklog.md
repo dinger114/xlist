@@ -265,3 +265,85 @@ dynamic_color 2 / animations 3）。计划里写的做法是「各文件 import 
 ## Next Phase
 
 - Phase 4：Android arm64 专项优化（APK 体积 < 40MB、冷启动、权限清理）。
+
+---
+Phase: 4
+Agent: Hermes (deepseek-v4.1-flash)
+Date: 2026-09-22
+Base commit: cfb9ab0
+End commit: （见 PR）
+PR: （见 PR 链接）
+
+## Summary
+
+Phase 4（Android arm64 专项优化）。计划 9 个任务。**核心发现：计划对体积瓶颈的
+判断是错的** —— 它假设体积在 assets/dex/res（Task 4.4 资源压缩），实测这三项
+加起来只占 APK 的 7%，88.9% 是 native 库。真正的大头是 AGP 9 默认不做 `.so`
+压缩（`useLegacyPackaging=false`）。改一行 Gradle 配置即减 26MB。
+
+## Metrics
+
+- **APK：46.1MB → 19.7MB（-57.3%）**（同一命令、同分支对照，均 arm64-only release）
+- 冷启动 10 次平均：基线 265ms → 262ms（在噪声内，无回退）
+- native 库压缩前 37.6MB → 压缩后 16.5MB
+- 测试：166/166 pass；`flutter analyze` error 0；`dart format` 干净
+
+## Tasks Completed
+
+- [x] Task 4.1: R8 full mode（`android.enableR8.fullMode=true`）—— 构建通过。
+      体积无变化（dex 原本只占 4.4%），属正确性/优化性收益而非体积收益
+- [x] Task 4.2: `--obfuscate` + `--split-debug-info` —— CI 与 Makefile 均已具备，
+      本地实测有效（去掉后 46.9MB）
+- [x] Task 4.3: `--tree-shake-icons` —— **从 Makefile 移除 `--no-tree-shake-icons`**。
+      实测字形削减 96.6%~99.5%，且全仓无动态构造 `IconData(codePoint: 变量)`，
+      无字形误剥风险（静态可证）。此前 Makefile 用 `--no-tree-shake-icons`
+      而 CI 不用，两者产物不一致，现已统一
+- [~] Task 4.4: 资源压缩 —— **实测无可观收益，判定为伪需求**。
+      `assets/` 磁盘仅 140KB；进包后 `flutter_assets` 0.66MB，最大的还是
+      `NOTICES.Z`(137KB) 与 font_awesome 字体。已做的相关项：
+      `shrinkResources false → true`；另开 `useLegacyPackaging`（真正的体积大头）
+- [x] Task 4.5: Baseline Profile —— **实测后放弃，模块已删除**。
+      曾搭通（`android/baselineprofile/`，AGP 9.1.0 + `androidx.baselineprofile`
+      1.3.4 可构建，task 为 `:app:generateReleaseBaselineProfile`，非计划里
+      写的 `:benchmark:connectedBenchmarkAndroidTest`），但判断收益不抵成本：
+      baseline profile 只 AOT 优化 `:app` 的 Java/Kotlin，而本 app 启动重活
+      全在 Dart 侧（`Global.init()` 串行 await GetStorage + 3 个 Storage +
+      7 个 Service 后才 `runApp`，见 `lib/global.dart:30-54`），跑的是
+      libapp.so 的 AOT 代码，profile 覆盖不到；`:app` 侧仅一个 FlutterActivity
+      空壳。预估收益 3-8ms（占 262ms 的 1-3%）。实测该 task 报 BUILD SUCCESSFUL
+      但全部 UP-TO-DATE、产物目录为空，**实际未产出 profile**。
+      已回滚：plugins/settings/dependency/baselineProfile 块/模块目录全部移除
+- [x] Task 4.6: 权限清理 —— 移除 `READ_PHONE_STATE`、`ACCESS_WIFI_STATE`。
+      实测全仓 `lib/` 与 `android/` 零引用（`grep -rn` 只命中 manifest 自身）
+- [x] Task 4.7: per-app language —— 新增 `res/xml/locales_config.xml`（en/zh，
+      与 `TranslationService.keys` 的 `en_US`/`zh_Hans` 对齐），Activity 挂
+      `android:localeConfig`
+- [x] Task 4.8: 删除无用 platform 代码 —— 删 `web/`。
+      **计划前提有误**：`ios/`/`linux/`/`macos/`/`windows/` 目录根本不存在，
+      只有 `web/`。删前已确认：无任何 Dart 代码引用，`build.yml` matrix 只构建
+      `apk`/`appbundle`。同步清理了 `ci.yml` 里的 `web/**` paths-ignore
+      与 pubspec 的 `flutter_icons.web`
+- [x] Task 4.9: 体积对比 + CHANGELOG —— CHANGELOG 已写 `[1.3.0]` 段。
+      **未打 tag、未发版**（见 Next）
+
+## 与计划的偏差（重要）
+
+| 计划判断 | 实测 |
+|---|---|
+| 体积大头在 assets/dex/res | 88.9% 是 native 库；assets+dex+res+arsc 合计 7% |
+| 冷启动 -30%+（靠 Baseline Profile） | 实测 265→262ms，无可见变化。真正的杠杆是 `EnableImpeller=false`（**当前被禁用**）—— 这是图形后端切换，超出本 Phase 范围，未动 |
+| 超时 40MB | 实际 19.7MB，大幅超出预期 |
+| `:benchmark:connectedBenchmarkAndroidTest` | 实际 task 名 `:app:generateReleaseBaselineProfile` |
+| 平台目录有 5 个要删 | 只有 `web/` 一个 |
+| CI 缺 obfuscate（Phase 0 补） | CI 早已具备 |
+
+## Blockers
+
+- **vision_analyze 不可用**（`auxiliary.vision` 模型 404），UI 只能靠
+  logcat / 截图字节数 / 像素统计做功能化验证，无法目视确认图标是否缺失。
+  图标风险的静态论证见 Task 4.3
+
+## Next Phase
+
+- 是否开启 Impeller（需真机目视对比渲染，当前无法做视觉验收，建议人工复核）
+- 发 v1.3.0（打 tag）

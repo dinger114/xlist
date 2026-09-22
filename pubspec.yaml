@@ -94,8 +94,6 @@ flutter_gen:
   line_length: 80
 
 flutter_icons:
-  web:
-    generate: true
   android: true
   image_path: "assets/common/logo.jpg"
 

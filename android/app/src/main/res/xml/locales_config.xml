@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 13+ (API 33) per-app language。系统「设置 → 应用 → Xlist → 语言」
+     会读这个文件列出可选语言；条目必须与 app 内 TranslationService.keys
+     （en_US / zh_Hans）和 ThemeBridge.supportedLocales 保持一致。 -->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="en" />
+    <locale android:name="zh" />
+</locale-config>

@@ -23,14 +23,14 @@ icons:
 # property 才会尊重工程自己的配置。
 release-android:
 	flutter build apk \
-		--no-tree-shake-icons \
+		--tree-shake-icons \
 		--release \
 		-Pdisable-abi-filtering=true \
 		--obfuscate --split-debug-info=./symbols
 
 release-aab:
 	flutter build appbundle \
-		--no-tree-shake-icons \
+		--tree-shake-icons \
 		--release \
 		-Pdisable-abi-filtering=true \
 		--obfuscate --split-debug-info=./symbols
