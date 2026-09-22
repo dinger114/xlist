@@ -46,13 +46,13 @@ dependencies:
   dismissible_page: ^1.0.1
   pull_down_button: ^0.10.2
   device_info_plus: ^13.2.0
-  flex_color_scheme: ^8.4.0
+  flex_color_scheme: ^9.0.0
   package_info_plus: ^10.2.1
   permission_handler: ^13.0.2
   modal_bottom_sheet: ^3.0.0-pre
   image_gallery_saver_plus: ^5.1.1
   font_awesome_flutter: ^11.0.0
-  cached_network_image: ^3.4.1
+  cached_network_image: ^4.0.0
   subtitle_wrapper_package: ^2.1.1
   infinite_scroll_pagination: ^5.1.1
   syncfusion_flutter_pdfviewer: ^34.2.8
@@ -61,7 +61,7 @@ dependencies:
   flutter_slidable: ^4.0.3
   flutter_screenutil: ^5.6.0
   flutter_downloader: ^1.12.1
-  flutter_smart_dialog: ^4.9.8+10
+  flutter_smart_dialog: ^5.3.0
   flutter_inappwebview: ^6.0.0
   flutter_native_splash: ^2.2.19
   flutter_keyboard_visibility: ^7.0.1
@@ -108,9 +108,16 @@ flutter:
 
 dependency_overrides:
   uuid: ^4.5.0
-  # 钉住：2.x/3.x 起改用独立的 material_ui 包，其 ColorScheme/Color 与
-  # Flutter 自带的是同名不同类（同 flex_color_scheme 9 白屏事故的成因）。
-  # adaptive_dialog 会调用 DynamicColorPlugin.getAccentColor()，跨包身份
-  # 不匹配只在运行时炸，analyze 抓不到。待真机验证后再解钉。
-  dynamic_color: ^1.7.0
-  animations: ^2.0.11
+  # dynamic_color 2.x 起改用独立的 material_ui 包（其 ColorScheme/Color 与
+  # Flutter 自带的是同名不同类）。
+  #
+  # 历史上这里钉在 1.7.0，因为 adaptive_dialog（仍用 flutter/material）会调用
+  # DynamicColorPlugin.getAccentColor() 并吃下 material_ui 版的 Color —— 当时
+  # 全项目都在 flutter/material 下，属真跨库，只会在运行时炸。
+  #
+  # Phase 3 起不再需要这个钉子：主壳仍是 flutter/material（约 50 个依赖依赖它），
+  # 但已由 `ThemeBridge`（lib/components/theme_bridge.dart）在
+  # MaterialApp.builder 上补了一层 material_ui 主题，两条线各自都有主题可用。
+  # `Color` 本身是 dart:ui 的共享类，跨库传值不涉及类型身份问题。
+  dynamic_color: ^2.1.0
+  animations: ^3.0.0

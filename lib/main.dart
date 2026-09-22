@@ -96,25 +96,33 @@ class XlistApp extends StatelessWidget {
         builder: (BuildContext context, Widget? child) {
           return MediaQuery(
             data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-            child: FlutterSmartDialog.init(
-              toastBuilder: (String msg) => ToastComponent(message: msg),
-            )(
-              context,
-              // 迷你播放条：覆盖在所有页面之上，全屏播放页自身不显示
-              //
-              // 必须用 StackFit.expand（等价于给两个子节点紧约束）：
-              // Stack 默认给非定位子节点**松约束**，app 子树的 Scaffold 会按
-              // 内容大小收缩，表现为「页面不满屏、背景发黑」。
-              //
-              // 注：smart_dialog 的 initState 只在 child 是 Navigator/FocusScope
-              // 时才能拿到 contextNavigator；传 Stack 会拿不到，但实测 toast /
-              // loading / dialog 仍正常显示（它自己那层 Overlay 才是真正的宿主）。
-              Stack(
-                fit: StackFit.expand,
-                children: [
-                  child ?? const SizedBox.shrink(),
-                  const MiniPlayerOverlay(),
-                ],
+            // 主题桥接：给已迁 material_ui 的包（smart_dialog / cached_network_image /
+            // flex_color_scheme / dynamic_color …）提供 material_ui 版主题。
+            // 不架这层的话，那些包内的 `Theme.of` 会**静默拿到 fallback 默认主题**
+            // （不报错，颜色变默认紫）—— 见 lib/components/theme_bridge.dart。
+            child: ThemeBridge(
+              // 5.3.0 里 `init` 仍挂在 `FlutterSmartDialog` 上（类名没改，
+              // 只有 `smart_dialog.dart` 里那个独立类叫 SmartDialog）。
+              child: FlutterSmartDialog.init(
+                toastBuilder: (String msg) => ToastComponent(message: msg),
+              )(
+                context,
+                // 迷你播放条：覆盖在所有页面之上，全屏播放页自身不显示
+                //
+                // 必须用 StackFit.expand（等价于给两个子节点紧约束）：
+                // Stack 默认给非定位子节点**松约束**，app 子树的 Scaffold 会按
+                // 内容大小收缩，表现为「页面不满屏、背景发黑」。
+                //
+                // 注：smart_dialog 的 initState 只在 child 是 Navigator/FocusScope
+                // 时才能拿到 contextNavigator；传 Stack 会拿不到，但实测 toast /
+                // loading / dialog 仍正常显示（它自己那层 Overlay 才是真正的宿主）。
+                Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    child ?? const SizedBox.shrink(),
+                    const MiniPlayerOverlay(),
+                  ],
+                ),
               ),
             ),
           );
@@ -126,7 +134,7 @@ class XlistApp extends StatelessWidget {
         // 裸 MaterialApp 不认（它们不是 MaterialApp 的参数），所以已在 main()
         // 里用 Get.addTranslations 手动注册。
         //
-        // 这里这一组 delegate 是**必需**的，不是可选优化：
+        // 这一组 delegate 是**必需**的，不是可选优化：
         // `DefaultMaterialLocalizations` 只提供英文。若 supportedLocales 里声明了
         // zh_Hans 却只挂 Default* delegate，设备为中文时语言解析会落到 zh，
         // 而该 delegate 的 isSupported 不认 zh —— 于是 Localizations 里没有
@@ -134,17 +142,11 @@ class XlistApp extends StatelessWidget {
         // AlertDialog / 日期选择器 / 长按菜单里的 `!` 断言直接崩
         // （真机实测：`Null check operator used on a null value` →
         //  MaterialLocalizations.of → AlertDialog.build）。
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-          DefaultMaterialLocalizations.delegate,
-          DefaultWidgetsLocalizations.delegate,
-        ],
-        supportedLocales: const [
-          Locale('en', 'US'),
-          Locale('zh', 'Hans'),
-        ],
+        //
+        // 取自 ThemeBridge，与桥接层共用同一份（桥接层内还会再挂一次 —— 因为
+        // `Localizations` 是遮蔽而非叠加，层内看不到层外的 delegate）。
+        localizationsDelegates: ThemeBridge.localizationsDelegates,
+        supportedLocales: ThemeBridge.supportedLocales,
       ),
     );
   }
