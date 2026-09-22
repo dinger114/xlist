@@ -59,9 +59,22 @@ android {
             // AGP 9 起 release 默认启用 R8（minifyEnabled 默认 true），
             // 必须显式挂上 keep 规则，否则 Room/WorkManager 反射实例化失败。
             minifyEnabled true
-            shrinkResources false
+            // Phase 4 / Task 4.4：开启资源收缩，配合 shrinkResources 需 minify 已开。
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
                     'proguard-rules.pro'
+        }
+    }
+
+    // Phase 4：让 native 库在 APK 内被压缩而非原样存储。
+    // AGP 9 默认 useLegacyPackaging=false，即 extractNativeLibs=false，
+    // 要求 .so 页对齐并**不做压缩**，于是 libmpv/libflutter/libapp 等
+    // 37MB 的 .so 全部以 STORED 进包（压缩后体积=原始体积）。
+    // 打开 legacy packaging 后按 deflate 压缩存储，APK 立减约 30%；
+    // 代价是安装时解压到 data 目录、启动略慢、占 ROM 更多。
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
         }
     }
 }

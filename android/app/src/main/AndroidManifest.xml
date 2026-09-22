@@ -6,8 +6,9 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <!-- READ_PHONE_STATE / ACCESS_WIFI_STATE 于 Phase 4 移除：
+         全仓 lib/ 与 android/ 零引用（权限由 permission_handler 按需申请，
+         这两个既不申请也不用）。若将来需要设备识别/SSID，再按需加回。 -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -33,6 +34,7 @@
             android:supportsPictureInPicture="true"
             android:resizeableActivity="true"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:localeConfig="@xml/locales_config"
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize"
             tools:ignore="Instantiatable">
