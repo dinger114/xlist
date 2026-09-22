@@ -1,5 +1,49 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- 主壳由 `GetMaterialApp` 换成 `MaterialApp`（`lib/main.dart`），为引入
+  material_ui 扫清唯一障碍（`GetMaterialApp.theme:` 要求 flutter 版
+  `ThemeData`，与 material_ui 的同名类冲突）。GetX 的 DI / 状态 / i18n /
+  导航全部保留：
+  - 新增 `lib/routes/app_router.dart`：把 `AppPages.routes`（含 children
+    嵌套）摊平成路由表并实现 `onGenerateRoute`，路径与迁移前逐字相同
+  - 词条改为在 `main()` 里 `Get.addTranslations()` 手动注册
+    （原先由 `GetMaterialApp` 内部代劳）
+  - `SplashBinding().dependencies()` 手动执行（原 `initialBinding` 钩子）
+  - 补 `flutter_localizations` + Global 系列 delegate
+- **原计划的 go_router 迁移（约 3 周）取消**：实测裸 `MaterialApp` +
+  `navigatorKey: Get.key` + `GetObserver` 下 GetX 导航、`Get.arguments`、
+  binding、控制器生命周期（含 pop 时自动销毁）全部可用，53 处导航调用与
+  32 处 `Get.arguments` 无需改动，也不必引入新路由库
+
+### Bug Fixes
+
+- 修复换成裸 `MaterialApp` 后**中文环境下弹对话框必崩**：
+  `Null check operator used on a null value` → `MaterialLocalizations.of`
+  → `AlertDialog.build`。根因是 `supportedLocales` 声明了 `zh_Hans` 却只挂
+  `DefaultMaterialLocalizations`（仅英文），zh 解析不到 delegate 时
+  `MaterialLocalizations.of()` 返回 null
+- 修复换成裸 `MaterialApp` 后**所有 `Get.arguments` 为 null**（表现为点文件夹
+  进详情页 `NoSuchMethodError: [](“path”) on null`）。根因是 `GetObserver`
+  的**第二个**位置参数（`Get.routing`）才是被写入 `args` 的对象，漏传即
+  无人写入；`GetMaterialApp` 内部传的是 `GetObserver(cb, Get.routing)`
+- 修复 arguments 时序：`onGenerateRoute` 里在跑 binding **之前**写入
+  `Get.routing.args`（原 GetX 在路由创建**之后**才写，而 binding 在构建时
+  执行，字段初始化里读 `Get.arguments` 的 controller 会拿到 null）
+
+### Tests
+
+- 测试基线 117 → 150：新增 `test/routes/` 5 个文件
+  - `getx_nav_shell_test.dart`：裸 shell 下 GetX 导航/参数/binding 生命周期
+  - `app_router_test.dart`：路由表扁平化与匹配
+  - `all_routes_reachable_test.dart`：20 条路由全量可达 + 未知路由兜底
+  - `localization_delegates_test.dart`：中文下 `MaterialLocalizations` 可取
+    （钉住上面那个崩溃）
+  - `get_arguments_wiring_test.dart`：`Get.arguments` 接线（钉住上面那个 null）
+
 ## [1.1.0](https://github.com/dinger114/xlist/releases/tag/v1.1.0) - 2026-09-22
 
 ### Dependencies

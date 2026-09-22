@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -9,37 +10,89 @@ import 'package:xlist/global.dart';
 import 'package:xlist/themes.dart';
 import 'package:xlist/components/index.dart';
 import 'package:xlist/routes/app_pages.dart';
+import 'package:xlist/routes/app_router.dart';
 import 'package:xlist/pages/splash/index.dart';
 import 'package:xlist/langs/translation_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
-  Global.init().then((e) => runApp(Phoenix(child: XlistApp())));
+
+  // 词条注册必须在任何 UI 读取 `.tr` 之前 —— 首页/播放页的标题都是 .tr。
+  // GetMaterialApp 原先在 onGenerateRoute/initialRoute 里替我们做这件事
+  // （实测其源码：`Get.addTranslations(translations!.keys)`），换成裸
+  // MaterialApp 后要自己补。
+  Get.addTranslations(TranslationService().keys);
+  Get.locale = TranslationService.locale;
+  Get.fallbackLocale = TranslationService.fallbackLocale;
+
+  Global.init().then((e) {
+    // 原 GetMaterialApp.initialBinding 会跑 SplashBinding；
+    // 裸 MaterialApp 没有这个钩子，手动执行一次。
+    SplashBinding().dependencies();
+    runApp(Phoenix(child: XlistApp()));
+  });
 }
 
 class XlistApp extends StatelessWidget {
+  XlistApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
       designSize: Size(1080, 1920),
       minTextAdapt: true,
       splitScreenMode: true,
-      builder: (context, child) => GetMaterialApp(
+      builder: (context, child) => MaterialApp(
         title: 'Xlist',
         theme: Themes.light,
         darkTheme: Themes.dark,
         themeMode: ThemeMode.light,
-        home: SplashPage(),
-        initialBinding: SplashBinding(),
-        defaultTransition: Transition.cupertino,
         debugShowCheckedModeBanner: false,
+
+        // ---- 用裸 MaterialApp 承载 GetX 导航 ----
+        //
+        // 为什么不用 GetMaterialApp：Phase 3 要引入 material_ui，而
+        // GetMaterialApp 的 `theme:` 参数要求 `package:flutter/material.dart`
+        // 的 ThemeData；material_ui 给的是**同名不同类**的另一份，会编译失败。
+        //
+        // 换成裸 MaterialApp 后，GetX 的导航 / Get.arguments / binding /
+        // 控制器生命周期仍然全部可用（已由 test/routes/getx_nav_shell_test.dart
+        // 逐条验证，含 pop 时控制器被自动销毁、二次进入不拿到陈旧实例）。
+        // 所以 53 处导航调用与 32 处 Get.arguments 一行都不用改 ——
+        // 原计划的 go_router 迁移（3 周）因此省掉。
+        //
+        // 三个必需件：
+        //   1. navigatorKey: Get.key —— GetX 导航要操作同一个 Navigator
+        //   2. navigatorObservers: [GetObserver()] —— 维护 Get.arguments 与
+        //      Get.currentRoute；下面的 routing 回调把当前路由同步给
+        //      MiniPlayerOverlay（判断是否在播放页）
+        //   3. onGenerateRoute / onUnknownRoute —— 由 AppPages.routes 扁平化
+        //      而来，路径与迁移前逐字相同（见 test/routes/app_router_test.dart）
+        navigatorKey: Get.key,
+        navigatorObservers: [
+          // 第二个参数 `Get.routing` 是**必须**的，不是可选项：
+          // GetObserver 通过 `_routeSend.update(...)` 往这个 Routing 实例里写
+          // `args`，而 `Get.arguments` 读的就是同一个对象。少传它 → 所有
+          // `Get.arguments['x']` 拿到 null（真机实测：文件夹点击进
+          // DetailController 直接 `NoSuchMethodError: [](“path”) on null`）。
+          // GetMaterialApp 内部就是 `GetObserver(routingCallback, Get.routing)`。
+          GetObserver(
+            (routing) {
+              currentRoute.value = routing?.current ?? '';
+              if (Global.routeLog) {
+                // 用 debugPrint（非 print）：release 下 print 的输出在 Android
+                // 会被丢掉，debugPrint 才能进 logcat。
+                debugPrint('XLIST_ROUTE >>> ${routing?.current}');
+              }
+            },
+            Get.routing,
+          ),
+        ],
         initialRoute: AppPages.INITIAL,
-        getPages: AppPages.routes,
-        unknownRoute: AppPages.unknownRoute,
-        // mini 播放条需要知道当前路由（全屏播放页不叠播放条）
-        routingCallback: (routing) =>
-            currentRoute.value = routing?.current ?? '',
+        onGenerateRoute: AppRouter.onGenerateRoute,
+        onUnknownRoute: AppRouter.onUnknownRoute,
+
         builder: (BuildContext context, Widget? child) {
           return MediaQuery(
             data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
@@ -52,6 +105,10 @@ class XlistApp extends StatelessWidget {
               // 必须用 StackFit.expand（等价于给两个子节点紧约束）：
               // Stack 默认给非定位子节点**松约束**，app 子树的 Scaffold 会按
               // 内容大小收缩，表现为「页面不满屏、背景发黑」。
+              //
+              // 注：smart_dialog 的 initState 只在 child 是 Navigator/FocusScope
+              // 时才能拿到 contextNavigator；传 Stack 会拿不到，但实测 toast /
+              // loading / dialog 仍正常显示（它自己那层 Overlay 才是真正的宿主）。
               Stack(
                 fit: StackFit.expand,
                 children: [
@@ -62,9 +119,32 @@ class XlistApp extends StatelessWidget {
             ),
           );
         },
-        translations: TranslationService(),
-        locale: TranslationService.locale,
-        fallbackLocale: TranslationService.fallbackLocale,
+
+        // ---- i18n ----
+        //
+        // GetMaterialApp 认 translations/locale/fallbackLocale 三个参数，
+        // 裸 MaterialApp 不认（它们不是 MaterialApp 的参数），所以已在 main()
+        // 里用 Get.addTranslations 手动注册。
+        //
+        // 这里这一组 delegate 是**必需**的，不是可选优化：
+        // `DefaultMaterialLocalizations` 只提供英文。若 supportedLocales 里声明了
+        // zh_Hans 却只挂 Default* delegate，设备为中文时语言解析会落到 zh，
+        // 而该 delegate 的 isSupported 不认 zh —— 于是 Localizations 里没有
+        // MaterialLocalizations，`MaterialLocalizations.of()` 返回 null，
+        // AlertDialog / 日期选择器 / 长按菜单里的 `!` 断言直接崩
+        // （真机实测：`Null check operator used on a null value` →
+        //  MaterialLocalizations.of → AlertDialog.build）。
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          DefaultMaterialLocalizations.delegate,
+          DefaultWidgetsLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('en', 'US'),
+          Locale('zh', 'Hans'),
+        ],
       ),
     );
   }
