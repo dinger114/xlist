@@ -28,11 +28,11 @@ dependencies:
   encrypt: ^5.0.3
   keframe: ^3.0.0
   charset: ^2.0.1
-  wakelock_plus: ^1.5.2
+  wakelock_plus: ^1.8.0
   audio_wave: ^0.1.5
-  share_plus: ^12.0.0
+  share_plus: ^13.3.0
   photo_view: ^0.15.0
-  file_picker: ^11.0.3
+  file_picker: ^13.1.0
   url_launcher: ^6.3.2
   image_picker: ^1.1.2
   easy_refresh: ^3.3.1+2
@@ -45,17 +45,17 @@ dependencies:
   adaptive_dialog: ^2.8.3
   dismissible_page: ^1.0.1
   pull_down_button: ^0.10.2
-  device_info_plus: ^12.1.0
+  device_info_plus: ^13.2.0
   flex_color_scheme: ^8.4.0
-  package_info_plus: ^9.0.1
+  package_info_plus: ^10.2.1
   permission_handler: ^13.0.2
   modal_bottom_sheet: ^3.0.0-pre
   image_gallery_saver_plus: ^5.1.1
   font_awesome_flutter: ^11.0.0
   cached_network_image: ^3.4.1
   subtitle_wrapper_package: ^2.1.1
-  infinite_scroll_pagination: ^4.1.0
-  syncfusion_flutter_pdfviewer: ^33.2.13
+  infinite_scroll_pagination: ^5.1.1
+  syncfusion_flutter_pdfviewer: ^34.2.8
   flutter_svg: ^2.3.0
   flutter_phoenix: ^1.1.0
   flutter_slidable: ^4.0.3
@@ -71,11 +71,9 @@ dev_dependencies:
     sdk: flutter
   flutter_gen: ^5.9.0
   flutter_lints: ^6.0.0
-  floor_generator: ^1.5.0
   flutter_launcher_icons: ^0.14.4
   change_app_package_name: ^1.1.0
   build_runner: ^2.3.3
-  json_model: ^1.0.0
   json_serializable: ^6.5.4
 
 flutter_native_splash:

@@ -11,9 +11,6 @@ build-watch:
 gen:
 	fluttergen
 
-json-models:
-	dart run json_model src=json_files
-
 splash:
 	dart run flutter_native_splash:create
 

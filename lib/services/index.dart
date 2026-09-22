@@ -4,3 +4,4 @@ export 'download_service.dart';
 export 'database_service.dart';
 export 'device_info_service.dart';
 export 'player_notification_service.dart';
+export 'audio_player_service.dart';

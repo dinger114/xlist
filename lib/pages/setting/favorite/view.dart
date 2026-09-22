@@ -113,21 +113,28 @@ class FavoritePage extends GetView<FavoriteController> {
   }
 
   // SliverList
+  // 5.x：PagedSliverList 不再接收 pagingController，改由 PagingListener
+  // 把 state 与 fetchNextPage 传进来。
   Widget _buildSliverList() {
-    return PagedSliverList<int, FavoriteEntity>.separated(
-      pagingController: controller.pagingController,
-      separatorBuilder: (context, index) => SizedBox(height: 30.h),
-      builderDelegate: PagedChildBuilderDelegate<FavoriteEntity>(
-        animateTransitions: false,
-        noItemsFoundIndicatorBuilder: (context) => _buildEmptyData(),
-        firstPageProgressIndicatorBuilder: (context) => _buildLoading(),
-        newPageProgressIndicatorBuilder: (context) => _buildLoading(),
-        itemBuilder: (context, item, index) {
-          return FrameSeparateWidget(
-            index: index,
-            child: _buildItem(item),
-          );
-        },
+    return PagingListener<int, FavoriteEntity>(
+      controller: controller.pagingController,
+      builder: (context, state, fetchNextPage) =>
+          PagedSliverList<int, FavoriteEntity>.separated(
+        state: state,
+        fetchNextPage: fetchNextPage,
+        separatorBuilder: (context, index) => SizedBox(height: 30.h),
+        builderDelegate: PagedChildBuilderDelegate<FavoriteEntity>(
+          animateTransitions: false,
+          noItemsFoundIndicatorBuilder: (context) => _buildEmptyData(),
+          firstPageProgressIndicatorBuilder: (context) => _buildLoading(),
+          newPageProgressIndicatorBuilder: (context) => _buildLoading(),
+          itemBuilder: (context, item, index) {
+            return FrameSeparateWidget(
+              index: index,
+              child: _buildItem(item),
+            );
+          },
+        ),
       ),
     );
   }

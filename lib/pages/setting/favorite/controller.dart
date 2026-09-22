@@ -16,39 +16,35 @@ class FavoriteController extends GetxController {
   static const pageSize = 20;
   final isEmpty = true.obs; // 是否为空
   final serverId = Get.find<UserStorage>().serverId.val;
-  List<FavoriteEntity> get favoriteList => pagingController.itemList!; // 最近浏览数据
+
+  /// 收藏数据（来自 PagingState，只读）
+  List<FavoriteEntity> get favoriteList =>
+      pagingController.value.items ?? const [];
 
   ScrollController scrollController = ScrollController();
-  final PagingController<int, FavoriteEntity> pagingController =
-      PagingController(firstPageKey: 0);
 
-  @override
-  void onInit() async {
-    pagingController.addPageRequestListener((currentPage) {
-      getFavoriteListData(currentPage);
-    });
-
-    super.onInit();
-  }
-
-  /// 获取收藏列表
-  /// [currentIndex] 当前游标
-  Future<void> getFavoriteListData(int currentIndex) async {
-    try {
-      final _favoriteList = await DatabaseService.to.database.favoriteDao
-          .findFavoriteByServerId(serverId, pageSize, currentIndex);
-
+  /// infinite_scroll_pagination 5.x 起：分页参数改为构造函数注入，
+  /// itemList/appendPage/appendLastPage/addPageRequestListener 均已移除。
+  /// 这里保持原有「按 offset 分页、取到不满一页即结束」的语义。
+  late final PagingController<int, FavoriteEntity> pagingController =
+      PagingController<int, FavoriteEntity>(
+    getNextPageKey: (state) {
+      final pages = state.pages;
+      // 上一页不满 pageSize，说明已到末页（与原 isLastPage 判断一致）
+      if (pages != null && pages.isNotEmpty && pages.last.length < pageSize) {
+        return null;
+      }
+      // 下一页 key = 已取条数（即 SQL offset），与原 currentIndex 语义一致
+      return (pages ?? const []).fold<int>(0, (sum, p) => sum + p.length);
+    },
+    fetchPage: (offset) async {
+      final list = await DatabaseService.to.database.favoriteDao
+          .findFavoriteByServerId(serverId, pageSize, offset);
       // 判断是否为空
-      if (currentIndex == 0) isEmpty.value = _favoriteList.isEmpty;
-      final isLastPage = _favoriteList.length < pageSize;
-      isLastPage
-          ? pagingController.appendLastPage(_favoriteList)
-          : pagingController.appendPage(
-              _favoriteList, currentIndex + _favoriteList.length);
-    } catch (e) {
-      SmartDialog.showToast(e.toString());
-    }
-  }
+      if (offset == 0) isEmpty.value = list.isEmpty;
+      return list;
+    },
+  );
 
   /// 删除收藏文件
   /// [entity] 收藏实体
@@ -65,8 +61,9 @@ class FavoriteController extends GetxController {
     try {
       await DatabaseService.to.database.favoriteDao
           .deleteFavoriteById(entity.id!);
-      favoriteList.remove(entity);
-      pagingController.notifyListeners();
+      // 5.x 的 items 是 unmodifiable，不能就地 remove，改为过滤后写回 state
+      pagingController.value =
+          pagingController.value.filterItems((e) => e.id != entity.id);
 
       isEmpty.value = favoriteList.isEmpty;
       SmartDialog.showToast('toast_remove_success'.tr);
@@ -91,11 +88,10 @@ class FavoriteController extends GetxController {
       await DatabaseService.to.database.favoriteDao
           .deleteFavoriteByServerId(_id);
 
-      // 清空数据
-      favoriteList.clear();
-      pagingController.notifyListeners();
+      // 清空数据：直接 reset state（等价于清空列表并回到首页）
+      pagingController.refresh();
 
-      isEmpty.value = favoriteList.isEmpty;
+      isEmpty.value = true;
       SmartDialog.showToast('toast_remove_success_all'.tr);
     } catch (e) {
       SmartDialog.showToast(e.toString());
