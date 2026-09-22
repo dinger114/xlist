@@ -54,9 +54,19 @@ class PlayerHelper {
     // 音频模式不渲染视频
     if (isAudioOnly) await player.setProperty('vid', 'no');
 
-    // HLS 专属优化
+    // HLS
+    //
+    // 原为 `cache-secs = 120`，实测在 alist 的 HLS 上会长时间转圈：
+    // 该站点的 m3u8 分段是 ~22.5MB / 60s（约 3Mbps），120s 即需预缓冲
+    // 约 45MB，逼近 `demuxer-max-bytes` 的 50MiB 上限，mpv 会一直等缓存
+    // 填满才开播；若换成码率更高的源（120s > 50MiB），缓存永远填不满，
+    // 表现为**一直转圈加载不出来**。
+    // 这里收敛到「缓存目标」与「缓存上限」相称的取值：20s ≈ 7.5MB，
+    // 远小于上限，起播快；同时不放宽上限以免占用过多内存。
     if (name != null && name.toLowerCase().endsWith('.m3u8')) {
-      await player.setProperty('cache-secs', '120');
+      await player.setProperty('cache-secs', '20');
+      await player.setProperty('cache-pause', 'yes');
+      await player.setProperty('cache-pause-wait', '3');
     }
 
     // Headers 在 open(Media(httpHeaders:)) 时传入，这里无需设置

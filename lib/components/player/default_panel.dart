@@ -398,10 +398,21 @@ class _DefaultPanelState extends State<DefaultPanel>
       }
     }
 
-    return Positioned.fill(
-      child: Stack(
-        children: ws,
-      ),
+    // 注意：**不能**返回 `Positioned.fill`。
+    //
+    // 调用处（`pages/video_player/view.dart`）是
+    //   Stack > Positioned.fill > Obx > DefaultPanel
+    // 中间隔了一层 `Obx`，而 `Positioned` 的父级必须**直接**是 `Stack`
+    // （由 `ParentDataWidget` 的 `debugIsValidRenderObject` 断言）。隔了 Obx 后
+    // ParentData 落到了 `Scaffold` 的 `CustomMultiChildLayout` 上，类型不匹配：
+    //   Incorrect use of ParentDataWidget. ... wants to apply ParentData of type
+    //   StackParentData to a RenderObject ... incompatible type
+    //   MultiChildLayoutParentData
+    // debug 下是红屏 + 断言；**release 下 Flutter 的 ErrorWidget 是个灰色方块**，
+    // 于是表现为「底部控制栏变灰块、音量/亮度手势失效」。
+    // 铺满由调用处的 `Positioned.fill` 负责，这里只返回 `Stack`。
+    return Stack(
+      children: ws,
     );
   }
 

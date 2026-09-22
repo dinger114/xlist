@@ -1,11 +1,22 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit/src/player/native/player/real.dart' show NativePlayer;
+
+import 'package:xlist/global.dart';
 
 import 'x_player.dart';
 import 'x_player_state.dart';
 import 'x_player_track.dart';
+
+/// mpv 后端日志开关：`--dart-define=XLIST_MPV_LOG=true`。
+///
+/// 排查「转圈 / 加载不出来」这类播放故障时，media_kit 自身的诊断信息
+/// 在 release 下会被丢弃（走 print），mpv 的日志也默认不暴露，导致只能靠猜。
+/// 打开后把 mpv 原始日志经 debugPrint 打到 logcat（`adb logcat | grep XLIST_MPV`）。
+/// 与 `Global.routeLog` 同思路：release 包也能开，平时零开销。
+const bool _mpvLog = bool.fromEnvironment('XLIST_MPV_LOG');
 
 /// media_kit 实现的 XPlayer
 class MediaKitPlayer implements XPlayer {
@@ -47,12 +58,26 @@ class MediaKitPlayer implements XPlayer {
   final List<StreamSubscription> _subscriptions = [];
 
   MediaKitPlayer({PlayerConfiguration? configuration})
-      : _player =
-            Player(configuration: configuration ?? PlayerConfiguration()) {
+      : _player = Player(
+          configuration: configuration ??
+              PlayerConfiguration(
+                // 仅在 XLIST_MPV_LOG 打开时提高 mpv 日志级别，
+                // 正常构建保持默认（error），无额外开销。
+                logLevel: _mpvLog ? MPVLogLevel.info : MPVLogLevel.error,
+              ),
+        ) {
     _initListeners();
   }
 
   void _initListeners() {
+    // mpv 后端日志（仅 XLIST_MPV_LOG 时输出）。排查播放故障的第一手证据：
+    // 「转圈」多数是 hls 缓存/网络层的问题，只有 mpv 自己的日志说得清。
+    if (_mpvLog) {
+      _subscriptions.add(_player.stream.log.listen((log) {
+        debugPrint('XLIST_MPV [${log.level}] ${log.prefix}: ${log.text}');
+      }));
+    }
+
     _subscriptions.add(_player.stream.playing.listen((playing) {
       _isPlaying = playing;
       _playingController.add(playing);
