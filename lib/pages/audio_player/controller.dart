@@ -1,9 +1,6 @@
-import 'dart:async';
-
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
-import 'package:audio_service/audio_service.dart';
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
@@ -11,23 +8,28 @@ import 'package:xlist/models/index.dart';
 import 'package:xlist/helper/index.dart';
 import 'package:xlist/common/index.dart';
 import 'package:xlist/storages/index.dart';
-import 'package:xlist/services/index.dart';
 import 'package:xlist/constants/index.dart';
 import 'package:xlist/repositorys/index.dart';
-import 'package:xlist/helper/player_helper.dart';
-import 'package:xlist/core/player/x_player_state.dart';
-import 'package:xlist/core/player/media_kit_player.dart';
-import 'package:xlist/database/entity/index.dart';
+import 'package:xlist/services/index.dart';
 
+/// 音频播放页 controller —— 现在是纯视图层。
+///
+/// 播放器、播放队列、播放进度都归 [AudioPlayerService]（全局常驻）。这里只留
+/// 页面自己的 UI 状态（tab、拖动中的进度），因此本页面被 pop 时不再销毁播放
+/// 器 —— 「返回即停止播放」的根因就在原来的 onClose 里那句 player.dispose()。
+///
+/// 为了让 view 少改动，[player] 直接指向播放服务：
+/// `controller.player.isPlaying` / `controller.togglePlay()` 等照旧可用。
 class AudioPlayerController extends GetxController
     with GetSingleTickerProviderStateMixin {
   final isPlaylist = false.obs; // 是否显示为播放列表
-  final object = ObjectModel().obs; // 文件信息
-  final isLoading = true.obs; // 是否正在加载
-  final playMode = 0.obs; // 播放模式
-  final httpHeaders = Map<String, String>().obs;
-  final serverId = Get.find<UserStorage>().serverId.val.obs;
   final userInfo = UserModel().obs; // 用户信息
+
+  /// 播放服务（全局常驻）
+  AudioPlayerService get player => AudioPlayerService.to;
+
+  /// 当前播放文件信息（view 里 controller.object 的别名）
+  ObjectModel get object => player.object.value;
 
   // 获取参数
   String path = Get.arguments['path'] ?? '';
@@ -38,28 +40,12 @@ class AudioPlayerController extends GetxController
   final String file = Get.arguments['file'] ?? '';
   final int downloadId = Get.arguments['downloadId'] ?? 0;
 
-  // 当前播放音频
-  final currentName = ''.obs;
-  final currentIndex = 0.obs;
-  late final MediaKitPlayer player;
-  final audioHandler = PlayerNotificationService.to.audioHandler;
   late TabController tabController;
 
+  /// 拖动中的进度（-1 表示未拖动）
+  /// 先赋 RxDouble 再当 double 用，是为了让 Obx 在拖动时也能收到通知
+  /// （与原实现保持一致）
   double seekPos = -1.0.obs;
-  final isPlaying = false.obs;
-  final duration = Duration().obs;
-  final currentPos = Duration().obs;
-  final bufferPos = Duration().obs;
-
-  Timer? _timer;
-  Timer? _timerProgress;
-  int _progressId = 0; // 进度表 ID
-  final timerDuration = Duration.zero.obs;
-  final List<StreamSubscription> _subscriptions = [];
-  MediaItem? _mediaItem;
-
-  // 播放地址（重试用）
-  String _sourceUrl = '';
 
   @override
   void onInit() async {
@@ -71,277 +57,64 @@ class AudioPlayerController extends GetxController
       isPlaylist.value = tabController.index == 1;
     });
 
-    // 过滤非音频
-    objects = objects.where((o) => PreviewHelper.isAudio(o.name!)).toList();
-    userInfo.value = await UserRepository.me(); // 获取用户信息
+    // 播放模式跟随全局偏好
+    player.playMode.value = Get.find<PreferencesStorage>().playMode.val;
 
-    // 当前播放文件名
-    currentName.value = name;
-    currentIndex.value = objects.indexWhere((o) => o.name == name); // 当前播放文件下标
-
-    // 创建播放器
-    player = MediaKitPlayer();
-
-    // PlayerNotificationService
-    audioHandler.initializeStreamController(player, objects.length > 1, false);
-    audioHandler.playbackState.addStream(audioHandler.streamController.stream);
-    audioHandler.setVideoFunctions(
-      player.play,
-      player.pause,
-      (ms) => player.seek(Duration(milliseconds: ms)),
-      player.stop,
+    // 装载播放源；若已在播同一个文件则复用（不重新从头播放）
+    await player.open(
+      path: path,
+      name: name,
+      objects: objects,
+      file: file,
+      downloadId: downloadId,
+      serverId: Get.arguments['serverId'],
     );
 
-    // 获取文件信息
-    if (file.isEmpty) {
-      try {
-        object.value = await ObjectRepository.get(path: '${path}${name}');
-        httpHeaders.value = await DriverHelper.getHeaders(
-            object.value.provider, object.value.rawUrl);
-      } catch (e) {
-        SmartDialog.showToast(e.toString());
-        return;
-      }
-    } else {
-      final download = await DatabaseService.to.database.downloadDao
-          .findDownloadById(downloadId);
-      object.value = ObjectModel.fromJson({
-        'name': download?.name,
-        'type': download?.type,
-        'size': download?.size,
-        'raw_url': 'file://${file}',
-      });
-    }
-
-    // 更新播放进度
-    await updateProgress();
-
-    // 先挂监听再 open，否则 ready 事件在监听前已错过，
-    // 通知栏 MediaItem 永远不会设置（metadata null -> 远古样式通知）
-    _initStreamListeners();
-
-    // 立即设置 MediaItem，保证标题第一时间上通知
-    _playerNotificationHandler();
-
-    // 初始化播放器
-    _sourceUrl = object.value.rawUrl ?? '';
-    await PlayerHelper.setOption(player,
-        isAudioOnly: true, headers: httpHeaders);
-    await player.open(_sourceUrl, headers: httpHeaders, autoPlay: true);
-    if (currentPos.value.inMilliseconds > 0) {
-      await player.seek(currentPos.value);
-    }
-
-    // 加入最近浏览
-    await CommonUtils.addRecent(object.value, path, name);
-
-    // 绑定进度监听
-    DownloadService.to.bindBackgroundIsolate((id, status, progress) {});
-    isLoading.value = false;
+    userInfo.value = await UserRepository.me();
   }
 
-  void _initStreamListeners() {
-    _subscriptions.add(player.playingStream.listen((playing) {
-      isPlaying.value = playing;
-      Future.delayed(Duration(milliseconds: 1000), () {
-        audioHandler.updatePlaybackState();
-      });
-    }));
-
-    _subscriptions.add(player.durationStream.listen((dur) {
-      if (dur != duration.value) {
-        duration.value = dur;
-      }
-    }));
-
-    _subscriptions.add(player.positionStream.listen((pos) {
-      currentPos.value = pos;
-    }));
-
-    _subscriptions.add(player.bufferStream.listen((buf) {
-      bufferPos.value = buf;
-    }));
-
-    _subscriptions.add(player.stateStream.listen((state) {
-      if (state == XPlayerState.ready || state == XPlayerState.playing) {
-        _playerNotificationHandler();
-      }
-
-      if (state == XPlayerState.completed) {
-        _onCompleted();
-      }
-    }));
-
-    _subscriptions.add(player.errorStream.listen((err) {
-      SmartDialog.showToast('toast_play_error'.tr);
-    }));
-  }
-
-  /// 播放完成
-  void _onCompleted() {
-    currentPos.value = Duration.zero;
-
-    // 更新播放进度 - 重置
-    DatabaseService.to.database.progressDao.updateProgress(
-      ProgressEntity(
-        id: _progressId,
-        serverId: serverId.value,
-        path: path,
-        name: currentName.value,
-        currentPos: currentPos.value.inMilliseconds,
-      ),
-    );
-
-    // 根据播放模式切换下一首
-    switch (playMode.value) {
-      case PlayMode.SINGLE_LOOP:
-        player.seek(Duration.zero);
-        player.play();
-        break;
-      case PlayMode.LIST_LOOP:
-        if (objects.length == 1) {
-          player.seek(Duration.zero);
-          player.play();
-        } else {
-          currentIndex.value == objects.length - 1
-              ? changePlaylist(0)
-              : changePlaylist(currentIndex.value + 1);
-        }
-        break;
-      case PlayMode.SHUFFLE:
-        if (objects.length == 1) {
-          player.seek(Duration.zero);
-          player.play();
-        } else {
-          changePlaylist(CommonUtils.randomInt(0, objects.length - 1));
-        }
-        break;
-      default:
-        break;
-    }
-  }
-
-  /// 通知栏控制器
-  void _playerNotificationHandler() {
-    _mediaItem = MediaItem(
-      id: '${path}${currentName.value}',
-      title: CommonUtils.formatFileNme(currentName.value),
-      duration: duration.value,
-      artUri: object.value.thumb != null && object.value.thumb!.isNotEmpty
-          ? Uri.parse(object.value.thumb!)
-          : Uri.parse('https://s2.loli.net/2023/07/05/viCwFoLceMtAB3m.jpg'),
-      artHeaders: httpHeaders,
-    );
-
-    // Add media
-    audioHandler.mediaItem.add(_mediaItem);
-  }
+  /// 播放/暂停切换
+  void togglePlay() => player.togglePlay();
 
   /// 切换播放列表文件
-  /// [index] 下标
-  void changePlaylist(int index) async {
-    final _object = objects[index];
-    if (index == currentIndex.value) {
-      SmartDialog.showToast('toast_current_play_file'.tr);
+  void changePlaylist(int index) => player.changePlaylist(index);
+
+  /// 上一首（随机模式抽一首）
+  void previous() {
+    if (player.objects.isEmpty) return;
+    if (player.playMode.value == PlayMode.SHUFFLE) {
+      player.changePlaylist(
+          CommonUtils.randomInt(0, player.objects.length - 1).toInt());
       return;
     }
+    player.currentIndex.value == 0
+        ? player.changePlaylist(player.objects.length - 1)
+        : player.changePlaylist(player.currentIndex.value - 1);
+  }
 
-    // 获取文件信息
-    SmartDialog.showLoading();
-    try {
-      object.value = await ObjectRepository.get(path: '${path}${_object.name}');
-    } catch (e) {
-      SmartDialog.dismiss();
-      SmartDialog.showToast(e.toString());
+  /// 下一首（随机模式抽一首）
+  void next() {
+    if (player.objects.isEmpty) return;
+    if (player.playMode.value == PlayMode.SHUFFLE) {
+      player.changePlaylist(
+          CommonUtils.randomInt(0, player.objects.length - 1).toInt());
       return;
     }
-
-    currentIndex.value = index;
-    currentName.value = _object.name!;
-
-    // 重置播放器信息
-    SmartDialog.dismiss();
-    currentPos.value = Duration.zero;
-    await updateProgress(); // 更新播放进度
-
-    // 初始化播放器
-    _sourceUrl = object.value.rawUrl ?? '';
-    await PlayerHelper.setOption(player,
-        isAudioOnly: true, headers: httpHeaders);
-    await player.open(_sourceUrl, headers: httpHeaders, autoPlay: true);
-    if (currentPos.value.inMilliseconds > 0) {
-      await player.seek(currentPos.value);
-    }
-
-    // 加入最近浏览
-    await CommonUtils.addRecent(object.value, path, _object.name!);
+    player.currentIndex.value == player.objects.length - 1
+        ? player.changePlaylist(0)
+        : player.changePlaylist(player.currentIndex.value + 1);
   }
 
-  /// 播放/暂停切换（乐观更新 UI，由 playingStream 校正）
-  void togglePlay() {
-    if (isPlaying.value) {
-      isPlaying.value = false;
-      player.pause();
-    } else {
-      isPlaying.value = true;
-      player.play();
-    }
+  /// 切换播放列表显示
+  void togglePlaylist() {
+    isPlaylist.value = !isPlaylist.value;
+    tabController.index = isPlaylist.value ? 1 : 0;
   }
 
-  /// 重试播放
-  void retryPlay() async {
-    if (_sourceUrl.isEmpty) return;
-    try {
-      await player.open(_sourceUrl, headers: httpHeaders, autoPlay: true);
-      if (currentPos.value.inMilliseconds > 0) {
-        await player.seek(currentPos.value);
-      }
-    } catch (e) {
-      SmartDialog.showToast(e.toString());
-    }
-  }
-
-  /// 定时关闭
-  void timedShutdown() async {
-    final _hasTimer = timerDuration.value.inSeconds > 0;
-    final value = await showModalActionSheet(
-      context: Get.overlayContext!,
-      title:
-          '定时关闭${_hasTimer ? '(剩余${timerDuration.value.inMinutes + 1}分钟)' : ''}',
-      actions: [
-        SheetAction(label: '5分钟', key: 5),
-        SheetAction(label: '10分钟', key: 10),
-        SheetAction(label: '15分钟', key: 15),
-        SheetAction(label: '30分钟', key: 30),
-        SheetAction(label: '60分钟', key: 60),
-        ...[
-          if (_hasTimer)
-            SheetAction(label: '关闭定时', key: 0, isDestructiveAction: true)
-        ].whereType<SheetAction>().toList(),
-      ],
-      cancelLabel: 'cancel'.tr,
-    );
-    if (value == null) return;
-
-    // 关闭定时
-    if (value == 0) {
-      _timer?.cancel();
-      timerDuration.value = Duration.zero;
-      SmartDialog.showToast('关闭定时');
-      return;
-    }
-
-    _timer?.cancel();
-    timerDuration.value = Duration(minutes: value);
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
-      timerDuration.value = timerDuration.value - Duration(seconds: 1);
-      if (timerDuration.value.inSeconds == 0) {
-        _timer?.cancel();
-        Get.find<AudioPlayerController>().player.pause();
-      }
-    });
-
-    SmartDialog.showToast('${value}分钟后关闭');
+  /// 切换播放模式
+  void changePlayMode() {
+    player.nextPlayMode();
+    Get.find<PreferencesStorage>().playMode.val = player.playMode.value;
   }
 
   /// 切换播放速度
@@ -362,48 +135,17 @@ class AudioPlayerController extends GetxController
       cancelLabel: 'cancel'.tr,
     );
     if (value == null) return;
-    player.setRate(value);
+    player.setSpeed(value);
     SmartDialog.showToast('toast_switch_success'.tr);
   }
 
-  /// 更新本地播放进度
-  Future<void> updateProgress() async {
-    final progress = await DatabaseService.to.database.progressDao
-        .findProgressByServerIdAndPath(serverId.value, path, currentName.value);
-
-    if (progress != null) {
-      _progressId = progress.id!;
-      currentPos.value = Duration(milliseconds: progress.currentPos);
-    } else {
-      _progressId =
-          await DatabaseService.to.database.progressDao.insertProgress(
-        ProgressEntity(
-          serverId: serverId.value,
-          path: path,
-          name: currentName.value,
-          currentPos: 0,
-        ),
-      );
-    }
-
-    // 每五秒记录一下播放进度
-    _timerProgress?.cancel();
-    _timerProgress = Timer.periodic(Duration(seconds: 5), (timer) async {
-      await DatabaseService.to.database.progressDao.updateProgress(
-        ProgressEntity(
-          id: _progressId,
-          serverId: serverId.value,
-          path: path,
-          name: currentName.value,
-          currentPos: currentPos.value.inMilliseconds,
-        ),
-      );
-    });
-  }
+  /// 定时关闭
+  void timedShutdown() => player.timedShutdown();
 
   /// 收藏
   void favorite() async {
-    await CommonUtils.addFavorite(object.value, path, currentName.value);
+    await CommonUtils.addFavorite(
+        player.object.value, path, player.currentName.value);
   }
 
   /// 复制链接
@@ -411,7 +153,7 @@ class AudioPlayerController extends GetxController
     Clipboard.setData(ClipboardData(
       text: CommonUtils.getDownloadLink(
         path,
-        object: object.value,
+        object: player.object.value,
         userInfo: userInfo.value,
       ),
     ));
@@ -420,23 +162,16 @@ class AudioPlayerController extends GetxController
 
   /// 下载文件
   void download() async {
-    DownloadHelper.file(
-        path, currentName.value, object.value.type!, object.value.size!);
+    DownloadHelper.file(path, player.currentName.value,
+        player.object.value.type!, player.object.value.size!);
   }
 
   @override
   void onClose() {
     super.onClose();
 
-    _timer?.cancel();
-    _timerProgress?.cancel();
-    for (final sub in _subscriptions) {
-      sub.cancel();
-    }
-    audioHandler.streamController.add(PlaybackState());
-    audioHandler.streamController.close();
-    player.dispose();
-
-    DownloadService.to.unbindBackgroundIsolate();
+    // 只释放页面自己的 UI 资源。播放器由 AudioPlayerService 持有，
+    // 这里绝不能 dispose —— 否则返回上一页就停止播放（本次修复的根因）。
+    tabController.dispose();
   }
 }

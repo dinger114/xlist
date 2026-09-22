@@ -11,6 +11,7 @@ import 'package:xlist/helper/index.dart';
 import 'package:xlist/services/index.dart';
 import 'package:xlist/storages/index.dart';
 import 'package:xlist/constants/index.dart';
+import 'package:xlist/services/audio_player_service.dart';
 
 // 全局配置
 class Global {
@@ -41,6 +42,9 @@ class Global {
     await Get.putAsync(() => DownloadService().init());
     await Get.putAsync(() => DeviceInfoService().init());
     await Get.putAsync(() => PlayerNotificationService().init());
+
+    // 音频播放服务：全局常驻，播放器不随页面回收（返回上一页继续播）
+    await Get.putAsync(() => AudioPlayerService().init());
 
     // 读取设备第一次打开
     final isFirstOpen = Get.find<PreferencesStorage>().isFirstOpen;

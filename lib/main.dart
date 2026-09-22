@@ -37,12 +37,29 @@ class XlistApp extends StatelessWidget {
         initialRoute: AppPages.INITIAL,
         getPages: AppPages.routes,
         unknownRoute: AppPages.unknownRoute,
+        // mini 播放条需要知道当前路由（全屏播放页不叠播放条）
+        routingCallback: (routing) =>
+            currentRoute.value = routing?.current ?? '',
         builder: (BuildContext context, Widget? child) {
           return MediaQuery(
             data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
             child: FlutterSmartDialog.init(
               toastBuilder: (String msg) => ToastComponent(message: msg),
-            )(context, child),
+            )(
+              context,
+              // 迷你播放条：覆盖在所有页面之上，全屏播放页自身不显示
+              //
+              // 必须用 StackFit.expand（等价于给两个子节点紧约束）：
+              // Stack 默认给非定位子节点**松约束**，app 子树的 Scaffold 会按
+              // 内容大小收缩，表现为「页面不满屏、背景发黑」。
+              Stack(
+                fit: StackFit.expand,
+                children: [
+                  child ?? const SizedBox.shrink(),
+                  const MiniPlayerOverlay(),
+                ],
+              ),
+            ),
           );
         },
         translations: TranslationService(),

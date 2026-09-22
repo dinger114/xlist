@@ -13,9 +13,13 @@ import 'package:xlist/common/index.dart';
 import 'package:xlist/constants/index.dart';
 import 'package:xlist/components/index.dart';
 import 'package:xlist/pages/audio_player/index.dart';
+import 'package:xlist/services/audio_player_service.dart';
 
 class AudioPlayerPage extends GetView<AudioPlayerController> {
   const AudioPlayerPage({Key? key}) : super(key: key);
+
+  /// 播放服务：播放状态、队列都在这里（controller 只是视图层）
+  AudioPlayerService get player => controller.player;
 
   /// 构建下拉按钮
   Widget _buildPullDownButton() {
@@ -80,7 +84,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(50.r),
         child: CachedNetworkImage(
-          imageUrl: controller.object.value.thumb ?? '',
+          imageUrl: player.object.value.thumb ?? '',
           fit: BoxFit.cover,
           placeholder: (context, url) =>
               CupertinoActivityIndicator(radius: 13.0),
@@ -107,7 +111,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 50.w),
             child: Text(
-              CommonUtils.formatFileNme(controller.currentName.value),
+              CommonUtils.formatFileNme(player.currentName.value),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: Get.textTheme.titleMedium?.copyWith(
@@ -138,7 +142,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
               SizedBox(width: 50.w),
               Expanded(
                 child: Text(
-                  CommonUtils.formatFileNme(controller.currentName.value),
+                  CommonUtils.formatFileNme(player.currentName.value),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: Get.textTheme.titleMedium?.copyWith(
@@ -154,19 +158,18 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
               physics: AlwaysScrollableScrollPhysics(
                 parent: BouncingScrollPhysics(),
               ),
-              itemCount: controller.objects.length,
+              itemCount: player.objects.length,
               itemBuilder: (context, index) {
                 return GestureDetector(
                   onTap: () => controller.changePlaylist(index),
                   child: Container(
                     height: CommonUtils.isPad ? 50 : 100.h,
                     child: Text(
-                      CommonUtils.formatFileNme(
-                          controller.objects[index].name!),
+                      CommonUtils.formatFileNme(player.objects[index].name!),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Get.textTheme.titleMedium?.copyWith(
-                        color: controller.currentIndex.value == index
+                        color: player.currentIndex.value == index
                             ? Get.theme.primaryColor
                             : null,
                       ),
@@ -184,19 +187,19 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
   /// 播放进度
   Widget _buildXSlider() {
     // 计算进度时间
-    double duration = controller.duration.value.inMilliseconds.toDouble();
+    double duration = player.duration.value.inMilliseconds.toDouble();
     double currentValue = controller.seekPos > 0
         ? controller.seekPos
-        : controller.currentPos.value.inMilliseconds.toDouble();
+        : player.currentPos.value.inMilliseconds.toDouble();
     currentValue = min(currentValue, duration);
     currentValue = max(currentValue, 0);
 
     // 计算缓存进度
-    double cacheValue = controller.bufferPos.value.inMilliseconds.toDouble();
+    double cacheValue = player.bufferPos.value.inMilliseconds.toDouble();
     cacheValue = min(cacheValue, duration);
     cacheValue = max(cacheValue, 0);
 
-    if (controller.duration.value.inMilliseconds == 0) {
+    if (player.duration.value.inMilliseconds == 0) {
       return XSlider(
         colors: XSliderColors(
           cursorColor: Get.theme.primaryColor,
@@ -222,8 +225,8 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
       },
       onChangeEnd: (v) {
         if (controller.seekPos.toInt() == -1) return;
-        controller.player.seek(Duration(milliseconds: v.toInt()));
-        controller.currentPos.value = Duration(
+        player.seek(Duration(milliseconds: v.toInt()));
+        player.currentPos.value = Duration(
           milliseconds: controller.seekPos.toInt(),
         );
         controller.seekPos = -1;
@@ -244,7 +247,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
             padding: EdgeInsets.only(left: 50.w),
             child: Obx(
               () => Text(
-                PlayerHelper.formatDuration(controller.currentPos.value),
+                PlayerHelper.formatDuration(player.currentPos.value),
               ),
             ),
           ),
@@ -254,7 +257,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
             padding: EdgeInsets.only(right: 50.w),
             child: Obx(
               () => Text(
-                PlayerHelper.formatDuration(controller.duration.value),
+                PlayerHelper.formatDuration(player.duration.value),
               ),
             ),
           ),
@@ -279,24 +282,14 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
               size: CommonUtils.isPad ? 50 : 100.sp,
               color: Get.isDarkMode ? Colors.white : Colors.black87,
             ),
-            onPressed: () {
-              final _ct = controller;
-              if (_ct.playMode.value == PlayMode.SHUFFLE) {
-                _ct.changePlaylist(Random().nextInt(_ct.objects.length));
-                return;
-              }
-
-              _ct.currentIndex.value == 0
-                  ? _ct.changePlaylist(_ct.objects.length - 1)
-                  : _ct.changePlaylist(_ct.currentIndex.value - 1);
-            },
+            onPressed: controller.previous,
           ),
           CupertinoButton(
             alignment: Alignment.center,
             padding: EdgeInsets.zero,
             child: Obx(
               () => Icon(
-                controller.isPlaying.value
+                player.isPlaying.value
                     ? CupertinoIcons.pause_fill
                     : CupertinoIcons.play_fill,
                 size: CommonUtils.isPad ? 65 : 150.sp,
@@ -313,17 +306,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
               size: CommonUtils.isPad ? 50 : 100.sp,
               color: Get.isDarkMode ? Colors.white : Colors.black87,
             ),
-            onPressed: () {
-              final _ct = controller;
-              if (_ct.playMode.value == PlayMode.SHUFFLE) {
-                _ct.changePlaylist(Random().nextInt(_ct.objects.length));
-                return;
-              }
-
-              _ct.currentIndex.value == _ct.objects.length - 1
-                  ? _ct.changePlaylist(0)
-                  : _ct.changePlaylist(_ct.currentIndex.value + 1);
-            },
+            onPressed: controller.next,
           ),
         ],
       ),
@@ -370,18 +353,13 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
                           () => CupertinoButton(
                             alignment: Alignment.centerLeft,
                             child: Icon(
-                              PlayMode.getIcon(controller.playMode.value),
+                              PlayMode.getIcon(player.playMode.value),
                               size: CommonUtils.isPad ? 30 : 70.sp,
                               color: Get.isDarkMode
                                   ? Colors.white
                                   : Colors.black87,
                             ),
-                            onPressed: () {
-                              controller.playMode.value =
-                                  controller.playMode.value == PlayMode.SHUFFLE
-                                      ? PlayMode.LIST_LOOP
-                                      : controller.playMode.value + 1;
-                            },
+                            onPressed: controller.changePlayMode,
                           ),
                         ),
                         Obx(
@@ -410,12 +388,11 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
                             child: Icon(
                               CupertinoIcons.clock,
                               size: CommonUtils.isPad ? 30 : 70.sp,
-                              color:
-                                  controller.timerDuration.value.inSeconds > 0
-                                      ? Get.theme.primaryColor
-                                      : Get.isDarkMode
-                                          ? Colors.white
-                                          : Colors.black87,
+                              color: player.timerDuration.value.inSeconds > 0
+                                  ? Get.theme.primaryColor
+                                  : Get.isDarkMode
+                                      ? Colors.white
+                                      : Colors.black87,
                             ),
                             onPressed: () => controller.timedShutdown(),
                           ),

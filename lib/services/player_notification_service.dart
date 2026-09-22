@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:audio_service/audio_service.dart';
 
 import 'package:xlist/constants/index.dart';
-import 'package:xlist/pages/audio_player/index.dart';
+import 'package:xlist/services/audio_player_service.dart';
 import 'package:xlist/pages/video_player/index.dart';
 import 'package:xlist/core/player/x_player.dart';
 import 'package:xlist/core/player/x_player_state.dart';
@@ -68,6 +68,29 @@ class PlayerNotificationHandler extends BaseAudioHandler
     _stop = stop;
   }
 
+  /// 通知栏的上一首/下一首要操作哪个 controller
+  /// （音频走全局常驻 service，视频仍是路由级 controller）
+  void setQueueMode({required bool isPlaylist, required bool isVideo}) {
+    _isPlaylist = isPlaylist;
+    _isVideo = isVideo;
+  }
+
+  /// 释放 streamController（App 退出 / service 销毁时调用）。
+  ///
+  /// 原来这段逻辑写在音频页 controller 的 onClose 里 —— 那意味着**只要离开
+  /// 播放页就把通知栏的 stream 关掉**，返回后通知栏 / 锁屏控制全部失效。
+  /// 现在改由播放服务在真正销毁时调用。
+  void releaseStreamController() {
+    if (streamController.isClosed) return;
+    streamController.close();
+  }
+
+  /// 清空通知栏（停止播放但保留 streamController 可用）
+  void resetPlaybackState() {
+    if (streamController.isClosed) return;
+    streamController.add(PlaybackState());
+  }
+
   /// Initialise our audio handler.
   PlayerNotificationHandler();
 
@@ -91,7 +114,7 @@ class PlayerNotificationHandler extends BaseAudioHandler
       // Get the current video/audio player controller.
       dynamic _vp = _isVideo ?? false
           ? Get.find<VideoPlayerController>()
-          : Get.find<AudioPlayerController>();
+          : AudioPlayerService.to;
 
       // If the current play mode is shuffle, change the playlist to a random index.
       final _playMode =
@@ -116,7 +139,7 @@ class PlayerNotificationHandler extends BaseAudioHandler
       // Get the current video/audio player controller.
       dynamic _vp = _isVideo ?? false
           ? Get.find<VideoPlayerController>()
-          : Get.find<AudioPlayerController>();
+          : AudioPlayerService.to;
 
       // If the current play mode is shuffle, change the playlist to a random index.
       final _playMode =

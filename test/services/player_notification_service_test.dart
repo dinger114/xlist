@@ -121,7 +121,7 @@ class _FakeXPlayer implements XPlayer {
 
   @override
   Future<void> open(String url,
-          {Map<String, String>? headers, bool autoPlay = true}) async {}
+      {Map<String, String>? headers, bool autoPlay = true}) async {}
   @override
   Future<void> play() async {}
   @override
