@@ -98,6 +98,15 @@
 
 ## [Unreleased]
 
+### Added
+
+- 新增播放诊断开关 `XLIST_MPV_LOG`（`--dart-define=XLIST_MPV_LOG=true`）：
+  把 mpv 后端日志经 `debugPrint` 打到 logcat。此前 media_kit 的诊断走 `print`，
+  release 下被丢弃，导致播放类故障只能靠猜。与 `Global.routeLog` 同思路，
+  平时保持默认日志级别、零开销
+
+## [1.1.1](https://github.com/dinger114/xlist/releases/tag/v1.1.1) - 2026-09-23
+
 ### Bug Fixes
 
 - **修复视频播放控制栏变灰块**（真机 Pixel 6 Pro 实测）。
@@ -140,10 +149,6 @@
 
 ### Added
 
-- 新增播放诊断开关 `XLIST_MPV_LOG`（`--dart-define=XLIST_MPV_LOG=true`）：
-  把 mpv 后端日志经 `debugPrint` 打到 logcat。此前 media_kit 的诊断走 `print`，
-  release 下被丢弃，导致播放类故障只能靠猜。与 `Global.routeLog` 同思路，
-  平时保持默认日志级别、零开销
 - 同一开关下挂 `FlutterError.onError`，把**每一次**框架异常连同堆栈经
   `debugPrint` 输出（前缀 `XLIST_ERR`）。Flutter 原生只对首个异常打印完整
   信息，之后一律退化成 `Another exception was thrown: Instance of 'SV<void>'`
