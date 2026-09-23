@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -53,7 +52,7 @@ void main() {
 }
 
 class XlistApp extends StatelessWidget {
-  XlistApp({super.key});
+  const XlistApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -107,13 +106,14 @@ class XlistApp extends StatelessWidget {
             Get.routing,
           ),
         ],
-        initialRoute: AppPages.INITIAL,
+        initialRoute: AppPages.initial,
         onGenerateRoute: AppRouter.onGenerateRoute,
         onUnknownRoute: AppRouter.onUnknownRoute,
 
         builder: (BuildContext context, Widget? child) {
           return MediaQuery(
-            data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: TextScaler.linear(1.0)),
             // 主题桥接：给已迁 material_ui 的包（smart_dialog / cached_network_image /
             // flex_color_scheme / dynamic_color …）提供 material_ui 版主题。
             // 不架这层的话，那些包内的 `Theme.of` 会**静默拿到 fallback 默认主题**

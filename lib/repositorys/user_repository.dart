@@ -10,7 +10,7 @@ class UserRepository extends Repository {
   // 获取对象列表
   static Future<UserModel> me() async {
     final url = Get.find<UserStorage>().serverUrl.val;
-    final response = await Repository.get('${url}/api/me');
+    final response = await Repository.get('$url/api/me');
 
     if (response.data['code'] != 200) {
       throw Exception(response.data['message']);

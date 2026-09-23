@@ -25,49 +25,49 @@ part 'app_routes.dart';
 class AppPages {
   AppPages._();
 
-  static const INITIAL = _Paths.SPLASH;
+  static const initial = _Paths.splash;
 
   static final routes = [
     unknownRoute,
-    GetPage(name: _Paths.SPLASH, page: () => SplashPage()),
+    GetPage(name: _Paths.splash, page: () => SplashPage()),
     GetPage(
-      name: _Paths.HOMEPAGE,
+      name: _Paths.homepage,
       page: () => Homepage(),
       binding: HomepageBinding(),
       transitionDuration: Duration.zero,
     ),
     GetPage(
-      name: _Paths.DETAIL,
+      name: _Paths.detail,
       page: () => DetailPage(),
       binding: DetailBinding(),
       middlewares: [AuthMiddleware()],
     ),
     GetPage(
-      name: _Paths.SEARCH,
+      name: _Paths.search,
       page: () => SearchPage(),
       binding: SearchBinding(),
       middlewares: [AuthMiddleware()],
     ),
     GetPage(
-      name: _Paths.DIRECTORY,
+      name: _Paths.directory,
       page: () => DirectoryPage(),
       binding: DirectoryBinding(),
       middlewares: [AuthMiddleware()],
     ),
     GetPage(
-      name: _Paths.DOCUMENT,
+      name: _Paths.document,
       page: () => DocumentPage(),
       binding: DocumentBinding(),
       middlewares: [AuthMiddleware()],
     ),
     GetPage(
-      name: _Paths.FILE,
+      name: _Paths.file,
       page: () => FilePage(),
       binding: FileBinding(),
       middlewares: [AuthMiddleware()],
     ),
     GetPage(
-      name: _Paths.IMAGE_PREVIEW,
+      name: _Paths.imagePreview,
       page: () => ImagePreviewPage(),
       binding: ImagePreviewBinding(),
       opaque: false,
@@ -76,13 +76,13 @@ class AppPages {
       middlewares: [AuthMiddleware()],
     ),
     GetPage(
-      name: _Paths.VIDEO_PLAYER,
+      name: _Paths.videoPlayer,
       page: () => VideoPlayerPage(),
       binding: VideoPlayerBinding(),
       middlewares: [AuthMiddleware()],
     ),
     GetPage(
-      name: _Paths.AUDIO_PLAYER,
+      name: _Paths.audioPlayer,
       page: () => AudioPlayerPage(),
       binding: AudioPlayerBinding(),
       showCupertinoParallax: false,
@@ -90,52 +90,52 @@ class AppPages {
       middlewares: [AuthMiddleware()],
     ),
     GetPage(
-      name: _Paths.SETTING,
+      name: _Paths.setting,
       page: () => SettingPage(),
       binding: SettingBinding(),
       children: [
         GetPage(
-          name: _Paths.SERVER,
+          name: _Paths.server,
           page: () => ServerPage(),
           binding: ServerBinding(),
         ),
         GetPage(
-          name: _Paths.DOWNLOAD,
+          name: _Paths.download,
           page: () => DownloadPage(),
           binding: DownloadBinding(),
         ),
         GetPage(
-          name: _Paths.ABOUT,
+          name: _Paths.about,
           page: () => AboutPage(),
           binding: AboutBinding(),
         ),
         GetPage(
-          name: _Paths.RECENT,
+          name: _Paths.recent,
           page: () => RecentPage(),
           binding: RecentBinding(),
         ),
         GetPage(
-          name: _Paths.FAVORITE,
+          name: _Paths.favorite,
           page: () => FavoritePage(),
           binding: FavoriteBinding(),
         ),
         GetPage(
-          name: _Paths.PREVIEW_IMAGE,
+          name: _Paths.previewImage,
           page: () => SettingImagePage(),
           binding: SettingImageBinding(),
         ),
         GetPage(
-          name: _Paths.PREVIEW_AUDIO,
+          name: _Paths.previewAudio,
           page: () => SettingAudioPage(),
           binding: SettingAudioBinding(),
         ),
         GetPage(
-          name: _Paths.PREVIEW_VIDEO,
+          name: _Paths.previewVideo,
           page: () => SettingVideoPage(),
           binding: SettingVideoBinding(),
         ),
         GetPage(
-          name: _Paths.PREVIEW_DOCUMENT,
+          name: _Paths.previewDocument,
           page: () => SettingDocumentPage(),
           binding: SettingDocumentBinding(),
         ),
@@ -144,7 +144,7 @@ class AppPages {
   ];
 
   static final unknownRoute = GetPage(
-    name: _Paths.NOTFOUND,
+    name: _Paths.notfound,
     page: () => NotfoundPage(),
   );
 }

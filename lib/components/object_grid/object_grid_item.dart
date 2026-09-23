@@ -16,13 +16,13 @@ class ObjectGridItem extends StatefulWidget {
   final bool isShowPreview;
 
   const ObjectGridItem({
-    Key? key,
+    super.key,
     required this.object,
     required this.isShowPreview,
-  }) : super(key: key);
+  });
 
   @override
-  _ObjectGridItemState createState() => _ObjectGridItemState();
+  State<ObjectGridItem> createState() => _ObjectGridItemState();
 }
 
 class _ObjectGridItemState extends State<ObjectGridItem>
@@ -37,7 +37,7 @@ class _ObjectGridItemState extends State<ObjectGridItem>
       return Stack(
         alignment: Alignment.center,
         children: [
-          Container(
+          SizedBox(
             width: 65,
             height: 65,
             child: ClipRRect(
@@ -60,7 +60,7 @@ class _ObjectGridItemState extends State<ObjectGridItem>
                     child: Icon(
                       CupertinoIcons.video_camera_solid,
                       size: 20,
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                     ),
                   ),
                 )
@@ -81,7 +81,8 @@ class _ObjectGridItemState extends State<ObjectGridItem>
     // 格式化时间
     final modified = object.modified == null
         ? ''
-        : '${Jiffy.parseFromDateTime(object.modified!).format(pattern: 'yyyy/MM/dd')}';
+        : Jiffy.parseFromDateTime(object.modified!)
+            .format(pattern: 'yyyy/MM/dd');
 
     return Column(
       children: [
@@ -103,7 +104,7 @@ class _ObjectGridItemState extends State<ObjectGridItem>
           overflow: TextOverflow.ellipsis,
         ),
         Text(
-          '${object.isDir! ? '∞' : CommonUtils.formatFileSize(object.size!)}',
+          object.isDir! ? '∞' : CommonUtils.formatFileSize(object.size!),
           style: Get.textTheme.bodySmall,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,

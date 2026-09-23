@@ -21,13 +21,13 @@ final RxString currentRoute = ''.obs;
 ///  2. main.dart 里 app 子树也要用 `Positioned.fill`，否则页面本身也会塌缩，
 ///     表现为「不满屏 + 背景发黑」。
 class MiniPlayerOverlay extends StatelessWidget {
-  const MiniPlayerOverlay({Key? key}) : super(key: key);
+  const MiniPlayerOverlay({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
       // 全屏播放页自己就是播放界面，不再叠一条
-      if (currentRoute.value.startsWith(Routes.AUDIO_PLAYER)) {
+      if (currentRoute.value.startsWith(Routes.audioPlayer)) {
         return const SizedBox.shrink();
       }
 
@@ -47,7 +47,7 @@ class MiniPlayerOverlay extends StatelessWidget {
 /// 播放服务（全局常驻）一旦装载了播放源就出现；点它回到全屏播放页
 /// （复用正在播放的源，不会重头播）。
 class MiniAudioPlayerBar extends StatelessWidget {
-  const MiniAudioPlayerBar({Key? key}) : super(key: key);
+  const MiniAudioPlayerBar({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +73,7 @@ class MiniAudioPlayerBar extends StatelessWidget {
               borderRadius: BorderRadius.circular(24.r),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.12),
+                  color: Colors.black.withValues(alpha: 0.12),
                   blurRadius: 12.r,
                   offset: Offset(0, 4.h),
                 ),
@@ -121,7 +121,7 @@ class MiniAudioPlayerBar extends StatelessWidget {
                           '${PlayerHelper.formatDuration(service.duration.value)}',
                           style: Get.textTheme.bodySmall?.copyWith(
                             color: Get.textTheme.bodySmall?.color
-                                ?.withOpacity(0.6),
+                                ?.withValues(alpha: 0.6),
                           ),
                         ),
                       ),
@@ -132,6 +132,7 @@ class MiniAudioPlayerBar extends StatelessWidget {
                 // 播放/暂停
                 CupertinoButton(
                   padding: EdgeInsets.zero,
+                  onPressed: service.togglePlay,
                   child: Obx(
                     () => Icon(
                       service.isPlaying.value
@@ -140,18 +141,18 @@ class MiniAudioPlayerBar extends StatelessWidget {
                       size: CommonUtils.isPad ? 26 : 60.sp,
                     ),
                   ),
-                  onPressed: service.togglePlay,
                 ),
 
                 // 关闭（停止并收起）
                 CupertinoButton(
                   padding: EdgeInsets.zero,
+                  onPressed: service.stopAndRelease,
                   child: Icon(
                     CupertinoIcons.xmark,
                     size: CommonUtils.isPad ? 22 : 48.sp,
-                    color: Get.textTheme.bodySmall?.color?.withOpacity(0.6),
+                    color:
+                        Get.textTheme.bodySmall?.color?.withValues(alpha: 0.6),
                   ),
-                  onPressed: service.stopAndRelease,
                 ),
               ],
             ),
@@ -163,10 +164,10 @@ class MiniAudioPlayerBar extends StatelessWidget {
 
   /// 回到全屏播放页；正在播的就是当前文件，服务会复用不重新 open
   void _openFullPlayer(AudioPlayerService service) {
-    if (Get.currentRoute.startsWith(Routes.AUDIO_PLAYER)) return;
+    if (Get.currentRoute.startsWith(Routes.audioPlayer)) return;
 
     Get.toNamed(
-      Routes.AUDIO_PLAYER,
+      Routes.audioPlayer,
       arguments: {
         'path': service.path.value,
         'name': service.currentName.value,

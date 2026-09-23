@@ -9,7 +9,7 @@ import 'package:xlist/services/index.dart';
 import 'package:xlist/pages/setting/about/index.dart';
 
 class AboutPage extends GetView<AboutController> {
-  const AboutPage({Key? key}) : super(key: key);
+  const AboutPage({super.key});
 
   // NavigationBar
   CupertinoNavigationBar _buildNavigationBar() {

@@ -83,7 +83,7 @@ void main() {
     await tester.pumpWidget(shell(wireRouteSend: false));
     await tester.tap(find.text('TO_BUILDER'));
     // 控制器在字段初始化里读 Get.arguments，会抛错；这里只观察参数是否为 null
-    await tester.pumpAndSettle().catchError((_) {});
+    await tester.pumpAndSettle();
     tester.takeException();
 
     debugPrint('>>> 漏传 Get.routing 时 Get.arguments = ${Get.arguments}');

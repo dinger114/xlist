@@ -2,7 +2,6 @@ import 'package:get/get.dart';
 import 'package:jiffy/jiffy.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:audio_wave/audio_wave.dart';
 import 'package:toggle_switch/toggle_switch.dart';
@@ -18,7 +17,7 @@ import 'package:xlist/pages/video_player/index.dart';
 import 'package:xlist/components/player/default_panel.dart';
 
 class VideoPlayerPage extends GetView<VideoPlayerController> {
-  const VideoPlayerPage({Key? key}) : super(key: key);
+  const VideoPlayerPage({super.key});
 
   /// 构建下拉按钮
   Widget _buildPullDownButton() {
@@ -145,10 +144,12 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
                 ? const SizedBox.shrink()
                 : DefaultPanel(
                     player: controller.player,
-                    subtitles: controller.subtitles.value,
-                    subtitleNameList: controller.subtitleNameList.value,
-                    audioTracks: controller.audioTracks.value,
-                    subtitleTracks: controller.subtitleTracks.value,
+                    // RxList/RxMap 本身就是 List/Map，直接传即可：Obx 里经 length/[]/keys
+                    // 读取时会自动登记依赖（`.value` 是 @protected，库外读取会被分析器标警告）
+                    subtitles: controller.subtitles,
+                    subtitleNameList: controller.subtitleNameList,
+                    audioTracks: controller.audioTracks,
+                    subtitleTracks: controller.subtitleTracks,
                     showPlaylist: controller.showPlaylist.value,
                     showTimedText: controller.showTimedText.value,
                     playerTitle: controller.currentName.value,
@@ -216,9 +217,7 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
             .format(pattern: 'yyyy/MM/dd');
 
     // 挂载类型
-    final provider = controller.object.value.provider == null
-        ? '-'
-        : controller.object.value.provider;
+    final provider = controller.object.value.provider ?? '-';
 
     // 是否是横屏
     final isLandscape =
@@ -251,7 +250,7 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
             hasLeading: false,
             children: [
               _buildListTile(title: 'directory'.tr, additionalInfo: path),
-              _buildListTile(title: 'mount_type'.tr, additionalInfo: provider!),
+              _buildListTile(title: 'mount_type'.tr, additionalInfo: provider),
               _buildListTile(title: 'modify_time'.tr, additionalInfo: modified),
               _buildListTile(title: 'file_type'.tr, additionalInfo: fileType),
               _buildListTile(title: 'file_size'.tr, additionalInfo: filesize),
@@ -282,7 +281,7 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
                 ? _buildPlayModeButton()
                 : SizedBox.shrink(),
             CupertinoListTile(
-              title: Container(
+              title: SizedBox(
                 width: 800.w,
                 child: Text(
                   CommonUtils.formatFileNme(object.name!),
@@ -333,8 +332,8 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
 
   // 正在播放动画
   Widget _buildPlayIcon() {
-    final bar =
-        (f) => AudioWaveBar(heightFactor: f, color: Get.theme.primaryColor);
+    AudioWaveBar bar(f) =>
+        AudioWaveBar(heightFactor: f, color: Get.theme.primaryColor);
 
     // 是否是横屏
     final isLandscape =
@@ -355,8 +354,7 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-            height: CommonUtils.isPad ? 700.h : 520.h, child: videoPlayer),
+        SizedBox(height: CommonUtils.isPad ? 700.h : 520.h, child: videoPlayer),
         Container(
           constraints: BoxConstraints.expand(height: 120.h),
           child: TabBar(
@@ -374,13 +372,11 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
           ),
         ),
         Expanded(
-          child: Container(
-            child: TabBarView(
-              children: [
-                _buildDescription(),
-                _buildPlayList(),
-              ],
-            ),
+          child: TabBarView(
+            children: [
+              _buildDescription(),
+              _buildPlayList(),
+            ],
           ),
         ),
       ],
@@ -391,7 +387,7 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
   Widget _buildLandscapeInfo(Widget videoPlayer) {
     return Row(
       children: [
-        Container(width: 780.w, child: videoPlayer),
+        SizedBox(width: 780.w, child: videoPlayer),
         Expanded(
           child: Column(
             children: [

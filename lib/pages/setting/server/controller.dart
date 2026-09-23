@@ -69,7 +69,7 @@ class ServerController extends GetxController {
       if (userInfo.id == null) throw 'toast_get_user_info_fail'.tr;
 
       _homepageController.getObjectList();
-      Get.until((route) => Get.currentRoute == Routes.HOMEPAGE);
+      Get.until((route) => Get.currentRoute == Routes.homepage);
 
       // 重置设置页面信息
       _settingController.serverId.value = server.id!;

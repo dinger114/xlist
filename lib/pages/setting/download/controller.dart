@@ -90,7 +90,7 @@ class DownloadController extends GetxController {
     }
 
     // 允许播放的视频 & 音频
-    final _arguments = {
+    final arguments = {
       'name': entity.name,
       'path': entity.path,
       'serverId': entity.serverId,
@@ -107,18 +107,19 @@ class DownloadController extends GetxController {
     };
 
     if (PreviewHelper.isVideo(entity.name)) {
-      Get.toNamed(Routes.VIDEO_PLAYER, arguments: _arguments);
+      Get.toNamed(Routes.videoPlayer, arguments: arguments);
       return;
     }
 
     if (PreviewHelper.isAudio(entity.name)) {
-      Get.toNamed(Routes.AUDIO_PLAYER, arguments: _arguments);
+      Get.toNamed(Routes.audioPlayer, arguments: arguments);
       return;
     }
 
     // 打开文件
     if (!await FlutterDownloader.open(taskId: task.taskId)) {
-      Share.shareXFiles([XFile('${task.savedDir}/${entity.name}')]);
+      SharePlus.instance.share(
+          ShareParams(files: [XFile('${task.savedDir}/${entity.name}')]));
     }
   }
 

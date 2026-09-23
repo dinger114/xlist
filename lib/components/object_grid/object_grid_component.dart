@@ -21,17 +21,17 @@ class ObjectGridComponent extends StatefulWidget {
   final bool isShowPreview;
 
   const ObjectGridComponent({
-    Key? key,
+    super.key,
     required this.path,
     required this.tag,
     required this.userInfo,
     required this.objects,
     required this.source,
     required this.isShowPreview,
-  }) : super(key: key);
+  });
 
   @override
-  _ObjectGridComponentState createState() => _ObjectGridComponentState();
+  State<ObjectGridComponent> createState() => _ObjectGridComponentState();
 }
 
 class _ObjectGridComponentState extends State<ObjectGridComponent> {

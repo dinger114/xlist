@@ -1,9 +1,7 @@
-import 'dart:ui';
 import 'dart:math';
 
 import 'package:get/get.dart';
 import 'package:path/path.dart' as p;
-import 'package:flutter/services.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:vivysub_utils/vivysub_utils.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -42,7 +40,7 @@ class CommonUtils {
   ///
   /// [min] 最小值
   /// [max] 最大值
-  static randomInt(int min, int max) {
+  static double randomInt(int min, int max) {
     return min + (max - min) * (Random().nextDouble());
   }
 
@@ -92,7 +90,7 @@ class CommonUtils {
     final serverUrl = Get.find<UserStorage>().serverUrl.val;
 
     // encode path
-    '${basePath}${path}${object.name}'.split('/').forEach((v) {
+    '$basePath$path${object.name}'.split('/').forEach((v) {
       if (v.isNotEmpty) encodePath += '/${Uri.encodeComponent(v)}';
     });
 
@@ -101,54 +99,55 @@ class CommonUtils {
         ? '?sign=${object.sign}'
         : '';
 
-    return '${serverUrl}/d${encodePath}${sign}';
+    return '$serverUrl/d$encodePath$sign';
   }
 
   /// 排序对象列表
   /// [list] 对象列表
   /// [sortType] 排序方式
-  static sortObjectList(List<ObjectModel> list, int sortType) {
+  static List<ObjectModel> sortObjectList(
+      List<ObjectModel> list, int sortType) {
     // 获取所有文件夹 & 文件
     final folders = <ObjectModel>[];
     final files = <ObjectModel>[];
 
     // 优化文件类型提取
     for (final value in list) {
-      value.type == FileType.FOLDER ? folders.add(value) : files.add(value);
+      value.type == FileType.folder ? folders.add(value) : files.add(value);
     }
 
     // 时间降序
-    if (sortType == SortType.TIME_DESC) {
+    if (sortType == SortType.timeDesc) {
       folders.sort((a, b) => b.modified!.compareTo(a.modified!));
       files.sort((a, b) => b.modified!.compareTo(a.modified!));
     }
 
     // 时间升序
-    if (sortType == SortType.TIME_ASC) {
+    if (sortType == SortType.timeAsc) {
       folders.sort((a, b) => a.modified!.compareTo(b.modified!));
       files.sort((a, b) => a.modified!.compareTo(b.modified!));
     }
 
     // 名称降序
-    if (sortType == SortType.NAME_DESC) {
+    if (sortType == SortType.nameDesc) {
       folders.sort((a, b) => b.name!.compareTo(a.name!));
       files.sort((a, b) => b.name!.compareTo(a.name!));
     }
 
     // 名称升序
-    if (sortType == SortType.NAME_ASC) {
+    if (sortType == SortType.nameAsc) {
       folders.sort((a, b) => a.name!.compareTo(b.name!));
       files.sort((a, b) => a.name!.compareTo(b.name!));
     }
 
     // 大小降序
-    if (sortType == SortType.SIZE_DESC) {
+    if (sortType == SortType.sizeDesc) {
       folders.sort((a, b) => (b.size ?? 0).compareTo(a.size ?? 0));
       files.sort((a, b) => (b.size ?? 0).compareTo(a.size ?? 0));
     }
 
     // 大小升序
-    if (sortType == SortType.SIZE_ASC) {
+    if (sortType == SortType.sizeAsc) {
       folders.sort((a, b) => (a.size ?? 0).compareTo(b.size ?? 0));
       files.sort((a, b) => (a.size ?? 0).compareTo(b.size ?? 0));
     }

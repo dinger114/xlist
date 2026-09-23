@@ -9,7 +9,7 @@ import 'package:xlist/constants/index.dart';
 import 'package:xlist/pages/file/index.dart';
 
 class FilePage extends GetView<FileController> {
-  const FilePage({Key? key}) : super(key: key);
+  const FilePage({super.key});
 
   // NavigationBar
   CupertinoNavigationBar _buildNavigationBar() {
@@ -46,7 +46,7 @@ class FilePage extends GetView<FileController> {
         ),
         SizedBox(height: 5.h),
         Text(
-          '${'file_size'.tr}: ${fileSize}',
+          '${'file_size'.tr}: $fileSize',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: Get.textTheme.bodySmall,

@@ -14,7 +14,7 @@ import 'package:xlist/database/entity/index.dart';
 import 'package:xlist/pages/setting/favorite/index.dart';
 
 class FavoritePage extends GetView<FavoriteController> {
-  const FavoritePage({Key? key}) : super(key: key);
+  const FavoritePage({super.key});
 
   // NavigationBar
   CupertinoNavigationBar _buildNavigationBar() {
@@ -53,7 +53,7 @@ class FavoritePage extends GetView<FavoriteController> {
       backgroundColor: CommonUtils.backgroundColor,
       margin: EdgeInsets.zero,
       children: [
-        Container(
+        SizedBox(
           height: CommonUtils.isPad ? 80 : 170.h,
           width: double.infinity,
           child: Slidable(
@@ -81,7 +81,7 @@ class FavoritePage extends GetView<FavoriteController> {
                   SizedBox(width: CommonUtils.isPad ? 15 : 30.w),
                   _buildIcon(entity.type, entity.name),
                   SizedBox(width: CommonUtils.isPad ? 10 : 20.w),
-                  Container(
+                  SizedBox(
                     width: 750.w,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,7 +95,7 @@ class FavoritePage extends GetView<FavoriteController> {
                         ),
                         SizedBox(height: 7.h),
                         Text(
-                          '${entity.type == FileType.FOLDER ? '∞' : CommonUtils.formatFileSize(entity.size)}${path.isNotEmpty ? ' - $path' : ''}',
+                          '${entity.type == FileType.folder ? '∞' : CommonUtils.formatFileSize(entity.size)}${path.isNotEmpty ? ' - $path' : ''}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: Get.textTheme.bodySmall,

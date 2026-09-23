@@ -17,16 +17,21 @@ import 'package:xlist/pages/directory/index.dart';
 import 'package:xlist/components/object_list/object_list_item.dart';
 
 class DirectoryPage extends GetView<DirectoryController> {
+  // 覆盖 GetView 的 tag 字段：GetView 声明 `final String? tag = null`，且其构造函数
+  // 不接受 tag，标签只能靠子类重新声明来传（GetX 官方示例就是这个写法）。
+  // analyzer 的 overridden_fields 在这条路径上属于误报，故显式 ignore。
+  // ignore: overridden_fields, annotate_overrides
   final String? tag;
   final String? previousPageTitle;
+  @override
   DirectoryController get controller => Get.find<DirectoryController>(tag: tag);
 
   /// 构造函数
   DirectoryPage({
-    Key? key,
+    super.key,
     this.tag,
     this.previousPageTitle,
-  }) : super(key: key) {
+  }) {
     Get.put<DirectoryController>(DirectoryController(), tag: tag);
   }
 
@@ -43,7 +48,7 @@ class DirectoryPage extends GetView<DirectoryController> {
           icon: CupertinoIcons.folder,
           onTap: () => ObjectHelper.mkdir(
             path: controller.path,
-            source: PageSource.DIRECTORY,
+            source: PageSource.directory,
             pageTag: tag ?? '',
           ),
         ),
@@ -95,7 +100,7 @@ class DirectoryPage extends GetView<DirectoryController> {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
-      trailing: Container(
+      trailing: SizedBox(
         width: 270.w,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
@@ -105,8 +110,8 @@ class DirectoryPage extends GetView<DirectoryController> {
             CupertinoButton(
               padding: EdgeInsets.zero,
               alignment: Alignment.centerRight,
-              child: Text(controller.isCopy ? 'copy'.tr : 'move'.tr),
               onPressed: controller.moveOrCopy,
+              child: Text(controller.isCopy ? 'copy'.tr : 'move'.tr),
             )
           ],
         ),
@@ -153,7 +158,7 @@ class DirectoryPage extends GetView<DirectoryController> {
                   '${controller.root ? '' : controller.path}/${object.name}';
               Get.to(
                 () => DirectoryPage(tag: path),
-                routeName: '${Routes.DIRECTORY}${path}',
+                routeName: '${Routes.directory}$path',
                 arguments: {
                   'path': path,
                   'object': object,
@@ -246,7 +251,7 @@ class DirectoryPage extends GetView<DirectoryController> {
                 color: Get.theme.primaryColor,
               ),
               SizedBox(width: 20.w),
-              Container(
+              SizedBox(
                 width: 860.w,
                 child: Text(
                   controller.srcObject.name ?? '',

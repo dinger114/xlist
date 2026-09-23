@@ -10,11 +10,6 @@ import 'package:xlist/routes/app_pages.dart';
 
 class SplashController extends GetxController {
   @override
-  void onInit() {
-    super.onInit();
-  }
-
-  @override
   void onReady() {
     super.onReady();
 
@@ -31,12 +26,12 @@ class SplashController extends GetxController {
 
     // 布局方式
     final layoutType = Get.find<PreferencesStorage>().layoutType.val;
-    if (layoutType == LayoutType.UNKNOWN) {
+    if (layoutType == LayoutType.unknown) {
       Get.find<PreferencesStorage>().layoutType.val =
-          CommonUtils.isPad ? LayoutType.GRID : LayoutType.LIST;
+          CommonUtils.isPad ? LayoutType.grid : LayoutType.list;
     }
 
     // 跳转到首页
-    Get.offAndToNamed(Routes.HOMEPAGE);
+    Get.offAndToNamed(Routes.homepage);
   }
 }

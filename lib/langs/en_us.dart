@@ -1,4 +1,4 @@
-const Map<String, String> en_US = {
+const Map<String, String> enUs = {
   'app_name': 'Xlist',
   'pull_down_new_file': 'New File',
   'pull_down_new_folder': 'New Folder',

@@ -20,7 +20,7 @@ class XSlider extends StatefulWidget {
   final XSliderColors colors;
 
   const XSlider({
-    Key? key,
+    super.key,
     required this.value,
     required this.onChanged,
     this.cacheValue = 0.0,
@@ -181,7 +181,7 @@ class _SliderPainter extends CustomPainter {
 
     // draw circle cursor
     pt.color = colors.cursorColor;
-    pt.color = pt.color.withAlpha(max(0, pt.color.alpha - 50));
+    pt.color = pt.color.withAlpha(max(0, (pt.color.a * 255.0).round() - 50));
     radius = min(size.height / 2, dragging ? 12 : 8);
     canvas.drawCircle(Offset(value, size.height / 2), radius, pt);
     pt.color = colors.cursorColor;

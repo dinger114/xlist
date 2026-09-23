@@ -8,7 +8,7 @@ import 'package:xlist/constants/index.dart';
 import 'package:xlist/pages/setting/preview/video/index.dart';
 
 class SettingVideoPage extends GetView<SettingVideoController> {
-  const SettingVideoPage({Key? key}) : super(key: key);
+  const SettingVideoPage({super.key});
 
   // NavigationBar
   CupertinoNavigationBar _buildNavigationBar() {

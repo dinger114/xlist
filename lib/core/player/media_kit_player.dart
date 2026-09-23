@@ -2,9 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:media_kit/media_kit.dart';
-import 'package:media_kit/src/player/native/player/real.dart' show NativePlayer;
-
-import 'package:xlist/global.dart';
 
 import 'x_player.dart';
 import 'x_player_state.dart';
@@ -155,6 +152,9 @@ class MediaKitPlayer implements XPlayer {
     _stateController.add(newState);
   }
 
+  // 参数只能不写类型：AudioTrack/VideoTrack/SubtitleTrack 的公共基类 _Track 是
+  // media_kit 的私有类型，包外引用不到；公开的 `Track` 是另一个不相关类型。
+  // ignore: strict_top_level_inference
   XTrack _convertTrack(t, XTrackType type) {
     return XTrack(
       id: t.id,

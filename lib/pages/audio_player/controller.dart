@@ -82,7 +82,7 @@ class AudioPlayerController extends GetxController
   /// 上一首（随机模式抽一首）
   void previous() {
     if (player.objects.isEmpty) return;
-    if (player.playMode.value == PlayMode.SHUFFLE) {
+    if (player.playMode.value == PlayMode.shuffle) {
       player.changePlaylist(
           CommonUtils.randomInt(0, player.objects.length - 1).toInt());
       return;
@@ -95,7 +95,7 @@ class AudioPlayerController extends GetxController
   /// 下一首（随机模式抽一首）
   void next() {
     if (player.objects.isEmpty) return;
-    if (player.playMode.value == PlayMode.SHUFFLE) {
+    if (player.playMode.value == PlayMode.shuffle) {
       player.changePlaylist(
           CommonUtils.randomInt(0, player.objects.length - 1).toInt());
       return;

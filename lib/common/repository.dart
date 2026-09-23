@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:xlist/services/dio_service.dart';
 
 class Repository {
-  Repository() {}
+  Repository();
 
   // Dio.get
   static Future<Response<T>> get<T>(

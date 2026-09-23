@@ -1,4 +1,4 @@
-const Map<String, String> zh_Hans = {
+const Map<String, String> zhHans = {
   'app_name': 'Xlist',
   'pull_down_new_file': '新建文件',
   'pull_down_new_folder': '新建文件夹',

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:get/get.dart';
 import 'package:flutter/widgets.dart';
-import 'package:audio_service/audio_service.dart' hide QueueState;
+import 'package:audio_service/audio_service.dart';
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
@@ -12,8 +12,6 @@ import 'package:xlist/common/index.dart';
 import 'package:xlist/storages/index.dart';
 import 'package:xlist/constants/index.dart';
 import 'package:xlist/repositorys/index.dart';
-import 'package:xlist/core/player/media_kit_player.dart';
-import 'package:xlist/core/player/x_player_state.dart';
 import 'package:xlist/database/entity/index.dart';
 import 'package:xlist/services/database_service.dart';
 import 'package:xlist/services/download_service.dart';
@@ -53,12 +51,12 @@ CompletedAction nextActionOnCompleted({
   if (queueLength <= 1) return CompletedAction.replay;
 
   switch (playMode) {
-    case PlayMode.SINGLE_LOOP:
+    case PlayMode.singleLoop:
       return CompletedAction.replay;
-    case PlayMode.LIST_LOOP:
+    case PlayMode.listLoop:
       return CompletedAction.switchTo(
           currentIndex >= queueLength - 1 ? 0 : currentIndex + 1);
-    case PlayMode.SHUFFLE:
+    case PlayMode.shuffle:
       return CompletedAction.switchTo(
           (randomPicker ?? _defaultRandomPick)(queueLength));
     default:
@@ -212,9 +210,9 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
     // 获取文件信息
     if (_file.isEmpty) {
       try {
-        object.value = await ObjectRepository.get(path: '${path}${name}');
-        httpHeaders.value = await DriverHelper.getHeaders(
-            object.value.provider, object.value.rawUrl);
+        object.value = await ObjectRepository.get(path: '$path$name');
+        httpHeaders.value =
+            DriverHelper.getHeaders(object.value.provider, object.value.rawUrl);
       } catch (e) {
         SmartDialog.showToast(e.toString());
         isLoading.value = false;
@@ -227,7 +225,7 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
         'name': download?.name,
         'type': download?.type,
         'size': download?.size,
-        'raw_url': 'file://${_file}',
+        'raw_url': 'file://$_file',
       });
     }
 
@@ -370,7 +368,7 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
   void changePlaylist(int index, {bool allowSameIndex = false}) async {
     if (index < 0 || index >= objects.length) return;
 
-    final _object = objects[index];
+    final current = objects[index];
     if (index == currentIndex.value && !allowSameIndex) {
       SmartDialog.showToast('toast_current_play_file'.tr);
       return;
@@ -380,7 +378,7 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
     SmartDialog.showLoading();
     try {
       object.value =
-          await ObjectRepository.get(path: '${path.value}${_object.name}');
+          await ObjectRepository.get(path: '${path.value}${current.name}');
     } catch (e) {
       SmartDialog.dismiss();
       SmartDialog.showToast(e.toString());
@@ -388,7 +386,7 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
     }
 
     currentIndex.value = index;
-    currentName.value = _object.name!;
+    currentName.value = current.name!;
 
     // 重置播放器信息
     SmartDialog.dismiss();
@@ -405,7 +403,7 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
     }
 
     // 加入最近浏览
-    await CommonUtils.addRecent(object.value, path.value, _object.name!);
+    await CommonUtils.addRecent(object.value, path.value, current.name!);
   }
 
   /// 播放/暂停切换（乐观更新 UI，由 playingStream 校正）
@@ -444,18 +442,18 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
 
   /// 切换播放模式（列表循环 → 单集循环 → 播完暂停 → 随机）
   void nextPlayMode() {
-    playMode.value = playMode.value == PlayMode.SHUFFLE
-        ? PlayMode.LIST_LOOP
+    playMode.value = playMode.value == PlayMode.shuffle
+        ? PlayMode.listLoop
         : playMode.value + 1;
   }
 
   /// 定时关闭
   Future<void> timedShutdown() async {
-    final _hasTimer = timerDuration.value.inSeconds > 0;
+    final hasTimer = timerDuration.value.inSeconds > 0;
     final value = await showModalActionSheet(
       context: Get.overlayContext!,
       title:
-          '定时关闭${_hasTimer ? '(剩余${timerDuration.value.inMinutes + 1}分钟)' : ''}',
+          '定时关闭${hasTimer ? '(剩余${timerDuration.value.inMinutes + 1}分钟)' : ''}',
       actions: [
         SheetAction(label: '5分钟', key: 5),
         SheetAction(label: '10分钟', key: 10),
@@ -463,9 +461,9 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
         SheetAction(label: '30分钟', key: 30),
         SheetAction(label: '60分钟', key: 60),
         ...[
-          if (_hasTimer)
+          if (hasTimer)
             SheetAction(label: '关闭定时', key: 0, isDestructiveAction: true)
-        ].whereType<SheetAction>().toList(),
+        ].whereType<SheetAction>(),
       ],
       cancelLabel: 'cancel'.tr,
     );
@@ -489,7 +487,7 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
       }
     });
 
-    SmartDialog.showToast('${value}分钟后关闭');
+    SmartDialog.showToast('$value分钟后关闭');
   }
 
   /// 更新本地播放进度（含每 5 秒落库的定时器）

@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:flutter/foundation.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 
 // DeviceInfo
@@ -14,7 +15,9 @@ class DeviceInfoService extends GetxService {
     try {
       DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
       if (GetPlatform.isAndroid) _androidInfo = await deviceInfo.androidInfo;
-    } catch (e) {}
+    } catch (e) {
+      debugPrint('XLIST_DEVICE 获取设备信息失败: $e');
+    }
     return this;
   }
 }

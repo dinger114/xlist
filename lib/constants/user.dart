@@ -1,10 +1,10 @@
 class UserRole {
-  static const int GENERAL = 0;
-  static const int GUEST = 1;
-  static const int ADMIN = 2;
+  static const int general = 0;
+  static const int guest = 1;
+  static const int admin = 2;
 }
 
-const UserPermissions = [
+const userPermissions = [
   'see_hides',
   'access_without_password',
   'offline_download',

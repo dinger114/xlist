@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:xlist/routes/app_pages.dart';
@@ -58,25 +57,25 @@ void main() {
       final paths = AppRouter.allPaths.toSet();
       // 逐个核对：这些是代码里 Get.toNamed 实际会用到的路径
       for (final p in [
-        Routes.HOMEPAGE,
-        Routes.DETAIL,
-        Routes.SEARCH,
-        Routes.DIRECTORY,
-        Routes.DOCUMENT,
-        Routes.FILE,
-        Routes.IMAGE_PREVIEW,
-        Routes.VIDEO_PLAYER,
-        Routes.AUDIO_PLAYER,
-        Routes.SETTING,
-        Routes.SETTING_SERVER,
-        Routes.SETTING_DOWNLOAD,
-        Routes.SETTING_ABOUT,
-        Routes.SETTING_RECENT,
-        Routes.SETTING_FAVORITE,
-        Routes.SETTING_PREVIEW_IMAGE,
-        Routes.SETTING_PREVIEW_AUDIO,
-        Routes.SETTING_PREVIEW_VIDEO,
-        Routes.SETTING_PREVIEW_DOCUMENT,
+        Routes.homepage,
+        Routes.detail,
+        Routes.search,
+        Routes.directory,
+        Routes.document,
+        Routes.file,
+        Routes.imagePreview,
+        Routes.videoPlayer,
+        Routes.audioPlayer,
+        Routes.setting,
+        Routes.settingServer,
+        Routes.settingDownload,
+        Routes.settingAbout,
+        Routes.settingRecent,
+        Routes.settingFavorite,
+        Routes.settingPreviewImage,
+        Routes.settingPreviewAudio,
+        Routes.settingPreviewVideo,
+        Routes.settingPreviewDocument,
       ]) {
         expect(paths.contains(p), isTrue, reason: '路由表缺少 $p，导航会走到 notfound');
       }
@@ -85,14 +84,14 @@ void main() {
 
   group('路由解析', () {
     test('已知路径能解析到 GetPage，且带 binding', () {
-      final page = AppRouter.resolve(Routes.HOMEPAGE);
+      final page = AppRouter.resolve(Routes.homepage);
       expect(page, isNotNull);
-      expect(page!.name, Routes.HOMEPAGE);
+      expect(page!.name, Routes.homepage);
       expect(page.binding, isNotNull, reason: '首页缺少 binding，控制器不会被创建');
     });
 
     test('带权限中间件的路由仍然挂着中间件（登录守卫不能丢）', () {
-      final page = AppRouter.resolve(Routes.DETAIL);
+      final page = AppRouter.resolve(Routes.detail);
       expect(page, isNotNull);
       expect(page!.middlewares, isNotNull);
       expect(page.middlewares!.isNotEmpty, isTrue,
@@ -101,15 +100,15 @@ void main() {
 
     test('设置页 9 个子路由都能解析到', () {
       for (final p in [
-        Routes.SETTING_SERVER,
-        Routes.SETTING_DOWNLOAD,
-        Routes.SETTING_ABOUT,
-        Routes.SETTING_RECENT,
-        Routes.SETTING_FAVORITE,
-        Routes.SETTING_PREVIEW_IMAGE,
-        Routes.SETTING_PREVIEW_AUDIO,
-        Routes.SETTING_PREVIEW_VIDEO,
-        Routes.SETTING_PREVIEW_DOCUMENT,
+        Routes.settingServer,
+        Routes.settingDownload,
+        Routes.settingAbout,
+        Routes.settingRecent,
+        Routes.settingFavorite,
+        Routes.settingPreviewImage,
+        Routes.settingPreviewAudio,
+        Routes.settingPreviewVideo,
+        Routes.settingPreviewDocument,
       ]) {
         expect(AppRouter.resolve(p), isNotNull, reason: '$p 无法解析');
       }

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:get/get.dart';
 import 'package:path/path.dart' as p;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:adaptive_dialog/adaptive_dialog.dart';
@@ -31,11 +32,11 @@ class ObjectHelper {
     List<ObjectModel>? objects,
   }) async {
     // 文件夹
-    if (type == FileType.FOLDER) {
-      final tag = '${path}${name}';
+    if (type == FileType.folder) {
+      final tag = '$path$name';
       Get.to(
         () => DetailPage(tag: tag, previousPageTitle: '返回'),
-        routeName: '${Routes.DETAIL}${tag}',
+        routeName: '${Routes.detail}$tag',
         arguments: {'path': path, 'name': name},
       );
       return;
@@ -43,33 +44,33 @@ class ObjectHelper {
 
     // 预览图片
     if (PreviewHelper.isImage(name)) {
-      Get.toNamed(Routes.IMAGE_PREVIEW,
+      Get.toNamed(Routes.imagePreview,
           arguments: {'path': path, 'name': name, 'objects': objects});
       return;
     }
 
     // 预览视频
     if (PreviewHelper.isVideo(name)) {
-      Get.toNamed(Routes.VIDEO_PLAYER,
+      Get.toNamed(Routes.videoPlayer,
           arguments: {'path': path, 'name': name, 'objects': objects});
       return;
     }
 
     // 预览音频
     if (PreviewHelper.isAudio(name)) {
-      Get.toNamed(Routes.AUDIO_PLAYER,
+      Get.toNamed(Routes.audioPlayer,
           arguments: {'path': path, 'name': name, 'objects': objects});
       return;
     }
 
     // 预览文档
     if (PreviewHelper.isDocument(name)) {
-      Get.toNamed(Routes.DOCUMENT, arguments: {'path': path, 'name': name});
+      Get.toNamed(Routes.document, arguments: {'path': path, 'name': name});
       return;
     }
 
     // 其他文件
-    Get.toNamed(Routes.FILE, arguments: {'path': path, 'name': name});
+    Get.toNamed(Routes.file, arguments: {'path': path, 'name': name});
   }
 
   /// 刷新列表
@@ -81,18 +82,18 @@ class ObjectHelper {
     bool refresh = false,
   }) async {
     switch (source) {
-      case PageSource.DETAIL:
+      case PageSource.detail:
         await Get.find<DetailController>(tag: pageTag)
             .getObjectList(refresh: refresh);
-        Get.until((route) => Get.currentRoute.startsWith(Routes.DETAIL));
+        Get.until((route) => Get.currentRoute.startsWith(Routes.detail));
         break;
-      case PageSource.HOMEPAGE:
+      case PageSource.homepage:
         await Get.find<HomepageController>().getObjectList(refresh: refresh);
-        Get.until((route) => Get.currentRoute.startsWith(Routes.HOMEPAGE));
+        Get.until((route) => Get.currentRoute.startsWith(Routes.homepage));
         break;
-      case PageSource.DIRECTORY:
+      case PageSource.directory:
         await Get.find<DirectoryController>(tag: pageTag).getDirectoryList();
-        Get.until((route) => Get.currentRoute.startsWith(Routes.DIRECTORY));
+        Get.until((route) => Get.currentRoute.startsWith(Routes.directory));
         break;
       default:
         break;
@@ -128,7 +129,7 @@ class ObjectHelper {
     try {
       SmartDialog.showLoading();
       final response = await ObjectRepository.rename(
-          path: '${path}${object.name}', name: data.first);
+          path: '$path${object.name}', name: data.first);
       if (response['code'] != HttpStatus.ok) {
         throw response['message'];
       }
@@ -154,8 +155,7 @@ class ObjectHelper {
   }) {
     if (object.isDir == true) {
       final serverUrl = Get.find<UserStorage>().serverUrl.val;
-      Clipboard.setData(
-          ClipboardData(text: '${serverUrl}${path}${object.name}'));
+      Clipboard.setData(ClipboardData(text: '$serverUrl$path${object.name}'));
     } else {
       Clipboard.setData(ClipboardData(
         text: CommonUtils.getDownloadLink(
@@ -291,7 +291,7 @@ class ObjectHelper {
     try {
       SmartDialog.showLoading();
       final response =
-          await ObjectRepository.mkdir(path: '${path}/${data.first}');
+          await ObjectRepository.mkdir(path: '$path/${data.first}');
       if (response['code'] != HttpStatus.ok) {
         throw response['message'];
       }
@@ -346,7 +346,7 @@ class ObjectHelper {
       refreshObjectList(source: source, pageTag: pageTag, refresh: true);
     } catch (e) {
       SmartDialog.dismiss();
-      print(e);
+      debugPrint('XLIST_OBJECT 操作失败: $e');
       SmartDialog.showToast(e.toString());
     }
   }
@@ -363,10 +363,12 @@ class ObjectHelper {
     XFile? pickedFile;
     final ImagePicker picker = ImagePicker(); // 图片选择器
 
-    if (type == FileType.IMAGE)
+    if (type == FileType.image) {
       pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    if (type == FileType.VIDEO)
+    }
+    if (type == FileType.video) {
       pickedFile = await picker.pickVideo(source: ImageSource.gallery);
+    }
 
     if (pickedFile != null) {
       try {
@@ -396,7 +398,7 @@ class ObjectHelper {
         refreshObjectList(source: source, pageTag: pageTag, refresh: true);
       } catch (e) {
         SmartDialog.dismiss();
-        print(e);
+        debugPrint('XLIST_OBJECT 上传失败: $e');
         SmartDialog.showToast(e.toString());
       }
     } else {
@@ -440,7 +442,7 @@ class ObjectHelper {
         refreshObjectList(source: source, pageTag: pageTag, refresh: true);
       } catch (e) {
         SmartDialog.dismiss();
-        print(e);
+        debugPrint('XLIST_OBJECT 上传失败: $e');
         SmartDialog.showToast(e.toString());
       }
     } else {

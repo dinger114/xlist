@@ -8,7 +8,7 @@ import 'package:xlist/constants/index.dart';
 import 'package:xlist/pages/setting/preview/audio/index.dart';
 
 class SettingAudioPage extends GetView<SettingAudioController> {
-  const SettingAudioPage({Key? key}) : super(key: key);
+  const SettingAudioPage({super.key});
 
   // NavigationBar
   CupertinoNavigationBar _buildNavigationBar() {

@@ -15,7 +15,7 @@ class BrowserService extends GetxService {
   }
 
   // Open Browser
-  open(String url) {
+  void open(String url) {
     _inAppBrowser.openUrlRequest(urlRequest: URLRequest(url: WebUri(url)));
   }
 }

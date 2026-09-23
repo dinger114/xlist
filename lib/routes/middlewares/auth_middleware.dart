@@ -11,9 +11,12 @@ class AuthMiddleware extends GetMiddleware {
     // 判断登录
     // ...
 
-    UserStorage _storage = Get.find<UserStorage>();
-    if (GetUtils.isNullOrBlank(_storage.serverId.val)!) {
-      return RouteSettings(name: Routes.HOMEPAGE);
+    UserStorage storage = Get.find<UserStorage>();
+    if (GetUtils.isNullOrBlank(storage.serverId.val)!) {
+      return RouteSettings(name: Routes.homepage);
     }
+
+    // 显式返回 null：GetX 约定 null 表示「放行」，不拦截本次导航。
+    return null;
   }
 }

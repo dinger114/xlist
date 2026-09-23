@@ -2,7 +2,7 @@ import 'package:get_storage/get_storage.dart';
 
 class UserStorage {
   // 初始化偏好设置存储
-  static final _prefBox = () => GetStorage('UserStorage');
+  static GetStorage _prefBox() => GetStorage('UserStorage');
 
   // Init
   Future<UserStorage> init() async {

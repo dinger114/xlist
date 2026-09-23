@@ -20,7 +20,7 @@ import 'package:xlist/repositorys/index.dart';
 class DocumentController extends GetxController {
   final object = ObjectModel().obs;
   final userInfo = UserModel().obs; // 用户信息
-  final httpHeaders = Map<String, String>().obs;
+  final httpHeaders = <String, String>{}.obs;
   final serverId = Get.find<UserStorage>().serverId.val;
   final isLoading = true.obs; // 是否正在加载
   final progress = 0.0.obs;
@@ -44,14 +44,13 @@ class DocumentController extends GetxController {
   // WebView
   final GlobalKey webViewKey = GlobalKey();
   InAppWebViewController? webViewController;
-  InAppWebViewGroupOptions options = InAppWebViewGroupOptions(
-    crossPlatform: InAppWebViewOptions(
-      transparentBackground: !Get.isDarkMode,
-      useShouldOverrideUrlLoading: true,
-      mediaPlaybackRequiresUserGesture: false,
-    ),
-    android: AndroidInAppWebViewOptions(useHybridComposition: true),
-    ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true),
+  // 6.x 起 InAppWebViewGroupOptions + 各平台 Options 合并成单一的 InAppWebViewSettings
+  final InAppWebViewSettings settings = InAppWebViewSettings(
+    transparentBackground: !Get.isDarkMode,
+    useShouldOverrideUrlLoading: true,
+    mediaPlaybackRequiresUserGesture: false,
+    useHybridComposition: true,
+    allowsInlineMediaPlayback: true,
   );
 
   @override
@@ -59,10 +58,10 @@ class DocumentController extends GetxController {
     super.onInit();
 
     // 获取文档地址
-    object.value = await ObjectRepository.get(path: '${path}${name}');
+    object.value = await ObjectRepository.get(path: '$path$name');
     userInfo.value = await UserRepository.me(); // 获取用户信息
-    httpHeaders.value = await DriverHelper.getHeaders(
-        object.value.provider, object.value.rawUrl);
+    httpHeaders.value =
+        DriverHelper.getHeaders(object.value.provider, object.value.rawUrl);
 
     // 如果是代码类型文件
     if (PreviewHelper.isCode(name) && !PreviewHelper.isHtml(name)) {
@@ -113,7 +112,7 @@ class DocumentController extends GetxController {
   }
 
   /// WebView 加载进度
-  onProgressChanged(controller, p) {
+  void onProgressChanged(InAppWebViewController controller, int p) {
     progress.value = p / 100;
   }
 

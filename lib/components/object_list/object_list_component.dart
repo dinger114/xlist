@@ -22,17 +22,17 @@ class ObjectListComponent extends StatefulWidget {
   final bool isShowPreview;
 
   const ObjectListComponent({
-    Key? key,
+    super.key,
     required this.path,
     required this.tag,
     required this.userInfo,
     required this.objects,
     required this.source,
     required this.isShowPreview,
-  }) : super(key: key);
+  });
 
   @override
-  _ObjectListComponentState createState() => _ObjectListComponentState();
+  State<ObjectListComponent> createState() => _ObjectListComponentState();
 }
 
 class _ObjectListComponentState extends State<ObjectListComponent> {

@@ -4,55 +4,54 @@ abstract class Routes {
   Routes._();
 
   // notfound
-  static const NOTFOUND = _Paths.NOTFOUND;
+  static const notfound = _Paths.notfound;
 
-  static const SPLASH = _Paths.SPLASH;
-  static const HOMEPAGE = _Paths.HOMEPAGE;
-  static const DETAIL = _Paths.DETAIL;
-  static const SEARCH = _Paths.SEARCH;
-  static const DIRECTORY = _Paths.DIRECTORY;
-  static const DOCUMENT = _Paths.DOCUMENT;
-  static const FILE = _Paths.FILE;
-  static const IMAGE_PREVIEW = _Paths.IMAGE_PREVIEW;
-  static const VIDEO_PLAYER = _Paths.VIDEO_PLAYER;
-  static const AUDIO_PLAYER = _Paths.AUDIO_PLAYER;
+  static const splash = _Paths.splash;
+  static const homepage = _Paths.homepage;
+  static const detail = _Paths.detail;
+  static const search = _Paths.search;
+  static const directory = _Paths.directory;
+  static const document = _Paths.document;
+  static const file = _Paths.file;
+  static const imagePreview = _Paths.imagePreview;
+  static const videoPlayer = _Paths.videoPlayer;
+  static const audioPlayer = _Paths.audioPlayer;
 
   // Settings
-  static const SETTING = _Paths.SETTING;
-  static const SETTING_SERVER = _Paths.SETTING + _Paths.SERVER;
-  static const SETTING_DOWNLOAD = _Paths.SETTING + _Paths.DOWNLOAD;
-  static const SETTING_ABOUT = _Paths.SETTING + _Paths.ABOUT;
-  static const SETTING_RECENT = _Paths.SETTING + _Paths.RECENT;
-  static const SETTING_FAVORITE = _Paths.SETTING + _Paths.FAVORITE;
-  static const SETTING_PREVIEW_IMAGE = _Paths.SETTING + _Paths.PREVIEW_IMAGE;
-  static const SETTING_PREVIEW_AUDIO = _Paths.SETTING + _Paths.PREVIEW_AUDIO;
-  static const SETTING_PREVIEW_VIDEO = _Paths.SETTING + _Paths.PREVIEW_VIDEO;
-  static const SETTING_PREVIEW_DOCUMENT =
-      _Paths.SETTING + _Paths.PREVIEW_DOCUMENT;
+  static const setting = _Paths.setting;
+  static const settingServer = _Paths.setting + _Paths.server;
+  static const settingDownload = _Paths.setting + _Paths.download;
+  static const settingAbout = _Paths.setting + _Paths.about;
+  static const settingRecent = _Paths.setting + _Paths.recent;
+  static const settingFavorite = _Paths.setting + _Paths.favorite;
+  static const settingPreviewImage = _Paths.setting + _Paths.previewImage;
+  static const settingPreviewAudio = _Paths.setting + _Paths.previewAudio;
+  static const settingPreviewVideo = _Paths.setting + _Paths.previewVideo;
+  static const settingPreviewDocument = _Paths.setting + _Paths.previewDocument;
 }
 
 abstract class _Paths {
-  static const SPLASH = '/';
-  static const NOTFOUND = '/notfound';
-  static const HOMEPAGE = '/homepage';
-  static const DETAIL = '/detail';
-  static const SEARCH = '/search';
-  static const DIRECTORY = '/directory';
-  static const DOCUMENT = '/document';
-  static const FILE = '/file';
-  static const IMAGE_PREVIEW = '/image/preview';
-  static const VIDEO_PLAYER = '/video/player';
-  static const AUDIO_PLAYER = '/audio/player';
+  static const splash = '/';
+  static const notfound = '/notfound';
+  static const homepage = '/homepage';
+  static const detail = '/detail';
+  static const search = '/search';
+  static const directory = '/directory';
+  static const document = '/document';
+  static const file = '/file';
+  static const imagePreview = '/image/preview';
+  static const videoPlayer = '/video/player';
+  static const audioPlayer = '/audio/player';
 
   // Settings
-  static const SETTING = '/setting';
-  static const SERVER = '/server';
-  static const DOWNLOAD = '/download';
-  static const ABOUT = '/about';
-  static const RECENT = '/recent';
-  static const FAVORITE = '/favorite';
-  static const PREVIEW_IMAGE = '/preview/image';
-  static const PREVIEW_AUDIO = '/preview/audio';
-  static const PREVIEW_VIDEO = '/preview/video';
-  static const PREVIEW_DOCUMENT = '/preview/document';
+  static const setting = '/setting';
+  static const server = '/server';
+  static const download = '/download';
+  static const about = '/about';
+  static const recent = '/recent';
+  static const favorite = '/favorite';
+  static const previewImage = '/preview/image';
+  static const previewAudio = '/preview/audio';
+  static const previewVideo = '/preview/video';
+  static const previewDocument = '/preview/document';
 }

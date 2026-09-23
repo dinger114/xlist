@@ -5,7 +5,6 @@ import 'package:easy_refresh/easy_refresh.dart';
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
-import 'package:xlist/models/user.dart';
 import 'package:xlist/common/index.dart';
 import 'package:xlist/models/index.dart';
 import 'package:xlist/services/index.dart';
@@ -101,13 +100,15 @@ class HomepageController extends GetxController {
       final data = FsListModel.fromJson(response['data']);
 
       // 排序
-      final _list =
+      final list =
           CommonUtils.sortObjectList(data.content ?? [], sortType.value);
 
       objects.clear(); // 清空数据
-      objects.addAll(_list);
+      objects.addAll(list);
       objects.refresh(); // 刷新数据
-    } catch (e) {}
+    } catch (e) {
+      debugPrint('XLIST_HOMEPAGE 获取列表失败: $e');
+    }
   }
 
   /// 重置用户 token
@@ -120,7 +121,9 @@ class HomepageController extends GetxController {
   }) async {
     try {
       userInfo.value = await UserRepository.me();
-    } catch (e) {}
+    } catch (e) {
+      debugPrint('XLIST_HOMEPAGE 获取用户信息失败: $e');
+    }
 
     // 如果可以获取到用户信息, 不需要重新获取 token
     final userId = Get.find<UserStorage>().id.val;
@@ -131,7 +134,7 @@ class HomepageController extends GetxController {
     }
 
     String token = '';
-    UserModel _userInfo = UserModel();
+    UserModel newUserInfo = UserModel();
     try {
       Response response = await Repository.post(
         '${server.url}/api/auth/login',
@@ -150,8 +153,8 @@ class HomepageController extends GetxController {
             DialogTextField(hintText: 'add_server_dialog_2fa_hint'.tr),
           ],
         );
-        if (data == null || data.isEmpty) return _userInfo;
-        if (data.first.isEmpty) return _userInfo;
+        if (data == null || data.isEmpty) return newUserInfo;
+        if (data.first.isEmpty) return newUserInfo;
 
         // 重新获取 token
         response = await Repository.post(
@@ -169,22 +172,24 @@ class HomepageController extends GetxController {
       }
 
       token = response.data['data']['token'];
-    } catch (e) {}
+    } catch (e) {
+      debugPrint('XLIST_HOMEPAGE 重新登录失败: $e');
+    }
 
     // 更新 token
     Get.find<UserStorage>().token.val = token;
 
     // 获取用户信息
     try {
-      _userInfo = await UserRepository.me();
+      newUserInfo = await UserRepository.me();
       Get.find<UserStorage>().id.val = userInfo.value.id.toString();
     } catch (e) {
       SmartDialog.showToast(e.toString());
     }
 
     // 更新用户信息
-    if (_userInfo.id != null) userInfo.value = _userInfo;
-    return _userInfo;
+    if (newUserInfo.id != null) userInfo.value = newUserInfo;
+    return newUserInfo;
   }
 
   @override

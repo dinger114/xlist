@@ -15,16 +15,16 @@ import 'package:xlist/repositorys/index.dart';
 import 'package:xlist/database/entity/index.dart';
 
 class AddServerBottomSheet extends StatefulWidget {
-  const AddServerBottomSheet({Key? key}) : super(key: key);
+  const AddServerBottomSheet({super.key});
 
   @override
-  _AddServerBottomSheetState createState() => _AddServerBottomSheetState();
+  State<AddServerBottomSheet> createState() => _AddServerBottomSheetState();
 }
 
 class _AddServerBottomSheetState extends State<AddServerBottomSheet> {
-  TextEditingController _urlController = TextEditingController();
-  TextEditingController _usernameController = TextEditingController();
-  TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _urlController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   // 是否是有效的服务器地址
   bool _isUrlValid = false;
@@ -58,11 +58,11 @@ class _AddServerBottomSheetState extends State<AddServerBottomSheet> {
 
     // 获取匿名用户信息
     try {
-      final response = await Dio().get('${url}/api/me');
+      final response = await Dio().get('$url/api/me');
       if (response.data['code'] == 200) {
         _isUrlValid = true;
         _server = ServerEntity(
-            url: url, type: ServerType.ALIST, username: 'guest', password: '');
+            url: url, type: ServerType.alist, username: 'guest', password: '');
       } else {
         _isUrlValid = false;
       }
@@ -71,10 +71,11 @@ class _AddServerBottomSheetState extends State<AddServerBottomSheet> {
     }
 
     setState(() {});
-    if (showToast)
+    if (showToast) {
       _isUrlValid
           ? SmartDialog.showToast('add_server_toast_pass'.tr)
           : SmartDialog.showToast('add_server_toast_anonymous_fail'.tr);
+    }
 
     // 返回是否有效
     return _isUrlValid;
@@ -95,7 +96,7 @@ class _AddServerBottomSheetState extends State<AddServerBottomSheet> {
 
       // 如果没有填用户名
       if (username.isEmpty && password.isEmpty) {
-        return _testGuestUser(showToast: showToast);
+        return await _testGuestUser(showToast: showToast);
       }
 
       // 去除最后一个 /
@@ -109,7 +110,7 @@ class _AddServerBottomSheetState extends State<AddServerBottomSheet> {
 
       // 登录测试
       Response response = await Dio().post(
-        '${url}/api/auth/login',
+        '$url/api/auth/login',
         data: {'username': username, 'password': password},
       );
 
@@ -130,7 +131,7 @@ class _AddServerBottomSheetState extends State<AddServerBottomSheet> {
 
         // 重新登录
         SmartDialog.showLoading();
-        response = await Dio().post('${url}/api/auth/login', data: {
+        response = await Dio().post('$url/api/auth/login', data: {
           'username': username,
           'password': password,
           'otp_code': data.first
@@ -162,7 +163,7 @@ class _AddServerBottomSheetState extends State<AddServerBottomSheet> {
       _isUrlValid = token != null;
       _server = ServerEntity(
         url: url,
-        type: ServerType.ALIST,
+        type: ServerType.alist,
         username: username,
         password: password,
       );
@@ -174,10 +175,11 @@ class _AddServerBottomSheetState extends State<AddServerBottomSheet> {
 
     setState(() {});
     SmartDialog.dismiss();
-    if (showToast)
+    if (showToast) {
       _isUrlValid
           ? SmartDialog.showToast('add_server_toast_pass'.tr)
           : SmartDialog.showToast('add_server_toast_url_user_invalid'.tr);
+    }
 
     // 返回是否有效
     return _isUrlValid;
@@ -226,8 +228,8 @@ class _AddServerBottomSheetState extends State<AddServerBottomSheet> {
       trailing: CupertinoButton(
         padding: EdgeInsets.zero,
         alignment: Alignment.centerRight,
-        child: Text('test'.tr),
         onPressed: _testUrlAndUser,
+        child: Text('test'.tr),
       ),
     );
   }

@@ -70,7 +70,9 @@ class SearchController extends GetxController {
       searchList.clear();
       searchList.addAll(_sort(response));
       searchList.refresh();
-    } catch (e) {}
+    } catch (e) {
+      debugPrint('XLIST_SEARCH 搜索失败: $e');
+    }
   }
 
   /// 重新搜索 (用于刷新)
@@ -111,20 +113,20 @@ class SearchController extends GetxController {
     }
 
     switch (sortType.value) {
-      case SortType.NAME_DESC:
+      case SortType.nameDesc:
         folders.sort((a, b) => cmpName(a, b, desc: true));
         files.sort((a, b) => cmpName(a, b, desc: true));
         break;
-      case SortType.SIZE_DESC:
+      case SortType.sizeDesc:
         folders.sort((a, b) => cmpSize(a, b, desc: true));
         files.sort((a, b) => cmpSize(a, b, desc: true));
         break;
-      case SortType.SIZE_ASC:
+      case SortType.sizeAsc:
         folders.sort(cmpSize);
         files.sort(cmpSize);
         break;
       // 时间排序回退到名称升序 (搜索结果没有 modified 字段)
-      case SortType.NAME_ASC:
+      case SortType.nameAsc:
       default:
         folders.sort(cmpName);
         files.sort(cmpName);

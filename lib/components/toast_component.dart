@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class ToastComponent extends StatelessWidget {
   final String message;
-  ToastComponent({Key? key, required this.message}) : super(key: key);
+  const ToastComponent({super.key, required this.message});
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +13,7 @@ class ToastComponent extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 15.h),
         margin: EdgeInsets.all(30.r),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.8),
+          color: Colors.black.withValues(alpha: 0.8),
           borderRadius: BorderRadius.circular(20.r),
         ),
         child: Text(

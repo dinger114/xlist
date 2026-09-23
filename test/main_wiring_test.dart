@@ -30,7 +30,8 @@ void main() {
           supportedLocales: ThemeBridge.supportedLocales,
           builder: (BuildContext context, Widget? child) {
             return MediaQuery(
-              data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: TextScaler.linear(1.0)),
               child: ThemeBridge(
                 child: FlutterSmartDialog.init(
                   toastBuilder: (String msg) => ToastComponent(message: msg),

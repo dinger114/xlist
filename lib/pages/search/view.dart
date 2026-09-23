@@ -21,7 +21,7 @@ import 'package:xlist/components/object_grid/object_grid_item.dart';
 import 'package:xlist/components/object_list/object_list_item.dart';
 
 class SearchPage extends GetView<SearchController> {
-  const SearchPage({Key? key}) : super(key: key);
+  const SearchPage({super.key});
 
   /// 去掉 basePath 前缀
   String _stripBase(String p) {
@@ -45,7 +45,7 @@ class SearchPage extends GetView<SearchController> {
     final dirName = parent.substring(lastSlash + 1);
     ObjectHelper.click(
       path: dirPath,
-      type: FileType.FOLDER,
+      type: FileType.folder,
       name: dirName,
     );
   }
@@ -179,7 +179,7 @@ class SearchPage extends GetView<SearchController> {
         .map((s) => {'srcDir': s.parent ?? '/', 'name': s.name ?? ''})
         .toList();
 
-    Get.toNamed(Routes.DIRECTORY, arguments: {
+    Get.toNamed(Routes.directory, arguments: {
       'srcItems': srcItems,
       // 兼容字段
       'srcDir': items.first.parent ?? '/',
@@ -268,25 +268,25 @@ class SearchPage extends GetView<SearchController> {
       itemBuilder: (context) => [
         PullDownMenuItem(
           title: 'pull_down_name'.tr,
-          icon: [SortType.NAME_DESC, SortType.NAME_ASC].contains(sortType)
-              ? (sortType == SortType.NAME_DESC
+          icon: [SortType.nameDesc, SortType.nameAsc].contains(sortType)
+              ? (sortType == SortType.nameDesc
                   ? CupertinoIcons.chevron_down
                   : CupertinoIcons.chevron_up)
               : null,
-          onTap: () => controller.setSortType(sortType == SortType.NAME_ASC
-              ? SortType.NAME_DESC
-              : SortType.NAME_ASC),
+          onTap: () => controller.setSortType(sortType == SortType.nameAsc
+              ? SortType.nameDesc
+              : SortType.nameAsc),
         ),
         PullDownMenuItem(
           title: 'pull_down_size'.tr,
-          icon: [SortType.SIZE_DESC, SortType.SIZE_ASC].contains(sortType)
-              ? (sortType == SortType.SIZE_DESC
+          icon: [SortType.sizeDesc, SortType.sizeAsc].contains(sortType)
+              ? (sortType == SortType.sizeDesc
                   ? CupertinoIcons.chevron_down
                   : CupertinoIcons.chevron_up)
               : null,
-          onTap: () => controller.setSortType(sortType == SortType.SIZE_DESC
-              ? SortType.SIZE_ASC
-              : SortType.SIZE_DESC),
+          onTap: () => controller.setSortType(sortType == SortType.sizeDesc
+              ? SortType.sizeAsc
+              : SortType.sizeDesc),
         ),
         PullDownMenuDivider.large(),
         PullDownMenuItem(
@@ -323,10 +323,10 @@ class SearchPage extends GetView<SearchController> {
               children: [
                 CupertinoButton(
                   padding: EdgeInsets.zero,
+                  onPressed: controller.toggleSelectAll,
                   child: Text(count == total && total > 0
                       ? 'unselect_all'.tr
                       : 'select_all'.tr),
-                  onPressed: controller.toggleSelectAll,
                 ),
                 Text(
                   'selected_count'.tr.replaceAll('@count', '$count'),
@@ -334,8 +334,8 @@ class SearchPage extends GetView<SearchController> {
                 ),
                 CupertinoButton(
                   padding: EdgeInsets.zero,
-                  child: Text('cancel_select'.tr),
                   onPressed: controller.exitSelection,
+                  child: Text('cancel_select'.tr),
                 ),
               ],
             );
@@ -344,7 +344,7 @@ class SearchPage extends GetView<SearchController> {
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
+              SizedBox(
                 width: CommonUtils.isPad ? Get.width - 180 : 720.w,
                 child: CupertinoSearchTextField(
                   placeholder: 'search'.tr,
@@ -355,7 +355,7 @@ class SearchPage extends GetView<SearchController> {
                 ),
               ),
               _buildSortButton(),
-              Container(
+              SizedBox(
                 width: CommonUtils.isPad ? 50 : 100.w,
                 child: CupertinoButton(
                   padding: EdgeInsets.zero,
@@ -619,8 +619,11 @@ class SearchPage extends GetView<SearchController> {
           sliver: SizeCacheWidget(
             child: Obx(() {
               // 读取 selectionMode 和 selectedIndexes 以触发重建
-              final _ = controller.selectionMode.value;
-              final __ = controller.selectedIndexes.length;
+              // 只做依赖登记（让选中态变化时整块重排），值本身不参与计算
+              // ignore: unused_local_variable
+              final hasSelectionMode = controller.selectionMode.value;
+              // ignore: unused_local_variable
+              final selectionCount = controller.selectedIndexes.length;
               return _buildSliverList();
             }),
           ),

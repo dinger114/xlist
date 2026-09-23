@@ -18,7 +18,7 @@ class DetailPage extends StatelessWidget {
   DetailController get controller => Get.find<DetailController>(tag: tag);
 
   /// 构造函数
-  DetailPage({Key? key, this.tag, this.previousPageTitle}) : super(key: key) {
+  DetailPage({super.key, this.tag, this.previousPageTitle}) {
     Get.put<DetailController>(DetailController(), tag: tag);
   }
 
@@ -37,7 +37,7 @@ class DetailPage extends StatelessWidget {
         () => ButtonHelper.createPullDownButton(
           controller: controller,
           path: '${controller.path}${controller.name}',
-          source: PageSource.DETAIL,
+          source: PageSource.detail,
           pageTag: tag ?? '',
         ),
       ),
@@ -56,21 +56,22 @@ class DetailPage extends StatelessWidget {
     }
 
     return SizeCacheWidget(
-      child: controller.layoutType.value == LayoutType.GRID
+      child: controller.layoutType.value == LayoutType.grid
           ? ObjectGridComponent(
               tag: tag ?? '',
-              source: PageSource.DETAIL,
+              source: PageSource.detail,
               userInfo: controller.userInfo.value,
               path: '${controller.path}${controller.name}/',
-              objects: controller.objects.value,
+              // RxList 本身就是 List，直接传即可（Obx 会经 length/[] 自动登记依赖）
+              objects: controller.objects,
               isShowPreview: controller.isShowPreview.value,
             )
           : ObjectListComponent(
               tag: tag ?? '',
-              source: PageSource.DETAIL,
+              source: PageSource.detail,
               userInfo: controller.userInfo.value,
               path: '${controller.path}${controller.name}/',
-              objects: controller.objects.value,
+              objects: controller.objects,
               isShowPreview: controller.isShowPreview.value,
             ),
     );

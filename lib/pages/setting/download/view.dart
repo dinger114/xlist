@@ -13,7 +13,7 @@ import 'package:xlist/constants/index.dart';
 import 'package:xlist/pages/setting/download/index.dart';
 
 class DownloadPage extends GetView<DownloadController> {
-  const DownloadPage({Key? key}) : super(key: key);
+  const DownloadPage({super.key});
 
   // NavigationBar
   CupertinoNavigationBar _buildNavigationBar() {
@@ -55,7 +55,7 @@ class DownloadPage extends GetView<DownloadController> {
           ? EdgeInsets.symmetric(horizontal: 20).copyWith(bottom: 5)
           : EdgeInsets.symmetric(horizontal: 50.w).copyWith(bottom: 30.h),
       children: [
-        Container(
+        SizedBox(
           height: CommonUtils.isPad ? 80 : 170.h,
           width: double.infinity,
           child: Slidable(
@@ -64,8 +64,11 @@ class DownloadPage extends GetView<DownloadController> {
                     motion: ScrollMotion(),
                     children: [
                       SlidableAction(
-                        onPressed: (context) => Share.shareXFiles(
-                            [XFile('${task.savedDir}/${entity.name}')]),
+                        onPressed: (context) => SharePlus.instance.share(
+                          ShareParams(
+                            files: [XFile('${task.savedDir}/${entity.name}')],
+                          ),
+                        ),
                         backgroundColor: CupertinoColors.systemBlue,
                         foregroundColor: Colors.white,
                         icon: CupertinoIcons.share,
@@ -114,7 +117,7 @@ class DownloadPage extends GetView<DownloadController> {
                   SizedBox(width: 30.w),
                   _buildIcon(entity.type, entity.name),
                   SizedBox(width: 20.w),
-                  Container(
+                  SizedBox(
                     width: task.progress == 100 ? 750.w : 650.w,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

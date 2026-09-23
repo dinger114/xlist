@@ -15,7 +15,7 @@ import 'package:xlist/pages/setting/index.dart';
 import 'package:xlist/pages/homepage/index.dart';
 
 class SettingPage extends GetView<SettingController> {
-  const SettingPage({Key? key}) : super(key: key);
+  const SettingPage({super.key});
 
   // NavigationBar
   CupertinoNavigationBar _buildNavigationBar() {
@@ -84,7 +84,7 @@ class SettingPage extends GetView<SettingController> {
       _buildListTile(
         title: 'favorite'.tr,
         icon: Icons.star_rounded,
-        onTap: () => Get.toNamed(Routes.SETTING_FAVORITE),
+        onTap: () => Get.toNamed(Routes.settingFavorite),
       ),
     ];
 
@@ -92,7 +92,7 @@ class SettingPage extends GetView<SettingController> {
       _buildListTile(
         title: 'recent'.tr,
         icon: Icons.history_rounded,
-        onTap: () => Get.toNamed(Routes.SETTING_RECENT),
+        onTap: () => Get.toNamed(Routes.settingRecent),
       ),
     ];
 
@@ -138,7 +138,7 @@ class SettingPage extends GetView<SettingController> {
                       title: 'server'.tr,
                       icon: Icons.cloud,
                       additionalInfo: controller.serverInfo.value.username,
-                      onTap: () => Get.toNamed(Routes.SETTING_SERVER),
+                      onTap: () => Get.toNamed(Routes.settingServer),
                     ),
                     _buildListTile(
                       title: 'setting_theme'.tr,
@@ -151,7 +151,7 @@ class SettingPage extends GetView<SettingController> {
                     _buildListTile(
                       title: 'download_manager'.tr,
                       icon: Icons.download_rounded,
-                      onTap: () => Get.toNamed(Routes.SETTING_DOWNLOAD),
+                      onTap: () => Get.toNamed(Routes.settingDownload),
                     ),
                   ],
                 ),
@@ -169,22 +169,22 @@ class SettingPage extends GetView<SettingController> {
                   _buildListTile(
                     title: 'document'.tr,
                     icon: Icons.description_rounded,
-                    onTap: () => Get.toNamed(Routes.SETTING_PREVIEW_DOCUMENT),
+                    onTap: () => Get.toNamed(Routes.settingPreviewDocument),
                   ),
                   _buildListTile(
                     title: 'image'.tr,
                     icon: Icons.image_rounded,
-                    onTap: () => Get.toNamed(Routes.SETTING_PREVIEW_IMAGE),
+                    onTap: () => Get.toNamed(Routes.settingPreviewImage),
                   ),
                   _buildListTile(
                     title: 'video'.tr,
                     icon: Icons.video_collection_rounded,
-                    onTap: () => Get.toNamed(Routes.SETTING_PREVIEW_VIDEO),
+                    onTap: () => Get.toNamed(Routes.settingPreviewVideo),
                   ),
                   _buildListTile(
                     title: 'audio'.tr,
                     icon: Icons.library_music,
-                    onTap: () => Get.toNamed(Routes.SETTING_PREVIEW_AUDIO),
+                    onTap: () => Get.toNamed(Routes.settingPreviewAudio),
                   ),
                   _buildListTile(
                     title: 'setting_autoplay'.tr,
@@ -388,7 +388,7 @@ class SettingPage extends GetView<SettingController> {
                   _buildListTile(
                     title: 'about'.tr,
                     icon: Icons.info_rounded,
-                    onTap: () => Get.toNamed(Routes.SETTING_ABOUT),
+                    onTap: () => Get.toNamed(Routes.settingAbout),
                   ),
                 ],
               ),

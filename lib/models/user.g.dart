@@ -13,7 +13,7 @@ UserModel _$UserModelFromJson(Map<String, dynamic> json) => UserModel()
   ..basePath = json['base_path'] as String?
   ..role = (json['role'] as num?)?.toInt()
   ..permission = (json['permission'] as num?)?.toInt()
-  ..sso_id = json['sso_id'] as String?
+  ..ssoId = json['sso_id'] as String?
   ..disabled = json['disabled'] as bool?;
 
 Map<String, dynamic> _$UserModelToJson(UserModel instance) => <String, dynamic>{
@@ -23,6 +23,6 @@ Map<String, dynamic> _$UserModelToJson(UserModel instance) => <String, dynamic>{
       'base_path': instance.basePath,
       'role': instance.role,
       'permission': instance.permission,
-      'sso_id': instance.sso_id,
+      'sso_id': instance.ssoId,
       'disabled': instance.disabled,
     };

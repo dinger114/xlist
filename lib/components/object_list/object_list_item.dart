@@ -16,13 +16,13 @@ class ObjectListItem extends StatefulWidget {
   final bool isShowPreview;
 
   const ObjectListItem({
-    Key? key,
+    super.key,
     required this.object,
     required this.isShowPreview,
-  }) : super(key: key);
+  });
 
   @override
-  _ObjectListItemState createState() => _ObjectListItemState();
+  State<ObjectListItem> createState() => _ObjectListItemState();
 }
 
 class _ObjectListItemState extends State<ObjectListItem>
@@ -37,7 +37,7 @@ class _ObjectListItemState extends State<ObjectListItem>
       return Stack(
         alignment: Alignment.center,
         children: [
-          Container(
+          SizedBox(
             width: CommonUtils.isPad ? 60 : 130.sp,
             height: CommonUtils.isPad ? 60 : 130.sp,
             child: ClipRRect(
@@ -61,7 +61,7 @@ class _ObjectListItemState extends State<ObjectListItem>
                     child: Icon(
                       CupertinoIcons.video_camera_solid,
                       size: CommonUtils.isPad ? 20 : 35.sp,
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                     ),
                   ),
                 )
@@ -87,7 +87,7 @@ class _ObjectListItemState extends State<ObjectListItem>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
+        SizedBox(
           width: object.isDir! ? 750.w : 800.w,
           child: Text(
             object.name ?? '',
@@ -98,7 +98,7 @@ class _ObjectListItemState extends State<ObjectListItem>
         ),
         SizedBox(height: 7.h),
         Text(
-          '${modified}${object.isDir! ? '∞' : CommonUtils.formatFileSize(object.size!)}',
+          '$modified${object.isDir! ? '∞' : CommonUtils.formatFileSize(object.size!)}',
           style: Get.textTheme.bodySmall,
         ),
       ],

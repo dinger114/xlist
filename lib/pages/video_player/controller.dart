@@ -5,7 +5,6 @@ import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:path/path.dart' as p;
 import 'package:charset/charset.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:audio_service/audio_service.dart';
@@ -13,7 +12,6 @@ import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:subtitle_wrapper_package/subtitle_wrapper_package.dart';
 
-import 'package:xlist/gen/index.dart';
 import 'package:xlist/helper/index.dart';
 import 'package:xlist/models/index.dart';
 import 'package:xlist/common/utils.dart';
@@ -21,17 +19,12 @@ import 'package:xlist/services/index.dart';
 import 'package:xlist/storages/index.dart';
 import 'package:xlist/constants/index.dart';
 import 'package:xlist/repositorys/index.dart';
-import 'package:xlist/helper/player_helper.dart';
-import 'package:xlist/core/player/x_player.dart';
-import 'package:xlist/core/player/x_player_state.dart';
-import 'package:xlist/core/player/x_player_track.dart';
-import 'package:xlist/core/player/media_kit_player.dart';
 import 'package:xlist/database/entity/index.dart';
 
 class VideoPlayerController extends SuperController {
   final object = ObjectModel().obs;
   final userInfo = UserModel().obs; // 用户信息
-  final httpHeaders = Map<String, String>().obs;
+  final httpHeaders = <String, String>{}.obs;
   final serverId = Get.find<UserStorage>().serverId.val.obs;
   final isLoading = true.obs; // 是否正在加载
   final isAutoPaused = false.obs; // 是否自动暂停
@@ -122,7 +115,7 @@ class VideoPlayerController extends SuperController {
     // 获取视频播放地址
     if (file.isEmpty) {
       try {
-        object.value = await ObjectRepository.get(path: '${path}${name}');
+        object.value = await ObjectRepository.get(path: '$path$name');
       } catch (e) {
         SmartDialog.showToast('toast_get_object_fail'.tr);
         return;
@@ -134,11 +127,11 @@ class VideoPlayerController extends SuperController {
         'name': download?.name,
         'type': download?.type,
         'size': download?.size,
-        'raw_url': 'file://${file}',
+        'raw_url': 'file://$file',
       });
 
       // 尝试更新一下字幕
-      ObjectRepository.get(path: '${path}${name}').then((value) {
+      ObjectRepository.get(path: '$path$name').then((value) {
         updateSubtitleNameList(value.related ?? []);
       });
     }
@@ -273,7 +266,7 @@ class VideoPlayerController extends SuperController {
     );
 
     // 列表循环
-    if (playMode.val == PlayMode.LIST_LOOP && showPlaylist.isTrue) {
+    if (playMode.val == PlayMode.listLoop && showPlaylist.isTrue) {
       player.seek(Duration.zero);
       currentIndex.value == objects.length - 1
           ? changePlaylist(0)
@@ -282,7 +275,7 @@ class VideoPlayerController extends SuperController {
     }
 
     // 单集循环
-    if (playMode.val == PlayMode.SINGLE_LOOP && showPlaylist.isTrue) {
+    if (playMode.val == PlayMode.singleLoop && showPlaylist.isTrue) {
       player.seek(Duration.zero);
       player.play();
       return;
@@ -325,7 +318,7 @@ class VideoPlayerController extends SuperController {
   /// 通知栏控制器
   void _playerNotificationHandler() {
     _mediaItem = MediaItem(
-      id: '${path}${currentName.value}',
+      id: '$path${currentName.value}',
       title: CommonUtils.formatFileNme(currentName.value),
       duration: duration.value,
       artUri: object.value.thumb != null && object.value.thumb!.isNotEmpty
@@ -341,8 +334,8 @@ class VideoPlayerController extends SuperController {
   /// 切换播放列表文件
   /// [index] 下标
   void changePlaylist(int index) async {
-    final _object = objects[index];
-    if (_object.name == currentName.value) {
+    final current = objects[index];
+    if (current.name == currentName.value) {
       SmartDialog.showToast('toast_current_play_file'.tr);
       return;
     }
@@ -350,7 +343,7 @@ class VideoPlayerController extends SuperController {
     // 获取视频播放地址
     SmartDialog.showLoading();
     try {
-      object.value = await ObjectRepository.get(path: '${path}${_object.name}');
+      object.value = await ObjectRepository.get(path: '$path${current.name}');
     } catch (e) {
       SmartDialog.dismiss();
       SmartDialog.showToast(e.toString());
@@ -359,7 +352,7 @@ class VideoPlayerController extends SuperController {
 
     // 更新初始化信息
     currentIndex.value = index;
-    currentName.value = _object.name!;
+    currentName.value = current.name!;
     isAutoPaused.value = false;
     subtitles.clear();
     audioTracks.clear();
@@ -377,13 +370,13 @@ class VideoPlayerController extends SuperController {
     try {
       _sourceUrl = await StrmHelper.resolvePlayUrl(
         object.value,
-        _object.name!,
+        current.name!,
       );
       httpHeaders.value = StrmHelper.getHeaders(object.value, _sourceUrl);
       await PlayerHelper.setOption(
         player,
         headers: httpHeaders,
-        name: _object.name!,
+        name: current.name!,
       );
       await player.open(_sourceUrl, headers: httpHeaders, autoPlay: true);
       if (currentPos.value.inMilliseconds > 0) {
@@ -395,27 +388,25 @@ class VideoPlayerController extends SuperController {
     }
 
     // 加入最近浏览
-    await CommonUtils.addRecent(object.value, path, _object.name!);
+    await CommonUtils.addRecent(object.value, path, current.name!);
     SmartDialog.showToast('toast_switch_success'.tr);
   }
 
   /// 切换音轨
   void changeAudioTrack({String? value}) async {
-    if (value == null) {
-      value = await showModalActionSheet(
-        context: Get.overlayContext!,
-        title: 'video_switch_audio'.tr,
-        actions: [
-          ...audioTracks.map(
-            (t) => SheetAction(
-              label: '${t.displayTitle}(${t.language ?? ''})',
-              key: t.id,
-            ),
+    value ??= await showModalActionSheet(
+      context: Get.overlayContext!,
+      title: 'video_switch_audio'.tr,
+      actions: [
+        ...audioTracks.map(
+          (t) => SheetAction(
+            label: '${t.displayTitle}(${t.language ?? ''})',
+            key: t.id,
           ),
-        ],
-        cancelLabel: 'cancel'.tr,
-      );
-    }
+        ),
+      ],
+      cancelLabel: 'cancel'.tr,
+    );
 
     if (value != null) {
       final track = audioTracks.firstWhereOrNull((t) => t.id == value);
@@ -439,40 +430,38 @@ class VideoPlayerController extends SuperController {
   /// 更新字幕文件名列表
   void updateSubtitleNameList(List<ObjectModel> related) {
     subtitleNameList.clear();
-    related.forEach((v) {
+    for (var v in related) {
       final ext = p.extension(v.name!).toLowerCase();
       if (ext == '.vtt' || ext == '.srt' || ext == '.ass') {
         subtitleNameList.add(v.name!);
       }
-    });
+    }
   }
 
   /// 切换字幕
   void changeSubtitle({String? value}) async {
-    if (value == null) {
-      value = await showModalActionSheet(
-        context: Get.overlayContext!,
-        materialConfiguration: MaterialModalActionSheetConfiguration(),
-        title: 'video_switch_subtitle'.tr,
-        actions: [
-          ...subtitleNameList.map(
-            (v) => SheetAction(label: v, key: v),
+    value ??= await showModalActionSheet(
+      context: Get.overlayContext!,
+      materialConfiguration: MaterialModalActionSheetConfiguration(),
+      title: 'video_switch_subtitle'.tr,
+      actions: [
+        ...subtitleNameList.map(
+          (v) => SheetAction(label: v, key: v),
+        ),
+        ...subtitleTracks.map(
+          (t) => SheetAction(
+            label: '${t.displayTitle}(${t.language ?? ''})',
+            key: 'internal::${t.id}',
           ),
-          ...subtitleTracks.map(
-            (t) => SheetAction(
-              label: '${t.displayTitle}(${t.language ?? ''})',
-              key: 'internal::${t.id}',
-            ),
-          ),
-          SheetAction(
-            label: 'player_subtitle_close'.tr,
-            key: 'close',
-            isDestructiveAction: true,
-          ),
-        ],
-        cancelLabel: 'cancel'.tr,
-      );
-    }
+        ),
+        SheetAction(
+          label: 'player_subtitle_close'.tr,
+          key: 'close',
+          isDestructiveAction: true,
+        ),
+      ],
+      cancelLabel: 'cancel'.tr,
+    );
     if (value == null) return;
 
     // 关闭字幕
@@ -487,8 +476,8 @@ class VideoPlayerController extends SuperController {
 
     // 切换内置字幕
     if (value.startsWith('internal::')) {
-      final _value = value.replaceAll('internal::', '');
-      final track = subtitleTracks.firstWhereOrNull((t) => t.id == _value);
+      final trackId = value.replaceAll('internal::', '');
+      final track = subtitleTracks.firstWhereOrNull((t) => t.id == trackId);
       if (track == null) return;
 
       final current = player.trackSelection.subtitle;
@@ -510,24 +499,24 @@ class VideoPlayerController extends SuperController {
 
     try {
       SmartDialog.showLoading(msg: 'toast_switch_loading'.tr);
-      final _object = await ObjectRepository.get(path: '${path}${value}');
+      final converted = await ObjectRepository.get(path: '$path$value');
       final response = await DioService.to.dio.get(
-        _object.rawUrl!,
+        converted.rawUrl!,
         options: Options(
           headers: httpHeaders,
           responseDecoder: (List<int> responseBytes, RequestOptions options,
               ResponseBody responseBody) {
-            String _data = '';
+            String data = '';
             try {
-              _data = hasUtf32Bom(responseBytes)
+              data = hasUtf32Bom(responseBytes)
                   ? utf32.decode(responseBytes)
                   : (hasUtf16Bom(responseBytes)
                       ? utf16.decode(responseBytes)
                       : utf8.decode(responseBytes));
             } catch (e) {
-              _data = gbk.decode(responseBytes);
+              data = gbk.decode(responseBytes);
             }
-            return _data;
+            return data;
           },
         ),
       );

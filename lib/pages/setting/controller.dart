@@ -60,7 +60,7 @@ class SettingController extends GetxController {
 
     // 获取当前主题模式
     themeModeText.value =
-        ThemeModeTextMap[Get.find<CommonStorage>().themeMode.val]!;
+        themeModeTextMap[Get.find<CommonStorage>().themeMode.val]!;
 
     // 获取存储路径 (数据库用 sqflite 路径，偏好设置用文档目录)
     final dbDir = await getDatabasesPath();
@@ -226,8 +226,8 @@ class SettingController extends GetxController {
     );
 
     if (value != null) {
-      Get.changeThemeMode(ThemeModeMap[value]!);
-      themeModeText.value = ThemeModeTextMap[value]!;
+      Get.changeThemeMode(themeModeMap[value]!);
+      themeModeText.value = themeModeTextMap[value]!;
       Get.find<CommonStorage>().themeMode.val = value;
       Future.delayed(Duration(milliseconds: 200), () {
         Get.forceAppUpdate();

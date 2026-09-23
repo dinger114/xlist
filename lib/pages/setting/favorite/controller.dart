@@ -84,9 +84,9 @@ class FavoriteController extends GetxController {
     if (ok != OkCancelResult.ok) return;
 
     try {
-      final _id = serverId;
+      final id = serverId;
       await DatabaseService.to.database.favoriteDao
-          .deleteFavoriteByServerId(_id);
+          .deleteFavoriteByServerId(id);
 
       // 清空数据：直接 reset state（等价于清空列表并回到首页）
       pagingController.refresh();
@@ -102,29 +102,29 @@ class FavoriteController extends GetxController {
   ///
   /// [entity] 收藏实体
   Future<List<ObjectModel>> getObjectList(FavoriteEntity entity) async {
-    List<ObjectModel> _objects = [
+    List<ObjectModel> objects = [
       ObjectModel.fromJson({
         'name': entity.name,
         'type': entity.type,
-        'is_dir': entity.type == FileType.FOLDER,
+        'is_dir': entity.type == FileType.folder,
         'size': entity.size,
       }),
     ];
-    if (entity.type == FileType.FOLDER) return [];
+    if (entity.type == FileType.folder) return [];
 
     try {
       SmartDialog.showLoading();
-      final _sortType = Get.find<PreferencesStorage>().sortType.val;
+      final sortType = Get.find<PreferencesStorage>().sortType.val;
       final response = await ObjectRepository.getList(path: entity.path);
       if (response['code'] == 200) {
         final data = FsListModel.fromJson(response['data']);
-        _objects = CommonUtils.sortObjectList(data.content ?? [], _sortType);
+        objects = CommonUtils.sortObjectList(data.content ?? [], sortType);
       }
       SmartDialog.dismiss();
     } catch (e) {
       SmartDialog.dismiss();
     }
 
-    return _objects;
+    return objects;
   }
 }

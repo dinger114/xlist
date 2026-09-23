@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -45,16 +43,16 @@ class ImagePreviewController extends GetxController {
     pageController = PageController(initialPage: currentIndex.value);
 
     // 获取头信息
-    final object = await ObjectRepository.get(path: '${path}${name}');
+    final object = await ObjectRepository.get(path: '$path$name');
     imageHeaders.value =
-        await DriverHelper.getHeaders(object.provider, object.rawUrl);
+        DriverHelper.getHeaders(object.provider, object.rawUrl);
 
     // 获取图片链接, 115 hack
-    if (object.provider!.startsWith(Provider.Cloud115)) {
+    if (object.provider!.startsWith(Provider.cloud115)) {
       for (var i = 0; i < objects.length; i++) {
-        final _response =
-            await ObjectRepository.get(path: '${path}${objects[i].name}');
-        imageUrls.add(_response.rawUrl!);
+        final response =
+            await ObjectRepository.get(path: '$path${objects[i].name}');
+        imageUrls.add(response.rawUrl!);
       }
     } else {
       imageUrls.value = objects.map((o) {
@@ -125,6 +123,10 @@ class ImagePreviewController extends GetxController {
       SmartDialog.dismiss();
       if (result['isSuccess'] == false) throw 'toast_save_image_fail'.tr;
       SmartDialog.showToast('toast_save_success'.tr);
-    } catch (e) {}
+    } catch (e) {
+      // 保存失败必须让用户看见：原来这里是空 catch，失败时界面毫无反应
+      SmartDialog.dismiss();
+      SmartDialog.showToast(e.toString());
+    }
   }
 }

@@ -14,19 +14,13 @@ class ButtonHelper {
   /// [text] 按钮文本
   /// [onPressed] 按钮点击事件
   /// [backgroundColor] 按钮背景颜色
-  static createElevatedButton(
+  static ElevatedButton createElevatedButton(
     String text, {
     required Function? onPressed,
     Color? backgroundColor,
     double? borderRadius,
   }) {
     return ElevatedButton(
-      child: Text(
-        text,
-        style: Get.textTheme.titleMedium?.copyWith(
-          color: Colors.white,
-        ),
-      ),
       style: ElevatedButton.styleFrom(
         elevation: 0,
         splashFactory: NoSplash.splashFactory,
@@ -37,6 +31,12 @@ class ButtonHelper {
         minimumSize: const Size.fromHeight(50),
       ),
       onPressed: onPressed as void Function()?,
+      child: Text(
+        text,
+        style: Get.textTheme.titleMedium?.copyWith(
+          color: Colors.white,
+        ),
+      ),
     );
   }
 
@@ -87,7 +87,7 @@ class ButtonHelper {
           title: 'pull_down_upload_image'.tr,
           icon: CupertinoIcons.photo_on_rectangle,
           onTap: () => ObjectHelper.upload(
-            type: FileType.IMAGE,
+            type: FileType.image,
             path: path,
             source: source,
             pageTag: pageTag,
@@ -98,7 +98,7 @@ class ButtonHelper {
           title: 'pull_down_upload_video'.tr,
           icon: CupertinoIcons.videocam_circle,
           onTap: () => ObjectHelper.upload(
-            type: FileType.VIDEO,
+            type: FileType.video,
             path: path,
             source: source,
             pageTag: pageTag,
@@ -134,18 +134,18 @@ class ButtonHelper {
       PullDownMenuDivider.large(),
       PullDownMenuItem(
         title: 'pull_down_list'.tr,
-        icon: layoutType == LayoutType.LIST ? CupertinoIcons.checkmark : null,
+        icon: layoutType == LayoutType.list ? CupertinoIcons.checkmark : null,
         onTap: () async {
-          controller.layoutType.value = LayoutType.LIST;
-          Get.find<PreferencesStorage>().layoutType.val = LayoutType.LIST;
+          controller.layoutType.value = LayoutType.list;
+          Get.find<PreferencesStorage>().layoutType.val = LayoutType.list;
         },
       ),
       PullDownMenuItem(
         title: 'pull_down_grid'.tr,
-        icon: layoutType == LayoutType.GRID ? CupertinoIcons.checkmark : null,
+        icon: layoutType == LayoutType.grid ? CupertinoIcons.checkmark : null,
         onTap: () async {
-          controller.layoutType.value = LayoutType.GRID;
-          Get.find<PreferencesStorage>().layoutType.val = LayoutType.GRID;
+          controller.layoutType.value = LayoutType.grid;
+          Get.find<PreferencesStorage>().layoutType.val = LayoutType.grid;
         },
       ),
     ]);

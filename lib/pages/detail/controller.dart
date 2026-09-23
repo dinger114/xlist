@@ -42,7 +42,7 @@ class DetailController extends GetxController {
 
     // 获取目录密码
     final passwordManager = await DatabaseService.to.database.passwordManagerDao
-        .findPasswordManagerByPath(serverId, '${path}${name}');
+        .findPasswordManagerByPath(serverId, '$path$name');
     if (passwordManager != null && passwordManager.isNotEmpty) {
       password = passwordManager.last.password;
     }
@@ -50,7 +50,9 @@ class DetailController extends GetxController {
     // 获取用户信息
     try {
       userInfo.value = await UserRepository.me();
-    } catch (e) {}
+    } catch (e) {
+      debugPrint('XLIST_DETAIL 获取用户信息失败: $e');
+    }
 
     // 加载完成
     await getObjectList();
@@ -64,7 +66,7 @@ class DetailController extends GetxController {
   Future<void> getObjectList({bool refresh = false}) async {
     try {
       final response = await ObjectRepository.getList(
-        path: '${path}${name}',
+        path: '$path$name',
         password: password,
         refresh: refresh,
       );
@@ -102,7 +104,7 @@ class DetailController extends GetxController {
         await DatabaseService.to.database.passwordManagerDao
             .insertPasswordManager(
           PasswordManagerEntity(
-              serverId: serverId, path: '${path}${name}', password: text.first),
+              serverId: serverId, path: '$path$name', password: text.first),
         );
 
         password = text.first;
@@ -114,13 +116,15 @@ class DetailController extends GetxController {
       final data = FsListModel.fromJson(response['data']);
 
       // 排序
-      final _list =
+      final list =
           CommonUtils.sortObjectList(data.content ?? [], sortType.value);
 
       objects.clear(); // 清空数据
-      objects.addAll(_list);
+      objects.addAll(list);
       objects.refresh(); // 刷新数据
-    } catch (e) {}
+    } catch (e) {
+      debugPrint('XLIST_DETAIL 获取列表失败: $e');
+    }
   }
 
   @override

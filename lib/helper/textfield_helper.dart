@@ -5,7 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:xlist/common/index.dart';
 
 class TextFieldHelper {
-  static createCupertino({
+  static Container createCupertino({
     TextEditingController? controller,
     String title = '',
     String placeholder = '',
@@ -13,13 +13,13 @@ class TextFieldHelper {
     EdgeInsetsGeometry? padding,
     TextInputType keyboardType = TextInputType.text,
   }) {
-    Widget _title = Row(
+    Widget title0 = Row(
       children: [
         Text(
           title,
           style: TextStyle(
             fontSize: CommonUtils.isPad ? 15 : 35.sp,
-            color: Get.theme.colorScheme.onBackground.withOpacity(0.9),
+            color: Get.theme.colorScheme.onSurface.withValues(alpha: 0.9),
           ),
         ),
         SizedBox(width: CommonUtils.isPad ? 5 : 10.w),
@@ -40,7 +40,7 @@ class TextFieldHelper {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          title.isEmpty ? SizedBox() : _title,
+          title.isEmpty ? SizedBox() : title0,
           TextField(
             controller: controller,
             keyboardType: keyboardType,

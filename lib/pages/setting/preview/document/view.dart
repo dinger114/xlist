@@ -8,7 +8,7 @@ import 'package:xlist/constants/index.dart';
 import 'package:xlist/pages/setting/preview/document/index.dart';
 
 class SettingDocumentPage extends GetView<SettingDocumentController> {
-  const SettingDocumentPage({Key? key}) : super(key: key);
+  const SettingDocumentPage({super.key});
 
   // NavigationBar
   CupertinoNavigationBar _buildNavigationBar() {

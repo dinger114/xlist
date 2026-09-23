@@ -6,7 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class BottomSheetHelper {
   /// 显示底部弹窗 - 无顶部控制器
   /// [child] is a widget
-  static showBottomSheet(
+  static Future<T?> showBottomSheet<T>(
     Widget child, {
     bool expand = true,
     bool useRootNavigator = true,
@@ -22,7 +22,7 @@ class BottomSheetHelper {
 
   /// 显示底部弹窗 - 带有顶部控制器
   /// [child] is a widget
-  static showBarBottomSheet(Widget child) async {
+  static Future<T?> showBarBottomSheet<T>(Widget child) async {
     return showBarModalBottomSheet(
       context: Get.context!,
       bounce: true,
@@ -37,7 +37,7 @@ class BottomSheetHelper {
         width: 135.r,
         height: 10.r,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.7),
+          color: Colors.white.withValues(alpha: 0.7),
           borderRadius: BorderRadius.circular(15.r),
         ),
       ),

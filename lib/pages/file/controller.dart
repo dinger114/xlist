@@ -24,7 +24,7 @@ class FileController extends GetxController {
     super.onInit();
 
     // 获取文件信息
-    object.value = await ObjectRepository.get(path: '${path}${name}');
+    object.value = await ObjectRepository.get(path: '$path$name');
     userInfo.value = await UserRepository.me(); // 获取用户信息
     isLoading.value = false;
 

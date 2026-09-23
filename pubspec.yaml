@@ -68,6 +68,14 @@ dependencies:
   flutter_keyboard_visibility: ^7.0.1
   flutter_localizations:
     sdk: flutter
+
+  # 以下 4 个之前是「传递依赖被直接 import」：代码能编，但依赖关系没写进
+  # pubspec —— 上游哪天不再传递它们，就会直接编译失败（analyzer 的
+  # depend_on_referenced_packages 就是在盯这个）。版本按 lock 里当前解析到的钉。
+  material_ui: ^1.4.0 # flutter_smart_dialog 5.3 走的是 material_ui 版 Material
+  json_annotation: ^4.12.0 # models/*.dart 的 @JsonSerializable
+  flutter_highlight: ^0.7.0 # 代码高亮主题（code_text_field 提供渲染）
+  highlight: ^0.7.0 # 同上，语言定义
 dev_dependencies:
   flutter_test:
     sdk: flutter

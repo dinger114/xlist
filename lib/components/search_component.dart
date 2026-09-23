@@ -8,7 +8,7 @@ import 'package:xlist/routes/app_pages.dart';
 
 class SearchComponent extends StatelessWidget {
   final String path;
-  SearchComponent({Key? key, required this.path}) : super(key: key);
+  const SearchComponent({super.key, required this.path});
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +17,7 @@ class SearchComponent extends StatelessWidget {
     final color = Get.isDarkMode ? Colors.grey[500] : Colors.grey[600];
 
     return GestureDetector(
-      onTap: () => Get.toNamed(Routes.SEARCH, arguments: {'path': path}),
+      onTap: () => Get.toNamed(Routes.search, arguments: {'path': path}),
       child: Container(
         height: CommonUtils.isPad ? 38 : 90.h,
         decoration: BoxDecoration(

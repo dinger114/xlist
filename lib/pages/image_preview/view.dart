@@ -10,7 +10,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:xlist/pages/image_preview/index.dart';
 
 class ImagePreviewPage extends GetView<ImagePreviewController> {
-  const ImagePreviewPage({Key? key}) : super(key: key);
+  const ImagePreviewPage({super.key});
 
   /// 页面指示器
   Widget _buildExtendedPageIndicator() {

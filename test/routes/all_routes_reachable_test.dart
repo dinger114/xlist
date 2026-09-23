@@ -29,32 +29,32 @@ void main() {
     });
 
     test('unknownRoute 不进路由表（由 onUnknownRoute 兜底）', () {
-      expect(allPaths.contains(Routes.NOTFOUND), isFalse,
+      expect(allPaths.contains(Routes.notfound), isFalse,
           reason: '/notfound 是 unknownRoute 的页面，应由 onUnknownRoute 兜底');
     });
 
     test('全部 Routes 常量都已注册（防漏注册/多余项）', () {
       const expected = [
-        Routes.SPLASH,
-        Routes.HOMEPAGE,
-        Routes.DETAIL,
-        Routes.SEARCH,
-        Routes.DIRECTORY,
-        Routes.DOCUMENT,
-        Routes.FILE,
-        Routes.IMAGE_PREVIEW,
-        Routes.VIDEO_PLAYER,
-        Routes.AUDIO_PLAYER,
-        Routes.SETTING,
-        Routes.SETTING_SERVER,
-        Routes.SETTING_DOWNLOAD,
-        Routes.SETTING_ABOUT,
-        Routes.SETTING_RECENT,
-        Routes.SETTING_FAVORITE,
-        Routes.SETTING_PREVIEW_IMAGE,
-        Routes.SETTING_PREVIEW_AUDIO,
-        Routes.SETTING_PREVIEW_VIDEO,
-        Routes.SETTING_PREVIEW_DOCUMENT,
+        Routes.splash,
+        Routes.homepage,
+        Routes.detail,
+        Routes.search,
+        Routes.directory,
+        Routes.document,
+        Routes.file,
+        Routes.imagePreview,
+        Routes.videoPlayer,
+        Routes.audioPlayer,
+        Routes.setting,
+        Routes.settingServer,
+        Routes.settingDownload,
+        Routes.settingAbout,
+        Routes.settingRecent,
+        Routes.settingFavorite,
+        Routes.settingPreviewImage,
+        Routes.settingPreviewAudio,
+        Routes.settingPreviewVideo,
+        Routes.settingPreviewDocument,
       ];
 
       final missing = expected.where((e) => !allPaths.contains(e)).toList();
@@ -65,8 +65,8 @@ void main() {
     });
 
     test('嵌套子路由按 GetX 的字符串拼接语义展开（/setting + /server）', () {
-      expect(Routes.SETTING_SERVER, '/setting/server');
-      expect(allPaths, contains(Routes.SETTING_SERVER));
+      expect(Routes.settingServer, '/setting/server');
+      expect(allPaths, contains(Routes.settingServer));
     });
 
     test('每个路径都能解析出 GetPage，且 name 与请求路径逐字一致', () {
@@ -114,7 +114,7 @@ void main() {
       // 顺序倒置会让字段初始化里读 Get.arguments 的 controller 全拿到 null。
       Get.routing.args = null;
       AppRouter.onGenerateRoute(RouteSettings(
-        name: Routes.HOMEPAGE,
+        name: Routes.homepage,
         arguments: {'path': '/p', 'name': 'n'},
       ));
       expect(Get.routing.args, {'path': '/p', 'name': 'n'});
@@ -141,7 +141,7 @@ void main() {
         );
 
     testWidgets('splash 能构建', (tester) async {
-      await tester.pumpWidget(appAt(Routes.SPLASH));
+      await tester.pumpWidget(appAt(Routes.splash));
       await tester.pump(const Duration(milliseconds: 20));
       expect(tester.takeException(), isNull);
     });
@@ -152,7 +152,7 @@ void main() {
       // 不走 onUnknownRoute（真机上 initialRoute 恒为 "/"，所以不受影响）。
       // onUnknownRoute 只在 pushNamed 未知路由时生效 —— 这才对应生产里
       // 「某处路由名写错」的场景。
-      await tester.pumpWidget(appAt(Routes.SPLASH));
+      await tester.pumpWidget(appAt(Routes.splash));
       await tester.pump(const Duration(milliseconds: 20));
       expect(tester.takeException(), isNull);
 

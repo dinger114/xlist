@@ -19,10 +19,10 @@ ObjectModel _obj(String name, int type, {DateTime? modified, int? size}) {
 }
 
 ObjectModel _folder(String name, {DateTime? modified, int? size}) =>
-    _obj(name, FileType.FOLDER, modified: modified, size: size);
+    _obj(name, FileType.folder, modified: modified, size: size);
 
 ObjectModel _file(String name, {DateTime? modified, int? size}) =>
-    _obj(name, FileType.VIDEO, modified: modified, size: size);
+    _obj(name, FileType.video, modified: modified, size: size);
 
 void main() {
   group('formatFileSize', () {
@@ -129,17 +129,17 @@ void main() {
         _folder('zzz', modified: DateTime(2020, 1, 1), size: 1),
       ];
       for (final type in [
-        SortType.TIME_DESC,
-        SortType.TIME_ASC,
-        SortType.NAME_DESC,
-        SortType.NAME_ASC,
-        SortType.SIZE_DESC,
-        SortType.SIZE_ASC,
+        SortType.timeDesc,
+        SortType.timeAsc,
+        SortType.nameDesc,
+        SortType.nameAsc,
+        SortType.sizeDesc,
+        SortType.sizeAsc,
       ]) {
         final r = CommonUtils.sortObjectList(List.of(list), type);
-        expect(r.first.type, FileType.FOLDER,
+        expect(r.first.type, FileType.folder,
             reason: 'sortType=$type 时文件夹未排在前');
-        expect(r.last.type, isNot(FileType.FOLDER));
+        expect(r.last.type, isNot(FileType.folder));
       }
     });
 
@@ -149,7 +149,7 @@ void main() {
         _file('b', modified: DateTime(2026, 3, 1)),
         _file('c', modified: DateTime(2026, 2, 1)),
       ];
-      final r = CommonUtils.sortObjectList(list, SortType.TIME_DESC);
+      final r = CommonUtils.sortObjectList(list, SortType.timeDesc);
       expect(r.map((e) => e.name), ['b', 'c', 'a']);
     });
 
@@ -159,19 +159,19 @@ void main() {
         _file('b', modified: DateTime(2026, 3, 1)),
         _file('c', modified: DateTime(2026, 2, 1)),
       ];
-      final r = CommonUtils.sortObjectList(list, SortType.TIME_ASC);
+      final r = CommonUtils.sortObjectList(list, SortType.timeAsc);
       expect(r.map((e) => e.name), ['a', 'c', 'b']);
     });
 
     test('名称降序', () {
       final list = [_file('b'), _file('a'), _file('c')];
-      final r = CommonUtils.sortObjectList(list, SortType.NAME_DESC);
+      final r = CommonUtils.sortObjectList(list, SortType.nameDesc);
       expect(r.map((e) => e.name), ['c', 'b', 'a']);
     });
 
     test('名称升序', () {
       final list = [_file('b'), _file('a'), _file('c')];
-      final r = CommonUtils.sortObjectList(list, SortType.NAME_ASC);
+      final r = CommonUtils.sortObjectList(list, SortType.nameAsc);
       expect(r.map((e) => e.name), ['a', 'b', 'c']);
     });
 
@@ -181,7 +181,7 @@ void main() {
         _file('b', size: 300),
         _file('c', size: 200),
       ];
-      final r = CommonUtils.sortObjectList(list, SortType.SIZE_DESC);
+      final r = CommonUtils.sortObjectList(list, SortType.sizeDesc);
       expect(r.map((e) => e.name), ['b', 'c', 'a']);
     });
 
@@ -191,33 +191,33 @@ void main() {
         _file('b', size: 300),
         _file('c', size: 200),
       ];
-      final r = CommonUtils.sortObjectList(list, SortType.SIZE_ASC);
+      final r = CommonUtils.sortObjectList(list, SortType.sizeAsc);
       expect(r.map((e) => e.name), ['a', 'c', 'b']);
     });
 
     test('不修改传入的原列表（返回新列表）', () {
       final list = [_file('b'), _file('a')];
       final before = List.of(list);
-      CommonUtils.sortObjectList(list, SortType.NAME_ASC);
+      CommonUtils.sortObjectList(list, SortType.nameAsc);
       // 注意：内部对 folders/files 是新数组，但 folders 排序后拼接返回；
       // 原 list 内容与顺序都不应被改动
       expect(list.map((e) => e.name), before.map((e) => e.name));
     });
 
     test('空列表返回空列表', () {
-      expect(CommonUtils.sortObjectList([], SortType.NAME_ASC), isEmpty);
+      expect(CommonUtils.sortObjectList([], SortType.nameAsc), isEmpty);
     });
 
     test('只有文件时不做文件夹分组', () {
       final list = [_file('b'), _file('a')];
-      final r = CommonUtils.sortObjectList(list, SortType.NAME_ASC);
+      final r = CommonUtils.sortObjectList(list, SortType.nameAsc);
       expect(r.length, 2);
-      expect(r.map((e) => e.type).toSet(), {FileType.VIDEO});
+      expect(r.map((e) => e.type).toSet(), {FileType.video});
     });
 
     test('只有文件夹时同样排序', () {
       final list = [_folder('b'), _folder('a')];
-      final r = CommonUtils.sortObjectList(list, SortType.NAME_ASC);
+      final r = CommonUtils.sortObjectList(list, SortType.nameAsc);
       expect(r.map((e) => e.name), ['a', 'b']);
     });
 
@@ -228,7 +228,7 @@ void main() {
       ];
       final r = CommonUtils.sortObjectList(list, 999);
       expect(r.length, 2);
-      expect(r.first.type, FileType.FOLDER);
+      expect(r.first.type, FileType.folder);
     });
 
     test('大小排序把 null size 当作 0（不抛异常）', () {
@@ -236,7 +236,7 @@ void main() {
         _file('a', size: 10),
         _file('b'), // size 为 null
       ];
-      final r = CommonUtils.sortObjectList(list, SortType.SIZE_ASC);
+      final r = CommonUtils.sortObjectList(list, SortType.sizeAsc);
       expect(r.first.name, 'b', reason: 'null 当 0 处理，应排最前');
     });
 
@@ -249,7 +249,7 @@ void main() {
         _file('b'), // modified 为 null
       ];
       expect(
-        () => CommonUtils.sortObjectList(list, SortType.TIME_DESC),
+        () => CommonUtils.sortObjectList(list, SortType.timeDesc),
         throwsA(isA<TypeError>()),
       );
     });
@@ -260,7 +260,7 @@ void main() {
         _file('b')..name = null,
       ];
       expect(
-        () => CommonUtils.sortObjectList(list, SortType.NAME_ASC),
+        () => CommonUtils.sortObjectList(list, SortType.nameAsc),
         throwsA(isA<TypeError>()),
       );
     });

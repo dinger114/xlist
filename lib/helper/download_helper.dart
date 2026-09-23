@@ -22,7 +22,7 @@ class DownloadHelper {
   /// [path] 文件路径
   /// [name] 文件名
   /// [type] 文件类型
-  static file(String path, String name, int type, int size) async {
+  static Future<void> file(String path, String name, int type, int size) async {
     bool isStorage = await checkPermissionStorage();
     if (!isStorage) {
       SmartDialog.showToast('toast_no_storage_permission'.tr);
@@ -53,7 +53,7 @@ class DownloadHelper {
       }
 
       // 图片类型单独处理
-      if (type == FileType.IMAGE) {
+      if (type == FileType.image) {
         final response = await DioService.to.dio.get(
           object.rawUrl!,
           options: Options(
@@ -116,7 +116,7 @@ class DownloadHelper {
 
     // 请求服务器获取下载地址
     final object = await ObjectRepository.get(
-      path: '${path}${name}',
+      path: '$path$name',
       password: password,
     );
 
@@ -149,7 +149,7 @@ class DownloadHelper {
     final directory = Platform.isAndroid
         ? await getExternalStorageDirectory()
         : await getApplicationDocumentsDirectory();
-    String p = directory!.path + '/Downloads' + path;
+    String p = '${directory!.path}/Downloads$path';
 
     // 如果目录不存在则创建
     final savedDir = Directory(p);

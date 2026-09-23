@@ -7,22 +7,13 @@ class SettingImageController extends GetxController {
   final imageSupportTypes =
       Get.find<PreferencesStorage>().imageSupportTypes.val.obs;
 
-  @override
-  void onInit() {
-    super.onInit();
-  }
-
   /// 切换图片支持类型
   /// [type] 图片类型
   void toggleImageSupportType(String type) {
-    final _imageSupportTypes = imageSupportTypes.value;
-    _imageSupportTypes.contains(type)
-        ? _imageSupportTypes.remove(type)
-        : _imageSupportTypes.add(type);
+    final types = imageSupportTypes; // RxList：add/remove 自带 refresh，无需手动通知
+    types.contains(type) ? types.remove(type) : types.add(type);
 
     // 更新偏好设置
-    imageSupportTypes.value = _imageSupportTypes;
-    imageSupportTypes.refresh();
-    Get.find<PreferencesStorage>().imageSupportTypes.val = _imageSupportTypes;
+    Get.find<PreferencesStorage>().imageSupportTypes.val = types.toList();
   }
 }

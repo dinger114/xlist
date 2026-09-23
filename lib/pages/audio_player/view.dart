@@ -16,7 +16,7 @@ import 'package:xlist/pages/audio_player/index.dart';
 import 'package:xlist/services/audio_player_service.dart';
 
 class AudioPlayerPage extends GetView<AudioPlayerController> {
-  const AudioPlayerPage({Key? key}) : super(key: key);
+  const AudioPlayerPage({super.key});
 
   /// 播放服务：播放状态、队列都在这里（controller 只是视图层）
   AudioPlayerService get player => controller.player;
@@ -102,7 +102,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
       padding: EdgeInsets.only(top: CommonUtils.isPad ? 20 : 100.h),
       child: Column(
         children: [
-          Container(
+          SizedBox(
             width: CommonUtils.isPad ? 300 : 700.r,
             height: CommonUtils.isPad ? 300 : 700.r,
             child: _buildCover(),
@@ -134,7 +134,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
         children: [
           Row(
             children: [
-              Container(
+              SizedBox(
                 width: CommonUtils.isPad ? 150 : 300.r,
                 height: CommonUtils.isPad ? 150 : 300.r,
                 child: _buildCover(),
@@ -162,7 +162,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
               itemBuilder: (context, index) {
                 return GestureDetector(
                   onTap: () => controller.changePlaylist(index),
-                  child: Container(
+                  child: SizedBox(
                     height: CommonUtils.isPad ? 50 : 100.h,
                     child: Text(
                       CommonUtils.formatFileNme(player.objects[index].name!),
@@ -236,7 +236,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
 
   /// 播放时间
   Widget _buildDuration() {
-    return Container(
+    return SizedBox(
       height: 70.h,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -268,7 +268,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
 
   /// 构建播放器控制按钮
   Widget _buildControlButton() {
-    return Container(
+    return SizedBox(
       height: 120.h,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -277,16 +277,17 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
           CupertinoButton(
             alignment: Alignment.centerLeft,
             padding: EdgeInsets.zero,
+            onPressed: controller.previous,
             child: Icon(
               CupertinoIcons.backward_end_alt_fill,
               size: CommonUtils.isPad ? 50 : 100.sp,
               color: Get.isDarkMode ? Colors.white : Colors.black87,
             ),
-            onPressed: controller.previous,
           ),
           CupertinoButton(
             alignment: Alignment.center,
             padding: EdgeInsets.zero,
+            onPressed: controller.togglePlay,
             child: Obx(
               () => Icon(
                 player.isPlaying.value
@@ -296,17 +297,16 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
                 color: Get.isDarkMode ? Colors.white : Colors.black87,
               ),
             ),
-            onPressed: controller.togglePlay,
           ),
           CupertinoButton(
             alignment: Alignment.centerRight,
             padding: EdgeInsets.zero,
+            onPressed: controller.next,
             child: Icon(
               CupertinoIcons.forward_end_alt_fill,
               size: CommonUtils.isPad ? 50 : 100.sp,
               color: Get.isDarkMode ? Colors.white : Colors.black87,
             ),
-            onPressed: controller.next,
           ),
         ],
       ),
@@ -321,7 +321,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
         length: 2,
         child: Column(
           children: [
-            Container(
+            SizedBox(
               height: 1150.h,
               child: Obx(
                 () => TabBarView(
@@ -352,6 +352,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
                         Obx(
                           () => CupertinoButton(
                             alignment: Alignment.centerLeft,
+                            onPressed: controller.changePlayMode,
                             child: Icon(
                               PlayMode.getIcon(player.playMode.value),
                               size: CommonUtils.isPad ? 30 : 70.sp,
@@ -359,7 +360,6 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
                                   ? Colors.white
                                   : Colors.black87,
                             ),
-                            onPressed: controller.changePlayMode,
                           ),
                         ),
                         Obx(

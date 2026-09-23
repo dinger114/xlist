@@ -1,8 +1,6 @@
 import 'package:get/get.dart';
 
 import 'package:xlist/core/player/x_player.dart';
-import 'package:xlist/core/player/x_player_state.dart';
-import 'package:xlist/core/player/x_player_track.dart';
 import 'package:xlist/core/player/media_kit_player.dart';
 import 'package:xlist/core/player/x_video_controller.dart';
 import 'package:xlist/storages/index.dart';

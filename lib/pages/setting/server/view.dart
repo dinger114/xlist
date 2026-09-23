@@ -16,7 +16,7 @@ import 'package:xlist/pages/setting/server/index.dart';
 import 'package:xlist/components/bottom_sheet/add_server_bottom_sheet.dart';
 
 class ServerPage extends GetView<ServerController> {
-  const ServerPage({Key? key}) : super(key: key);
+  const ServerPage({super.key});
 
   // NavigationBar
   CupertinoNavigationBar _buildNavigationBar() {
@@ -34,7 +34,7 @@ class ServerPage extends GetView<ServerController> {
               await BottomSheetHelper.showBottomSheet(AddServerBottomSheet());
 
           if (result == null) return;
-          if (!(result is ServerEntity)) return;
+          if (result is! ServerEntity) return;
 
           // 重置首页信息
           if (controller.serverList.isEmpty) {
@@ -42,15 +42,15 @@ class ServerPage extends GetView<ServerController> {
             Get.find<UserStorage>().serverUrl.val = result.url;
 
             // 重置首页信息
-            final _homepageController = Get.find<HomepageController>();
-            _homepageController.serverId.value = result.id!;
-            await _homepageController.resetUserToken(result);
-            _homepageController.getObjectList();
+            final homepageController = Get.find<HomepageController>();
+            homepageController.serverId.value = result.id!;
+            await homepageController.resetUserToken(result);
+            homepageController.getObjectList();
 
             // 重置设置页面信息
-            final _settingController = Get.find<SettingController>();
-            _settingController.serverId.value = result.id!;
-            _settingController.serverInfo.value = result;
+            final settingController = Get.find<SettingController>();
+            settingController.serverId.value = result.id!;
+            settingController.serverInfo.value = result;
 
             // 重置服务器信息
             controller.serverId.value = result.id!;
@@ -70,7 +70,7 @@ class ServerPage extends GetView<ServerController> {
           ? EdgeInsets.symmetric(horizontal: 20, vertical: 5)
           : EdgeInsets.symmetric(horizontal: 50.w, vertical: 15.h),
       children: [
-        Container(
+        SizedBox(
           height: CommonUtils.isPad ? 75 : 150.h,
           width: double.infinity,
           child: Slidable(

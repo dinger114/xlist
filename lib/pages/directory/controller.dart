@@ -112,7 +112,7 @@ class DirectoryController extends GetxController {
       objects.addAll(formatData(response));
       objects.refresh(); // 刷新数据
     } catch (e) {
-      print(e);
+      debugPrint('XLIST_DIRECTORY 获取列表失败: $e');
     }
   }
 
@@ -128,7 +128,7 @@ class DirectoryController extends GetxController {
             {
               'name': d.name,
               'is_dir': true,
-              'type': FileType.FOLDER,
+              'type': FileType.folder,
               'size': 0,
               'modified': d.modified?.toIso8601String(),
             },
@@ -168,7 +168,7 @@ class DirectoryController extends GetxController {
       }
       // 关闭目录选择栈, 回到来源页
       if (source.isEmpty) {
-        Get.until((route) => !Get.currentRoute.startsWith(Routes.DIRECTORY));
+        Get.until((route) => !Get.currentRoute.startsWith(Routes.directory));
       }
       return;
     }

@@ -11,7 +11,6 @@ import 'package:xlist/helper/index.dart';
 import 'package:xlist/services/index.dart';
 import 'package:xlist/storages/index.dart';
 import 'package:xlist/constants/index.dart';
-import 'package:xlist/services/audio_player_service.dart';
 
 // 全局配置
 class Global {
@@ -38,12 +37,12 @@ class Global {
     await GetStorage.init();
 
     // Storage
-    await Get.put(CommonStorage());
+    Get.put(CommonStorage());
     await Get.putAsync(() => UserStorage().init());
     await Get.putAsync(() => PreferencesStorage().init());
 
     // Init Getx Service
-    await Get.put(BrowserService());
+    Get.put(BrowserService());
     await Get.putAsync(() => DioService().init());
     await Get.putAsync(() => DatabaseService().init());
     await Get.putAsync(() => DownloadService().init());
@@ -63,7 +62,7 @@ class Global {
     AppPermissionHelper.requestNotification();
 
     // Theme
-    Get.changeThemeMode(ThemeModeMap[Get.find<CommonStorage>().themeMode.val]!);
+    Get.changeThemeMode(themeModeMap[Get.find<CommonStorage>().themeMode.val]!);
 
     // android 状态栏为透明的沉浸
     if (GetPlatform.isAndroid) {

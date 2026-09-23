@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:async';
 
 import 'package:get/get.dart';
+import 'package:flutter/foundation.dart';
 import 'package:audio_service/audio_service.dart';
 
 import 'package:xlist/constants/index.dart';
@@ -38,7 +39,7 @@ class PlayerNotificationHandler extends BaseAudioHandler
   late StreamController<PlaybackState> streamController;
 
   // XPlayerState → audio_service state
-  static final X_TO_PROCESSING_STATE = {
+  static final xToProcessingState = {
     XPlayerState.idle: AudioProcessingState.idle,
     XPlayerState.loading: AudioProcessingState.buffering,
     XPlayerState.ready: AudioProcessingState.ready,
@@ -112,23 +113,24 @@ class PlayerNotificationHandler extends BaseAudioHandler
       if (!_isPlaylist!) return;
 
       // Get the current video/audio player controller.
-      dynamic _vp = _isVideo ?? false
+      dynamic vp = _isVideo ?? false
           ? Get.find<VideoPlayerController>()
           : AudioPlayerService.to;
 
       // If the current play mode is shuffle, change the playlist to a random index.
-      final _playMode =
-          _isVideo ?? false ? _vp.playMode.val : _vp.playMode.value;
-      if (_playMode == PlayMode.SHUFFLE) {
-        _vp.changePlaylist(Random().nextInt(_vp.objects.length));
+      final playMode = _isVideo ?? false ? vp.playMode.val : vp.playMode.value;
+      if (playMode == PlayMode.shuffle) {
+        vp.changePlaylist(Random().nextInt(vp.objects.length));
         return;
       }
 
       // Change the current index to the previous index.
-      _vp.currentIndex.value == 0
-          ? _vp.changePlaylist(_vp.objects.length - 1)
-          : _vp.changePlaylist(_vp.currentIndex.value - 1);
-    } catch (e) {}
+      vp.currentIndex.value == 0
+          ? vp.changePlaylist(vp.objects.length - 1)
+          : vp.changePlaylist(vp.currentIndex.value - 1);
+    } catch (e) {
+      debugPrint('XLIST_NOTIFY skipToPrevious 失败: $e');
+    }
   }
 
   @override
@@ -137,23 +139,24 @@ class PlayerNotificationHandler extends BaseAudioHandler
       if (!_isPlaylist!) return;
 
       // Get the current video/audio player controller.
-      dynamic _vp = _isVideo ?? false
+      dynamic vp = _isVideo ?? false
           ? Get.find<VideoPlayerController>()
           : AudioPlayerService.to;
 
       // If the current play mode is shuffle, change the playlist to a random index.
-      final _playMode =
-          _isVideo ?? false ? _vp.playMode.val : _vp.playMode.value;
-      if (_playMode == PlayMode.SHUFFLE) {
-        _vp.changePlaylist(Random().nextInt(_vp.objects.length));
+      final playMode = _isVideo ?? false ? vp.playMode.val : vp.playMode.value;
+      if (playMode == PlayMode.shuffle) {
+        vp.changePlaylist(Random().nextInt(vp.objects.length));
         return;
       }
 
       // Change the current index to the next index.
-      _vp.currentIndex.value == _vp.objects.length - 1
-          ? _vp.changePlaylist(0)
-          : _vp.changePlaylist(_vp.currentIndex.value + 1);
-    } catch (e) {}
+      vp.currentIndex.value == vp.objects.length - 1
+          ? vp.changePlaylist(0)
+          : vp.changePlaylist(vp.currentIndex.value + 1);
+    } catch (e) {
+      debugPrint('XLIST_NOTIFY skipToNext 失败: $e');
+    }
   }
 
   /// Initialise our stream controller and start listening to player events.
@@ -189,7 +192,7 @@ class PlayerNotificationHandler extends BaseAudioHandler
   }
 
   /// Broadcast playback state.
-  void updatePlaybackState([_]) {
+  void updatePlaybackState([PlaybackState? _]) {
     final player = _player;
     if (player == null) return;
 
@@ -200,9 +203,9 @@ class PlayerNotificationHandler extends BaseAudioHandler
     // closing"（表现为关闭播放器后日志里的未捕获异常）。提前退出。
     if (streamController.isClosed) return;
 
-    AudioProcessingState _processingState() {
+    AudioProcessingState processingState() {
       if (player.isBuffering) return AudioProcessingState.buffering;
-      return X_TO_PROCESSING_STATE[player.state] ?? AudioProcessingState.idle;
+      return xToProcessingState[player.state] ?? AudioProcessingState.idle;
     }
 
     streamController.add(PlaybackState(
@@ -222,7 +225,7 @@ class PlayerNotificationHandler extends BaseAudioHandler
         MediaAction.seekBackward,
       },
       androidCompactActionIndices: const [0, 1, 3],
-      processingState: _processingState(),
+      processingState: processingState(),
       playing: player.isPlaying,
       updatePosition: player.position,
       bufferedPosition: player.buffer,

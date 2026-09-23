@@ -7,22 +7,13 @@ class SettingVideoController extends GetxController {
   final videoSupportTypes =
       Get.find<PreferencesStorage>().videoSupportTypes.val.obs;
 
-  @override
-  void onInit() {
-    super.onInit();
-  }
-
   /// 切换视频支持类型
   /// [type] 视频类型
   void toggleVideoSupportType(String type) {
-    final _videoSupportTypes = videoSupportTypes.value;
-    _videoSupportTypes.contains(type)
-        ? _videoSupportTypes.remove(type)
-        : _videoSupportTypes.add(type);
+    final types = videoSupportTypes; // RxList：add/remove 自带 refresh，无需手动通知
+    types.contains(type) ? types.remove(type) : types.add(type);
 
     // 更新偏好设置
-    videoSupportTypes.value = _videoSupportTypes;
-    videoSupportTypes.refresh();
-    Get.find<PreferencesStorage>().videoSupportTypes.val = _videoSupportTypes;
+    Get.find<PreferencesStorage>().videoSupportTypes.val = types.toList();
   }
 }

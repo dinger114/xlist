@@ -8,7 +8,7 @@ import 'package:xlist/constants/index.dart';
 import 'package:xlist/pages/setting/preview/image/index.dart';
 
 class SettingImagePage extends GetView<SettingImageController> {
-  const SettingImagePage({Key? key}) : super(key: key);
+  const SettingImagePage({super.key});
 
   // NavigationBar
   CupertinoNavigationBar _buildNavigationBar() {

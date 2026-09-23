@@ -19,7 +19,7 @@ class UserModel {
   @JsonKey(name: 'permission')
   int? permission;
   @JsonKey(name: 'sso_id')
-  String? sso_id;
+  String? ssoId;
   @JsonKey(name: 'disabled')
   bool? disabled;
 

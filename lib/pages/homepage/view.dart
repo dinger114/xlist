@@ -17,7 +17,7 @@ import 'package:xlist/database/entity/index.dart';
 import 'package:xlist/services/browser_service.dart';
 
 class Homepage extends GetView<HomepageController> {
-  const Homepage({Key? key}) : super(key: key);
+  const Homepage({super.key});
 
   /// NavigationBar
   Widget _buildSliverNavigationBar() {
@@ -28,7 +28,7 @@ class Homepage extends GetView<HomepageController> {
       leading: CupertinoButton(
         padding: EdgeInsets.zero,
         alignment: Alignment.centerLeft,
-        child: Container(
+        child: SizedBox(
           width: 190.w,
           child: Row(
             children: [
@@ -38,7 +38,7 @@ class Homepage extends GetView<HomepageController> {
             ],
           ),
         ),
-        onPressed: () => Get.toNamed(Routes.SETTING)
+        onPressed: () => Get.toNamed(Routes.setting)
             ?.then((value) => controller.getObjectList()),
       ),
       largeTitle: Text(
@@ -49,7 +49,7 @@ class Homepage extends GetView<HomepageController> {
         () => ButtonHelper.createPullDownButton(
           controller: controller,
           path: '/',
-          source: PageSource.HOMEPAGE,
+          source: PageSource.homepage,
           pageTag: tag ?? '',
         ),
       ),
@@ -89,7 +89,7 @@ class Homepage extends GetView<HomepageController> {
                 AddServerBottomSheet(),
               );
               if (result == null) return;
-              if (!(result is ServerEntity)) return;
+              if (result is! ServerEntity) return;
 
               // 重置本地信息
               Get.find<UserStorage>().serverId.val = result.id!;
@@ -118,21 +118,22 @@ class Homepage extends GetView<HomepageController> {
     }
 
     return SizeCacheWidget(
-      child: controller.layoutType.value == LayoutType.GRID
+      child: controller.layoutType.value == LayoutType.grid
           ? ObjectGridComponent(
               tag: '',
-              source: PageSource.HOMEPAGE,
+              source: PageSource.homepage,
               userInfo: controller.userInfo.value,
               path: '/',
-              objects: controller.objects.value,
+              // RxList 本身就是 List，直接传即可（Obx 会经 length/[] 自动登记依赖）
+              objects: controller.objects,
               isShowPreview: controller.isShowPreview.value,
             )
           : ObjectListComponent(
               tag: '',
-              source: PageSource.HOMEPAGE,
+              source: PageSource.homepage,
               userInfo: controller.userInfo.value,
               path: '/',
-              objects: controller.objects.value,
+              objects: controller.objects,
               isShowPreview: controller.isShowPreview.value,
             ),
     );

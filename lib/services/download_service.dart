@@ -25,24 +25,24 @@ class DownloadService extends GetxService {
   }
 
   // 绑定下载回调监听
-  bindBackgroundIsolate(DownloadIsolateCallback callback) {
-    ReceivePort _port = ReceivePort();
+  void bindBackgroundIsolate(DownloadIsolateCallback callback) {
+    final ReceivePort receivePort = ReceivePort();
     bool isSuccess =
-        IsolateNameServer.registerPortWithName(_port.sendPort, port);
+        IsolateNameServer.registerPortWithName(receivePort.sendPort, port);
 
     if (!isSuccess) {
       unbindBackgroundIsolate();
       bindBackgroundIsolate(callback);
       return;
     }
-    _port.listen((dynamic data) {
+    receivePort.listen((dynamic data) {
       callback(data[0], data[1], data[2]);
     });
     FlutterDownloader.registerCallback(downloadCallback);
   }
 
   // 解绑下载回调监听
-  unbindBackgroundIsolate() {
+  void unbindBackgroundIsolate() {
     IsolateNameServer.removePortNameMapping(port);
   }
 }

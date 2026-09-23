@@ -17,16 +17,16 @@ class MoreBottomSheet extends StatefulWidget {
   final ObjectModel object;
 
   const MoreBottomSheet({
-    Key? key,
+    super.key,
     required this.path,
     required this.tag,
     required this.userInfo,
     required this.object,
     required this.source,
-  }) : super(key: key);
+  });
 
   @override
-  _MoreBottomSheetState createState() => _MoreBottomSheetState();
+  State<MoreBottomSheet> createState() => _MoreBottomSheetState();
 }
 
 class _MoreBottomSheetState extends State<MoreBottomSheet> {
@@ -44,27 +44,25 @@ class _MoreBottomSheetState extends State<MoreBottomSheet> {
 
   /// 构建标题
   Widget _buildTitle() {
-    return Container(
-      child: Row(
-        children: [
-          Row(
-            children: [
-              _buildIcon(),
-              SizedBox(width: CommonUtils.isPad ? 10 : 20.w),
-              Container(
-                width: 900.w,
-                child: Text(
-                  object.name ?? '',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Get.textTheme.titleMedium
-                      ?.copyWith(fontWeight: FontWeight.bold),
-                ),
+    return Row(
+      children: [
+        Row(
+          children: [
+            _buildIcon(),
+            SizedBox(width: CommonUtils.isPad ? 10 : 20.w),
+            SizedBox(
+              width: 900.w,
+              child: Text(
+                object.name ?? '',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Get.textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.bold),
               ),
-            ],
-          )
-        ],
-      ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -164,7 +162,7 @@ class _MoreBottomSheetState extends State<MoreBottomSheet> {
                     icon: CupertinoIcons.folder,
                     onTap: () {
                       Get.back();
-                      Get.toNamed(Routes.DIRECTORY, arguments: {
+                      Get.toNamed(Routes.directory, arguments: {
                         'srcDir': widget.path,
                         'srcObject': object,
                         'root': true,
@@ -180,7 +178,7 @@ class _MoreBottomSheetState extends State<MoreBottomSheet> {
                     icon: CupertinoIcons.doc_on_doc,
                     onTap: () {
                       Get.back();
-                      Get.toNamed(Routes.DIRECTORY, arguments: {
+                      Get.toNamed(Routes.directory, arguments: {
                         'srcDir': widget.path,
                         'srcObject': object,
                         'root': true,

@@ -2,9 +2,9 @@ import 'package:xlist/models/index.dart';
 import 'package:xlist/constants/index.dart';
 
 class PermissionHelper {
-  static bool isAdmin(UserModel user) => user.role == UserRole.ADMIN;
-  static bool isGeneral(UserModel user) => user.role == UserRole.GENERAL;
-  static bool isGuest(UserModel user) => user.role == UserRole.GUEST;
+  static bool isAdmin(UserModel user) => user.role == UserRole.admin;
+  static bool isGeneral(UserModel user) => user.role == UserRole.general;
+  static bool isGuest(UserModel user) => user.role == UserRole.guest;
 
   /// 是否有权限
   /// [user] 用户

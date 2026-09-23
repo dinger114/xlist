@@ -14,7 +14,7 @@ import 'package:xlist/database/entity/index.dart';
 import 'package:xlist/pages/setting/recent/index.dart';
 
 class RecentPage extends GetView<RecentController> {
-  const RecentPage({Key? key}) : super(key: key);
+  const RecentPage({super.key});
 
   // NavigationBar
   CupertinoNavigationBar _buildNavigationBar() {
@@ -53,7 +53,7 @@ class RecentPage extends GetView<RecentController> {
       backgroundColor: CommonUtils.backgroundColor,
       margin: EdgeInsets.zero,
       children: [
-        Container(
+        SizedBox(
           height: CommonUtils.isPad ? 80 : 170.h,
           width: double.infinity,
           child: Slidable(
@@ -81,7 +81,7 @@ class RecentPage extends GetView<RecentController> {
                   SizedBox(width: CommonUtils.isPad ? 15 : 30.w),
                   _buildIcon(entity.type, entity.name),
                   SizedBox(width: CommonUtils.isPad ? 10 : 20.w),
-                  Container(
+                  SizedBox(
                     width: 750.w,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

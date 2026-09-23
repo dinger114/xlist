@@ -17,7 +17,7 @@ import 'package:xlist/components/markdown_style.dart';
 import 'package:xlist/pages/document/index.dart';
 
 class DocumentPage extends GetView<DocumentController> {
-  const DocumentPage({Key? key}) : super(key: key);
+  const DocumentPage({super.key});
 
   // NavigationBar
   CupertinoNavigationBar _buildNavigationBar() {
@@ -71,17 +71,17 @@ class DocumentPage extends GetView<DocumentController> {
         url: WebUri(controller.object.value.rawUrl ?? ''),
         headers: controller.httpHeaders,
       ),
-      initialOptions: controller.options,
+      initialSettings: controller.settings,
       onProgressChanged: controller.onProgressChanged,
       onReceivedServerTrustAuthRequest: (app, challenge) async {
         return ServerTrustAuthResponse(
           action: ServerTrustAuthResponseAction.PROCEED,
         );
       },
-      androidOnPermissionRequest: (app, origin, resources) async {
-        return PermissionRequestResponse(
-          resources: resources,
-          action: PermissionRequestResponseAction.GRANT,
+      onPermissionRequest: (app, permissionRequest) async {
+        return PermissionResponse(
+          resources: permissionRequest.resources,
+          action: PermissionResponseAction.GRANT,
         );
       },
       shouldOverrideUrlLoading: (app, navigationAction) async {
@@ -103,16 +103,14 @@ class DocumentPage extends GetView<DocumentController> {
 
   // PDF
   Widget _buildPdfView() {
-    return Container(
-      child: SfPdfViewer.network(
-        controller.object.value.rawUrl ?? '',
-        headers: controller.httpHeaders.value,
-        canShowScrollHead: true,
-        canShowPaginationDialog: false,
-        canShowPasswordDialog: false,
-        canShowHyperlinkDialog: false,
-        enableDoubleTapZooming: false,
-      ),
+    return SfPdfViewer.network(
+      controller.object.value.rawUrl ?? '',
+      headers: controller.httpHeaders,
+      canShowScrollHead: true,
+      canShowPaginationDialog: false,
+      canShowPasswordDialog: false,
+      canShowHyperlinkDialog: false,
+      enableDoubleTapZooming: false,
     );
   }
 

@@ -40,7 +40,7 @@ class AppRouter {
   /// 把 `AppPages.routes` 递归摊平。
   ///
   /// GetX 的 children 语义是**字符串拼接**：父 `/setting` + 子 `/server`
-  /// 得到 `/setting/server`（与 `Routes.SETTING_SERVER` 的定义一致）。
+  /// 得到 `/setting/server`（与 `Routes.settingServer` 的定义一致）。
   /// 这里复刻同一规则，保证与原有路由路径逐字相同。
   static List<GetPage> _flatten(List<GetPage> routes) {
     final out = <GetPage>[];

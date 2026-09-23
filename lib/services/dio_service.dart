@@ -13,26 +13,27 @@ class DioService extends GetxService {
   static DioService get to => Get.find();
 
   // Dio
-  Dio _dio = Dio();
+  final Dio _dio = Dio();
   Dio get dio => _dio;
   Map<String, String> defaultHeaders = {}; // 默认请求头
 
   // 连接超时时间
-  static const Duration CONNECT_TIMEOUT = Duration(seconds: 10 * 1000);
+  static const Duration connectTimeout = Duration(seconds: 10 * 1000);
 
   // 响应超时时间 5 min
-  static const Duration RECEIVE_TIMEOUT = Duration(seconds: 300 * 1000);
+  static const Duration receiveTimeout = Duration(seconds: 300 * 1000);
 
   // Init
   Future<DioService> init() async {
     // 设置一些默认信息
     _dio.options
-      ..connectTimeout = CONNECT_TIMEOUT
-      ..receiveTimeout = RECEIVE_TIMEOUT;
+      ..connectTimeout = connectTimeout
+      ..receiveTimeout = receiveTimeout;
 
     // Certificate
-    (_dio.httpClientAdapter as IOHttpClientAdapter).onHttpClientCreate =
-        (HttpClient dioClient) {
+    // 用 createHttpClient 而非已弃用的 onHttpClientCreate：后者在 dio 6 会被移除。
+    // 签名也换了 —— createHttpClient 是 `HttpClient Function()`，不接收参数。
+    (_dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
       final SecurityContext sc = SecurityContext();
       sc.allowLegacyUnsafeRenegotiation = true;
 
@@ -71,10 +72,5 @@ class DioInterceptors extends Interceptor {
 
     // Next
     handler.next(response);
-  }
-
-  @override
-  void onError(DioError err, ErrorInterceptorHandler handler) {
-    return super.onError(err, handler);
   }
 }

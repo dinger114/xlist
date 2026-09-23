@@ -3,20 +3,14 @@ import 'dart:async';
 
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:subtitle_wrapper_package/subtitle_wrapper_package.dart';
 
 import 'package:xlist/common/index.dart';
 import 'package:xlist/helper/index.dart';
 import 'package:xlist/pages/video_player/index.dart';
-import 'package:xlist/core/player/x_player.dart';
-import 'package:xlist/core/player/x_player_state.dart';
-import 'package:xlist/core/player/x_player_track.dart';
 import 'package:xlist/components/player/slider.dart';
 import 'package:xlist/components/player/error_state.dart';
-import 'package:xlist/helper/pip_helper.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 double speed = 1.0;
@@ -34,7 +28,7 @@ class DefaultPanel extends StatefulWidget {
   final bool isFullScreen;
 
   const DefaultPanel({
-    Key? key,
+    super.key,
     required this.player,
     required this.playerTitle,
     required this.subtitles,
@@ -44,10 +38,10 @@ class DefaultPanel extends StatefulWidget {
     this.showPlaylist = false,
     this.showTimedText = true,
     this.isFullScreen = false,
-  }) : super(key: key);
+  });
 
   @override
-  _DefaultPanelState createState() => _DefaultPanelState();
+  State<DefaultPanel> createState() => _DefaultPanelState();
 }
 
 class _DefaultPanelState extends State<DefaultPanel>
@@ -57,15 +51,11 @@ class _DefaultPanelState extends State<DefaultPanel>
   bool get showTimedText => widget.showTimedText;
 
   XPlayerState? _playerState;
-  bool _isPlaying = false;
-  bool _isBuffering = false;
-  Duration _duration = Duration.zero;
   Duration _currentPos = Duration.zero;
 
   // 是否显示各个组件
   bool _subtitleDrawerState = false;
   bool _audioDrawerState = false;
-  bool _playlistDrawerState = false;
 
   AnimationController? _animationController;
   Animation<Offset>? _animation;
@@ -88,30 +78,12 @@ class _DefaultPanelState extends State<DefaultPanel>
 
     // init player state
     _playerState = player.state;
-    _isPlaying = player.isPlaying;
-    _isBuffering = player.isBuffering;
-    _duration = player.duration;
     _currentPos = player.position;
 
     // 监听状态
     _subs.add(player.stateStream.listen((state) {
       if (!mounted) return;
       setState(() => _playerState = state);
-    }));
-
-    _subs.add(player.playingStream.listen((playing) {
-      if (!mounted) return;
-      setState(() => _isPlaying = playing);
-    }));
-
-    _subs.add(player.bufferingStream.listen((buffering) {
-      if (!mounted) return;
-      setState(() => _isBuffering = buffering);
-    }));
-
-    _subs.add(player.durationStream.listen((duration) {
-      if (!mounted) return;
-      setState(() => _duration = duration);
     }));
 
     _subs.add(player.positionStream.listen((pos) {
@@ -159,16 +131,10 @@ class _DefaultPanelState extends State<DefaultPanel>
   }
 
   // 切换播放列表显示状态
-  void changePlaylistDrawerState(bool state) {
-    if (state) {
-      setState(() {
-        _playlistDrawerState = state;
-      });
-    }
-    Future.delayed(Duration(milliseconds: 100), () {
-      _animationController?.forward();
-    });
-  }
+  //
+  // 播放列表抽屉已从本面板移除：真正在用播放列表的是
+  // `pages/video_player/view.dart` 里的独立抽屉，本面板既没有渲染它，
+  // 也没有任何按钮回调这里，所以连字段一起删掉，避免留下「看起来能开」的假接口。
 
   // 抽屉列表
   Widget _buildPublicDrawer(Widget child) {
@@ -183,39 +149,35 @@ class _DefaultPanelState extends State<DefaultPanel>
                 setState(() {
                   _subtitleDrawerState = false;
                   _audioDrawerState = false;
-                  _playlistDrawerState = false;
                 });
               },
             ),
           ),
-          Container(
-            child: SlideTransition(
-              position: _animation!,
-              child: Container(
-                height: Get.height,
-                width: 320,
-                child: Scaffold(
-                  backgroundColor: Colors.black.withOpacity(0.8),
-                  appBar: AppBar(
-                    backgroundColor: Colors.black.withOpacity(0.3),
-                    automaticallyImplyLeading: false,
-                    elevation: 0.1,
-                    actions: [
-                      IconButton(
-                        icon: Icon(Icons.close),
-                        onPressed: () async {
-                          await _animationController!.reverse();
-                          setState(() {
-                            _subtitleDrawerState = false;
-                            _audioDrawerState = false;
-                            _playlistDrawerState = false;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                  body: Container(height: Get.height, child: child),
+          SlideTransition(
+            position: _animation!,
+            child: SizedBox(
+              height: Get.height,
+              width: 320,
+              child: Scaffold(
+                backgroundColor: Colors.black.withValues(alpha: 0.8),
+                appBar: AppBar(
+                  backgroundColor: Colors.black.withValues(alpha: 0.3),
+                  automaticallyImplyLeading: false,
+                  elevation: 0.1,
+                  actions: [
+                    IconButton(
+                      icon: Icon(Icons.close),
+                      onPressed: () async {
+                        await _animationController!.reverse();
+                        setState(() {
+                          _subtitleDrawerState = false;
+                          _audioDrawerState = false;
+                        });
+                      },
+                    ),
+                  ],
                 ),
+                body: SizedBox(height: Get.height, child: child),
               ),
             ),
           ),
@@ -227,19 +189,19 @@ class _DefaultPanelState extends State<DefaultPanel>
   // 字幕切换列表
   Widget _buildSubtitleList() {
     // 合并 subtitleNameList + subtitleTracks
-    final _subtitleList = List<Map<String, String>>.empty(growable: true);
-    widget.subtitleNameList.forEach((v) {
-      _subtitleList.add({'label': v, 'key': v});
-    });
-    widget.subtitleTracks.forEach((t) {
-      _subtitleList.add({
+    final subtitleList = List<Map<String, String>>.empty(growable: true);
+    for (var v in widget.subtitleNameList) {
+      subtitleList.add({'label': v, 'key': v});
+    }
+    for (var t in widget.subtitleTracks) {
+      subtitleList.add({
         'label': '${t.displayTitle}(${t.language ?? ''})',
         'key': 'internal::${t.id}',
       });
-    });
+    }
 
     // 添加关闭字幕
-    _subtitleList.add(
+    subtitleList.add(
       {'label': 'player_subtitle_close'.tr, 'key': 'close'},
     );
 
@@ -250,23 +212,21 @@ class _DefaultPanelState extends State<DefaultPanel>
         indent: 10,
         endIndent: 10,
       ),
-      itemCount: _subtitleList.length,
+      itemCount: subtitleList.length,
       itemBuilder: (context, index) {
         return CupertinoListTile(
-          title: Container(
-            child: Text(
-              _subtitleList[index]['label'] ?? '',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Get.textTheme.bodyLarge?.copyWith(
-                color: _subtitleList[index]['key'] == 'close'
-                    ? Colors.red
-                    : Colors.white,
-              ),
+          title: Text(
+            subtitleList[index]['label'] ?? '',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Get.textTheme.bodyLarge?.copyWith(
+              color: subtitleList[index]['key'] == 'close'
+                  ? Colors.red
+                  : Colors.white,
             ),
           ),
           onTap: () async {
-            final value = _subtitleList[index]['key'];
+            final value = subtitleList[index]['key'];
             final videoPlayerController = Get.find<VideoPlayerController>();
             videoPlayerController.changeSubtitle(value: value);
             await _animationController!.reverse();
@@ -283,13 +243,13 @@ class _DefaultPanelState extends State<DefaultPanel>
 
   // 音轨切换列表
   Widget _buildAudioList() {
-    final _audioList = List<Map<String, String?>>.empty(growable: true);
-    widget.audioTracks.forEach((t) {
-      _audioList.add({
+    final audioList = List<Map<String, String?>>.empty(growable: true);
+    for (var t in widget.audioTracks) {
+      audioList.add({
         'label': '${t.displayTitle}(${t.language ?? ''})',
         'key': t.id,
       });
-    });
+    }
 
     return ListView.separated(
       shrinkWrap: true,
@@ -298,21 +258,19 @@ class _DefaultPanelState extends State<DefaultPanel>
         indent: 10,
         endIndent: 10,
       ),
-      itemCount: _audioList.length,
+      itemCount: audioList.length,
       itemBuilder: (context, index) {
         return CupertinoListTile(
-          title: Container(
-            child: Text(
-              _audioList[index]['label'] ?? '',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Get.textTheme.bodyLarge?.copyWith(
-                color: Colors.white,
-              ),
+          title: Text(
+            audioList[index]['label'] ?? '',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Get.textTheme.bodyLarge?.copyWith(
+              color: Colors.white,
             ),
           ),
           onTap: () async {
-            final value = _audioList[index]['key'];
+            final value = audioList[index]['key'];
             final videoPlayerController = Get.find<VideoPlayerController>();
             videoPlayerController.changeAudioTrack(value: value);
             await _animationController!.reverse();
@@ -382,18 +340,16 @@ class _DefaultPanelState extends State<DefaultPanel>
       } else if (_audioDrawerState == true && widget.isFullScreen) {
         ws.add(_buildPublicDrawer(_buildAudioList()));
       } else {
-        ws.add(_buildGestureDetector(
+        ws.add(_GestureDetector(
           player: widget.player,
           playerTitle: widget.playerTitle,
           showNextEpisodeBtn: widget.showPlaylist,
           showSubtitleDrawerBtn: widget.subtitleNameList.isNotEmpty ||
               widget.subtitleTracks.isNotEmpty,
           showAudioDrawerBtn: widget.audioTracks.length > 1,
-          showPlaylistDrawerBtn: false,
           isFullScreen: widget.isFullScreen,
           changeSubtitleDrawerState: changeSubtitleDrawerState,
           changeAudioDrawerState: changeAudioDrawerState,
-          changePlaylistDrawerState: changePlaylistDrawerState,
         ));
       }
     }
@@ -413,7 +369,7 @@ class _DefaultPanelState extends State<DefaultPanel>
     // 铺满由调用处的 `Positioned.fill` 负责，这里只返回 `Stack`。
     // 必须包一层 `Material`。
     //
-    // 下面 `_buildGestureDetector` 里多处用了 `Ink`/`InkWell`（播放按钮、倍速、
+    // 下面 `_GestureDetector` 里多处用了 `Ink`/`InkWell`（播放按钮、倍速、
     // 手势层的按钮），而 `Ink` 会 `Material.of(context)`；页面根是
     // `CupertinoPageScaffold`，**不提供 `Material` 祖先**。
     //
@@ -441,37 +397,32 @@ class _DefaultPanelState extends State<DefaultPanel>
   bool get wantKeepAlive => true;
 }
 
-class _buildGestureDetector extends StatefulWidget {
+class _GestureDetector extends StatefulWidget {
   final XPlayer player;
   final String playerTitle;
   final bool showNextEpisodeBtn;
   final bool showSubtitleDrawerBtn;
   final bool showAudioDrawerBtn;
-  final bool showPlaylistDrawerBtn;
   final bool isFullScreen;
   final Function changeSubtitleDrawerState;
   final Function changeAudioDrawerState;
-  final Function changePlaylistDrawerState;
 
-  _buildGestureDetector({
-    Key? key,
+  const _GestureDetector({
     this.playerTitle = "",
     required this.player,
     required this.showNextEpisodeBtn,
     required this.showSubtitleDrawerBtn,
     required this.showAudioDrawerBtn,
-    required this.showPlaylistDrawerBtn,
     required this.isFullScreen,
     required this.changeSubtitleDrawerState,
     required this.changeAudioDrawerState,
-    required this.changePlaylistDrawerState,
-  }) : super(key: key);
+  });
 
   @override
-  _buildGestureDetectorState createState() => _buildGestureDetectorState();
+  _GestureDetectorState createState() => _GestureDetectorState();
 }
 
-class _buildGestureDetectorState extends State<_buildGestureDetector> {
+class _GestureDetectorState extends State<_GestureDetector> {
   XPlayer get player => widget.player;
 
   Duration _duration = Duration();
@@ -526,7 +477,7 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
   };
 
   // 初始化构造函数
-  _buildGestureDetectorState();
+  _GestureDetectorState();
 
   void initEvent() {
     _duration = player.duration;
@@ -611,7 +562,7 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
   /// 长按屏幕快进
   ///
   /// [detills] 事件
-  _onLongPressStart(LongPressStartDetails detills) {
+  void _onLongPressStart(LongPressStartDetails detills) {
     player.setRate(_speed * 3.0);
     setState(() {
       _hideTimer?.cancel();
@@ -620,7 +571,7 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
     });
   }
 
-  _onLongPressEnd(LongPressEndDetails detills) {
+  void _onLongPressEnd(LongPressEndDetails detills) {
     player.setRate(_speed);
     setState(() {
       _hideStuff = true;
@@ -628,14 +579,14 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
     });
   }
 
-  _onHorizontalDragStart(detills) {
+  void _onHorizontalDragStart(DragStartDetails detills) {
     setState(() {
       updatePrevDx = detills.globalPosition.dx;
       updatePosX = _currentPos.inMilliseconds;
     });
   }
 
-  _onHorizontalDragUpdate(detills) {
+  void _onHorizontalDragUpdate(DragUpdateDetails detills) {
     double curDragDx = detills.globalPosition.dx;
     // 确定当前是前进或者后退
     int cdx = curDragDx.toInt();
@@ -664,7 +615,7 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
       dragRange = 0;
     }
     //
-    this.setState(() {
+    setState(() {
       _isHorizontalMove = true;
       _hideStuff = false;
       _isTouch = true;
@@ -676,11 +627,11 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
     });
   }
 
-  _onHorizontalDragEnd(detills) {
+  void _onHorizontalDragEnd(DragEndDetails detills) {
     if (_duration.inMilliseconds != 0) {
       player.seek(Duration(milliseconds: _dargPos.inMilliseconds));
     }
-    this.setState(() {
+    setState(() {
       _isHorizontalMove = false;
       _isTouch = false;
       _hideStuff = true;
@@ -688,7 +639,7 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
     });
   }
 
-  _onVerticalDragStart(detills) async {
+  Future<void> _onVerticalDragStart(DragStartDetails detills) async {
     double clientW = MediaQuery.of(context).size.width;
     double curTouchPosX = detills.globalPosition.dx;
 
@@ -730,15 +681,15 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
     }
   }
 
-  _onVerticalDragUpdate(detills) {
-    if (!varTouchInitSuc) return null;
+  void _onVerticalDragUpdate(DragUpdateDetails detills) {
+    if (!varTouchInitSuc) return;
     double curDragDy = detills.globalPosition.dy;
     // 确定当前是前进或者后退
     int cdy = curDragDy.toInt();
     int pdy = updatePrevDy!.toInt();
     bool isBefore = cdy < pdy;
     // + -, 不满足, 上下滑动合法滑动值，> 3
-    if (isBefore && pdy - cdy < 3 || !isBefore && cdy - pdy < 3) return null;
+    if (isBefore && pdy - cdy < 3 || !isBefore && cdy - pdy < 3) return;
     // 区间
     double dragRange =
         isBefore ? updateDargVarVal! + 0.03 : updateDargVarVal! - 0.03;
@@ -765,7 +716,7 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
     });
   }
 
-  _onVerticalDragEnd(detills) {
+  void _onVerticalDragEnd(DragEndDetails detills) {
     setState(() {
       varTouchInitSuc = false;
     });
@@ -812,7 +763,7 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
     return Ink(
       child: InkWell(
         onTap: () => cb(),
-        child: Container(
+        child: SizedBox(
           height: 30,
           child: Padding(
             padding: EdgeInsets.only(left: 5, right: 5),
@@ -843,17 +794,7 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
     cacheValue = min(cacheValue, duration);
     cacheValue = max(cacheValue, 0);
 
-    // 计算底部吸底进度
-    double curConWidth = MediaQuery.of(context).size.width;
-    if (CommonUtils.isPad &&
-        MediaQuery.of(context).orientation == Orientation.landscape) {
-      curConWidth = 780.w;
-    }
-
-    double curTimePro = duration == 0 ? 0 : (currentValue / duration) * 100;
-    double curBottomProW = (curConWidth / 100) * curTimePro;
-
-    return Container(
+    return SizedBox(
       height: barHeight,
       child: Stack(
         children: [
@@ -891,7 +832,7 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
                     Padding(
                       padding: EdgeInsets.only(right: 5.0, left: 5),
                       child: Text(
-                        '${PlayerHelper.formatDuration(_currentPos)}',
+                        PlayerHelper.formatDuration(_currentPos),
                         style: TextStyle(
                           fontSize: 14.0,
                           color: Colors.white,
@@ -946,16 +887,14 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
                           ),
                     // 总播放时间
                     _duration.inMilliseconds == 0
-                        ? Container(
-                            child: const Text(
-                              "00:00",
-                              style: TextStyle(color: Colors.white),
-                            ),
+                        ? const Text(
+                            "00:00",
+                            style: TextStyle(color: Colors.white),
                           )
                         : Padding(
                             padding: EdgeInsets.only(right: 5.0, left: 5),
                             child: Text(
-                              '${PlayerHelper.formatDuration(_duration)}',
+                              PlayerHelper.formatDuration(_duration),
                               style: TextStyle(
                                 fontSize: 14.0,
                                 color: Colors.white,
@@ -1008,11 +947,11 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
                             padding: EdgeInsets.all(5),
                             child: InkWell(
                               onTap: () {
-                                final _vp = Get.find<VideoPlayerController>();
-                                _vp.currentIndex.value == _vp.objects.length - 1
-                                    ? _vp.changePlaylist(0)
-                                    : _vp.changePlaylist(
-                                        _vp.currentIndex.value + 1);
+                                final vp = Get.find<VideoPlayerController>();
+                                vp.currentIndex.value == vp.objects.length - 1
+                                    ? vp.changePlaylist(0)
+                                    : vp.changePlaylist(
+                                        vp.currentIndex.value + 1);
                               },
                               child: Container(
                                 alignment: Alignment.center,
@@ -1041,7 +980,7 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
                                 width: 40,
                                 height: 30,
                                 child: Text(
-                                  _speed.toString() + " X",
+                                  "$_speed X",
                                   style: TextStyle(color: Colors.white),
                                 ),
                               ),
@@ -1062,8 +1001,8 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
                     _buildPlayStateBtn(
                       Icons.fullscreen,
                       () {
-                        final _vp = Get.find<VideoPlayerController>();
-                        _vp.toggleFullScreen();
+                        final vp = Get.find<VideoPlayerController>();
+                        vp.toggleFullScreen();
                       },
                     ),
                     SizedBox(width: 7),
@@ -1143,20 +1082,18 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
             ],
           ),
         ),
-        child: Container(
+        child: SizedBox(
           height: barHeight,
           child: Row(
             children: <Widget>[
               _buildTopBackBtn(),
               Expanded(
-                child: Container(
-                  child: Text(
-                    widget.playerTitle,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                    textAlign: TextAlign.left,
-                    style: TextStyle(color: Colors.white),
-                  ),
+                child: Text(
+                  widget.playerTitle,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  textAlign: TextAlign.left,
+                  style: TextStyle(color: Colors.white),
                 ),
               )
             ],
@@ -1178,12 +1115,13 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
                 opacity: _hideStuff ? 0.0 : 0.7,
                 duration: Duration(milliseconds: 400),
                 child: GestureDetector(
+                  onTap: _playOrPause,
                   child: Container(
                     height: 50.0,
                     width: 50.0,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: Colors.grey[800]?.withOpacity(0.6),
+                      color: Colors.grey[800]?.withValues(alpha: 0.6),
                       borderRadius: BorderRadius.circular(30.0),
                     ),
                     child: Icon(
@@ -1194,7 +1132,6 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
                       size: 30.0,
                     ),
                   ),
-                  onTap: _playOrPause,
                 ),
               )
             : Column(
@@ -1205,8 +1142,8 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
                     height: barHeight * (widget.isFullScreen ? 0.6 : 0.5),
                     child: CircularProgressIndicator(
                       strokeWidth: 3.0,
-                      valueColor:
-                          AlwaysStoppedAnimation(Colors.white.withOpacity(0.7)),
+                      valueColor: AlwaysStoppedAnimation(
+                          Colors.white.withValues(alpha: 0.7)),
                     ),
                   ),
                 ],
@@ -1294,7 +1231,7 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
         Ink(
           child: InkWell(
             onTap: () {
-              if (_speed == speedVals) return null;
+              if (_speed == speedVals) return;
               setState(() {
                 _speed = speed = speedVals;
                 _hideSpeedStu = true;
@@ -1306,7 +1243,7 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
               width: 50,
               height: 30,
               child: Text(
-                mapKey + " X",
+                "$mapKey X",
                 style: TextStyle(
                   color: _speed == speedVals
                       ? Get.theme.primaryColor
@@ -1383,15 +1320,15 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
                     bottom: 0,
                     child: !_hideSpeedStu
                         ? Container(
+                            decoration: BoxDecoration(
+                              color: Colors.black45,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                             child: Padding(
                               padding: EdgeInsets.all(10),
                               child: Column(
                                 children: _buildSpeedListWidget(),
                               ),
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.black45,
-                              borderRadius: BorderRadius.circular(10),
                             ),
                           )
                         : Container(),
