@@ -97,6 +97,72 @@
   回退 Skia），但属图形后端切换，需真机目视对比渲染效果，本轮无视觉验收
   手段，未动
 
+## [1.2.1](https://github.com/dinger114/xlist/releases/tag/v1.2.1) - 2026-09-23
+
+### Bug Fixes
+
+- **修复 APK 无法构建**（`flutter build apk` 在 Gradle 配置阶段就失败）。两个
+  独立原因，都非代码问题：
+  - `android/app/build.gradle` 的 `compileOptions` 用 Java **1.8**，会让 Gradle
+    在解析 `packageDebug` 依赖时抛 `MissingValueException`（报错原文
+    "Cannot query the value of this property because it has no value available"，
+    栈底 `ProviderBackedFileCollection.visitDependencies`），不给任何有用信息。
+    改为 17 后消失（实测：只改 `kotlinOptions` 无效、只改 `compileOptions` 有效；
+    缺 NDK / `packaging` / `sourceSets` / `android.newDsl` / 新旧赋值语法
+    逐一排除均无效）
+  - **JDK 过新**：本机 PATH 上的 `java` 是 Temurin 26，Gradle 默认取
+    "Current JVM"，AGP 9 用它调用 `core-for-system-modules.jar` 的 `jlink`，
+    26 不接受该 jmod 布局（`--disable-plugin system-modules`）→
+    `JdkImageTransform` 失败。改用 17 通过
+- 因 `org.gradle.java.home` 写绝对路径对别的机器/CI 不通用（路径不存在时
+  Gradle 直接报错、不回退），JDK 17 改由**构建入口**负责：
+  CI 走 `actions/setup-java`（`java-version: 17`），本机由 `Makefile` 用
+  `/usr/libexec/java_home -v 17` 解析（不写死路径；解析不到则不覆盖
+  `JAVA_HOME`，让构建报错而非静默绑错 JDK）
+
+### Changed
+
+- **静态分析完全清零**：33 warning + 455 info → **0**。`flutter analyze`
+  现为 "No issues found"。改动保持语义等价，测试基线 210 全过、改动前后一致。
+  真问题部分：`auth_middleware.redirect` 补显式 `return null`；
+  去掉对 `audio_service 0.18.19` 已不导出符号的 `hide QueueState`；
+  `default_panel` 删 5 个只在 `initState` 赋值、从不读取的字段与假的播放列表
+  抽屉接口（真身在 `video_player/view.dart`）；13 处 `Rx.value` 的
+  `@protected` 违规改为直接操作 `RxList`/`RxMap`
+- **弃用 API 迁移**：dio `onHttpClientCreate` → `createHttpClient`（dio 6 将
+  移除旧 API）；`shareXFiles` → `SharePlus.instance.share(ShareParams)`；
+  `flutter_inappwebview` 的 `InAppWebViewGroupOptions` + 各平台 Options →
+  统一的 `InAppWebViewSettings`，`androidOnPermissionRequest` →
+  `onPermissionRequest`；`Color.alpha` → `Color.a`
+- 风格统一：`SCREAMING_CAPS` 常量改 lowerCamelCase（`Routes.HOMEPAGE` →
+  `Routes.homepage` 等 86 处、346 个带前缀引用）、本地变量去下划线前缀、
+  `sso_id` → `ssoId`、`force_root` → `forceRoot`；`lib/langs/` 文件名与常量
+  改为 `en_us.dart`/`enUs`（`translation_service` 里的 locale 键
+  `'en_US'`/`'zh_Hans'` 是 GetX 映射键，按原样保留）
+- `pubspec.yaml` 补 4 个此前「传递依赖被直接 import」的包
+  （`material_ui`、`json_annotation`、`flutter_highlight`、`highlight`），
+  版本按 `pubspec.lock` 钉死；`ssoId` 改名后用 `build_runner` 重新生成
+  `user.g.dart`，**wire 格式不变**（`@JsonKey(name: 'sso_id')`、`'force_root'`
+  等 JSON 键保持原样）
+- 三处保留的 analyzer ignore 均带原因注释（非掩盖）：`GetView.tag` 覆盖
+  （GetView 的 `tag` 是 final 且构造函数不收 tag，只能子类重新声明，GetX
+  官方写法）、media_kit 的私有 `_Track` 类型（包外引用不到，只能不写类型）、
+  `search/view` 里 Obx 为登记依赖而读的两个值
+
+### 已知问题（上游阻塞，非本仓库可解）
+
+- Flutter 构建时提示 `floating`、`flutter_downloader`、
+  `image_gallery_saver_plus`、`in_app_review` 四个插件仍在使用 Kotlin Gradle
+  Plugin（KGP），以及 `android.builtInKotlin=false` / `android.newDsl=false`
+  两个 migrator 临时开关。**已实测确认当前无法迁移**：四个插件均已是 pub.dev
+  上的最新版且都未迁；一旦置 `android.builtInKotlin=true`，构建会在配置阶段
+  即失败（AGP 9 不再接受 KGP），而 Flutter Gradle Plugin 的 KGP 回退逻辑
+  （`FlutterPluginUtils.kt` 的 `detectApplyingKotlinGradlePlugin`）会在
+  `builtInKotlin=false` 时**自动替未声明 KGP 的模块补上 KGP**，因此也不存在
+  「先让 app 单独迁完」的路径——官方文档给的分模块开关
+  （`com.android.built-in-kotlin`）在 Flutter 工程上实测同样失败。
+  唯一可行时序是**等上游插件先迁**，之后再翻转该开关
+
 ## [Unreleased]
 
 ### Changed
