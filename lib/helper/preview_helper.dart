@@ -67,4 +67,15 @@ class PreviewHelper {
     final ext = p.extension(name).replaceAll('.', '').toLowerCase();
     return ext == 'html' || ext == 'htm';
   }
+
+  /// 是否是 Markdown
+  /// [name] 文件名称
+  ///
+  /// 不查 `Get.find<PreferencesStorage>()`：判定只依赖扩展名，这样它是纯函数、
+  /// 可直接单测。`md` **同时**命中 [isCode]（它在 `kSupportPreviewCodeTypes`
+  /// 里），所以渲染时会优先走 markdown 分支 —— 见 `document/view.dart`。
+  static bool isMarkdown(String name) {
+    final ext = p.extension(name).replaceAll('.', '').toLowerCase();
+    return ext == 'md';
+  }
 }
