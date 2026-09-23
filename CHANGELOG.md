@@ -101,6 +101,34 @@
 
 ### Changed
 
+- **`.md` 文件改为真正的 Markdown 渲染**（此前显示的是带语法高亮的源码）。
+  `md` 同时出现在 `kSupportPreviewCodeTypes` 与 `kCodeLanguages` 里，历史实现
+  让它走「代码高亮」分支 —— 而 `kCodeLanguages['md'] == 'markdown'` 是
+  highlight.js 的**语法名**，不是渲染器，所以从未真正渲染过（全仓历史里
+  `flutter_markdown` / `MarkdownBody` 一次都没出现过，非回归）。
+  新增依赖 `flutter_markdown_plus ^1.0.12`（官方 `flutter_markdown` 已
+  discontinued 且指向它；实测其源码只 import `flutter/material`，
+  **不引入 `material_ui`**，即不触发本项目的双主题谱系问题）。
+  `document/view.dart` 新增 `_buildMarkdownView()`；`controller.dart` 新增
+  `codeText`（原始文本）与语法高亮用的 `codeController` 各司其职；
+  `PreviewHelper.isMarkdown()` 为不依赖 DI 的纯函数。
+  注意 `md` 同时命中 `isCode()`，故 md 分支必须优先判断 —— 已在代码分支显式
+  排除 md 并在测试里锁住该前提，避免调换顺序导致静默回归
+- **新增 Markdown 排版样式 `lib/components/markdown_style.dart`**。
+  不用 `MarkdownStyleSheet.fromTheme` 的默认值（读源码确认）：它把所有
+  `*Padding` 都设为 `EdgeInsets.zero`（标题段落挤成一团，是可读性差的主因）、
+  `code` 背景取 `theme.cardTheme.color`（本项目为 null，行内代码无底色）、
+  链接硬编码 `Colors.blue`（暗色背景 #121212 下不可读）、分隔线用 5px 粗边。
+  改为按 GitHub 比例的完整样式表：标题字号 26/22/19/17/16 递减、上留白大于
+  下留白、行内代码有底色与 monospace、引用块带左侧竖线、代码块圆角带边框、
+  表格有边框与单元格内边距、分隔线收到 1px。正文色按页面背景（亮 #F2F2F7 /
+  暗 #121212）显式给定，对比度以 **WCAG AA（>4.5:1）** 为断言标准
+- **字号一律用逻辑像素，不用 `.r` / `.sp`**。本项目
+  `ScreenUtilInit(designSize: Size(1080, 1920))` 的设计尺寸与设备逻辑尺寸
+  **单位不一致**（实测真机 `MediaQuery.size.width` 是 411dp，designSize 写 1080），
+  导致 `scaleWidth ≈ 0.381` —— 用它相乘会把 16 号正文缩成 **6.1px**。
+  顺带收益：直接用逻辑像素后，Flutter 会自动应用系统字体大小设置
+  （`MediaQuery.textScaler`），无障碍缩放天然生效，而 `.sp` 那套绕过了它
 - `dependency_overrides` 收敛：`dynamic_color` / `animations` 两个钉子**多余**
   （它们的版本本来就没被降级过），已移除并实测 `pub get` 照常解析；只剩
   `uuid: ^4.5.0` 是真必需 —— `syncfusion_flutter_pdfviewer` 要 `uuid ^4.1.0`
@@ -118,6 +146,14 @@
 
 ### Added
 
+- **依赖 patch 级升级**：`syncfusion_flutter_pdfviewer` 及 7 个 syncfusion 兄弟包
+  34.2.8 → **34.2.9**、`file_picker_darwin` 2.1.0 → **2.1.2**。
+  其余 `pub outdated` 列出的 19 条经逐条查上游约束后确认**无法升级**：9 条被
+  上游直接钉死且上游最新版仍未跟进（`subtitle_wrapper_package 2.2.1` 钉
+  `bloc ^8.1.4`、`floor 1.5.0` 钉 `sqlparser ^0.34.1`、`encrypt 5.0.3` 钉
+  `pointycastle ^3.6.2` 等），7 条是 Android 用不到的平台实现（`dbus` /
+  `file_picker_linux` 等），另 2 条由 Flutter SDK 自身钉住
+  （`material_color_utilities` / `test_api`）
 - 新增播放诊断开关 `XLIST_MPV_LOG`（`--dart-define=XLIST_MPV_LOG=true`）：
   把 mpv 后端日志经 `debugPrint` 打到 logcat。此前 media_kit 的诊断走 `print`，
   release 下被丢弃，导致播放类故障只能靠猜。与 `Global.routeLog` 同思路，

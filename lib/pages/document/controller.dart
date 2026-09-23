@@ -35,6 +35,12 @@ class DocumentController extends GetxController {
   // 是否是代码类型文件
   CodeController? codeController;
 
+  /// 原始文本内容（md 渲染用）。
+  ///
+  /// 原先只把文本塞进 [codeController] 供语法高亮；markdown 要的是原始
+  /// 文本交给渲染器，两者需求不同，所以单独留一份，避免耦合。
+  final codeText = ''.obs;
+
   // WebView
   final GlobalKey webViewKey = GlobalKey();
   InAppWebViewController? webViewController;
@@ -65,8 +71,11 @@ class DocumentController extends GetxController {
         options: Options(headers: httpHeaders),
       );
 
+      final text = response.data.toString();
+      codeText.value = text;
+
       codeController = CodeController(
-        text: response.data.toString(),
+        text: text,
         language: allLanguages[kCodeLanguages[fileType]] ?? javascript,
       );
     }
