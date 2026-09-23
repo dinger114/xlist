@@ -33,9 +33,7 @@ class ButtonHelper {
       onPressed: onPressed as void Function()?,
       child: Text(
         text,
-        style: Get.textTheme.titleMedium?.copyWith(
-          color: Colors.white,
-        ),
+        style: Get.textTheme.titleMedium?.copyWith(color: Colors.white),
       ),
     );
   }
@@ -66,11 +64,8 @@ class ButtonHelper {
         PullDownMenuItem(
           title: 'pull_down_new_folder'.tr,
           icon: CupertinoIcons.folder,
-          onTap: () => ObjectHelper.mkdir(
-            path: path,
-            source: source,
-            pageTag: pageTag,
-          ),
+          onTap: () =>
+              ObjectHelper.mkdir(path: path, source: source, pageTag: pageTag),
         ),
         PullDownMenuDivider.large(),
         PullDownMenuItem(
@@ -110,20 +105,24 @@ class ButtonHelper {
     }
 
     // 刷新
-    items.add(PullDownMenuItem(
-      title: 'pull_down_refresh'.tr,
-      icon: CupertinoIcons.refresh,
-      onTap: () async => await controller.getObjectList(),
-    ));
+    items.add(
+      PullDownMenuItem(
+        title: 'pull_down_refresh'.tr,
+        icon: CupertinoIcons.refresh,
+        onTap: () async => await controller.getObjectList(),
+      ),
+    );
 
     // 强制刷新, 只有有可写权限的用户才能看到
     if (controller.userInfo.value.permission != null &&
         PermissionHelper.canWrite(controller.userInfo.value)) {
-      items.add(PullDownMenuItem(
-        title: 'pull_down_force_refresh'.tr,
-        icon: CupertinoIcons.refresh_circled,
-        onTap: () async => await controller.getObjectList(refresh: true),
-      ));
+      items.add(
+        PullDownMenuItem(
+          title: 'pull_down_force_refresh'.tr,
+          icon: CupertinoIcons.refresh_circled,
+          onTap: () async => await controller.getObjectList(refresh: true),
+        ),
+      );
     }
 
     // 布局方式
@@ -160,8 +159,8 @@ class ButtonHelper {
         title: 'pull_down_time'.tr,
         icon: [0, 1].contains(sortType)
             ? (sortType == 0
-                ? CupertinoIcons.chevron_down
-                : CupertinoIcons.chevron_up)
+                  ? CupertinoIcons.chevron_down
+                  : CupertinoIcons.chevron_up)
             : null,
         onTap: () async {
           sortType == 0
@@ -176,8 +175,8 @@ class ButtonHelper {
         title: 'pull_down_name'.tr,
         icon: [2, 3].contains(sortType)
             ? (sortType == 2
-                ? CupertinoIcons.chevron_down
-                : CupertinoIcons.chevron_up)
+                  ? CupertinoIcons.chevron_down
+                  : CupertinoIcons.chevron_up)
             : null,
         onTap: () async {
           sortType == 3
@@ -192,8 +191,8 @@ class ButtonHelper {
         title: 'pull_down_size'.tr,
         icon: [4, 5].contains(sortType)
             ? (sortType == 4
-                ? CupertinoIcons.chevron_down
-                : CupertinoIcons.chevron_up)
+                  ? CupertinoIcons.chevron_down
+                  : CupertinoIcons.chevron_up)
             : null,
         onTap: () async {
           sortType == 5

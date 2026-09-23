@@ -76,8 +76,10 @@ class DetailController extends GetxController {
         final server = await DatabaseService.to.database.serverDao
             .findServerById(serverId);
         if (server != null) {
-          userInfo.value = await Get.find<HomepageController>()
-              .resetUserToken(server, force: true);
+          userInfo.value = await Get.find<HomepageController>().resetUserToken(
+            server,
+            force: true,
+          );
           await getObjectList(refresh: refresh);
           return;
         }
@@ -103,9 +105,12 @@ class DetailController extends GetxController {
         // 更新本地数据库密码
         await DatabaseService.to.database.passwordManagerDao
             .insertPasswordManager(
-          PasswordManagerEntity(
-              serverId: serverId, path: '$path$name', password: text.first),
-        );
+              PasswordManagerEntity(
+                serverId: serverId,
+                path: '$path$name',
+                password: text.first,
+              ),
+            );
 
         password = text.first;
         await getObjectList(refresh: refresh);
@@ -116,8 +121,10 @@ class DetailController extends GetxController {
       final data = FsListModel.fromJson(response['data']);
 
       // 排序
-      final list =
-          CommonUtils.sortObjectList(data.content ?? [], sortType.value);
+      final list = CommonUtils.sortObjectList(
+        data.content ?? [],
+        sortType.value,
+      );
 
       objects.clear(); // 清空数据
       objects.addAll(list);

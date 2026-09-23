@@ -17,7 +17,10 @@ abstract class DownloadDao {
     'SELECT * FROM download WHERE server_id = :serverId AND path = :path AND name = :name',
   )
   Future<DownloadEntity?> findDownloadByServerIdAndPath(
-      int serverId, String path, String name);
+    int serverId,
+    String path,
+    String name,
+  );
 
   @Query('DELETE FROM download WHERE id = :id')
   Future<void> deleteDownloadById(int id);

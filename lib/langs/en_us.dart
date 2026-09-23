@@ -133,8 +133,7 @@ const Map<String, String> enUs = {
   'add_server_dialog_2fa_hint': 'Please enter your OTP verification code',
   'add_server_toast_2fa_error': '2FA verification failed',
   'add_server_section_header': 'Please enter server information',
-  'add_server_section_footer':
-      'The server address format is: https://example.com.\nPlease test whether the server address and username are correct before saving.',
+  'add_server_section_footer': 'The server address format is: https://example.com.\nPlease test whether the server address and username are correct before saving.',
   'add_server_textfield_url': 'Server Address',
   'add_server_textfield_url_hint':
       'Please enter the server address (https://example.com)',
@@ -150,8 +149,7 @@ const Map<String, String> enUs = {
   'homepage_empty_server_button': 'New Server',
   'directory_root_title': 'Select target folder',
   'directory_empty_description': 'No more directories!!!',
-  'file_unsupported_description':
-      'This type of file is not supported for opening, please add it to the download list\nAfter the download is complete, you can use other applications to open and preview',
+  'file_unsupported_description': 'This type of file is not supported for opening, please add it to the download list\nAfter the download is complete, you can use other applications to open and preview',
   'video_switch_subtitle': 'Switch Subtitle',
   'video_switch_audio': 'Switch Audio',
   'video_tab_introduction': 'Introduction',
@@ -189,17 +187,14 @@ const Map<String, String> enUs = {
   'setting_premium_buy_description': 'One-time purchase, permanent use',
   'setting_premium_restore': 'Restore',
   'setting_premium_upgrade': 'Upgrade to Xlist Premium',
-  'setting_premium_upgrade_description':
-      'With a one-time purchase, you will permanently receive all of the following premium features',
+  'setting_premium_upgrade_description': 'With a one-time purchase, you will permanently receive all of the following premium features',
   'setting_premium_upgraded': '🎉 Upgraded to Xlist Premium',
   'setting_premium_upgraded_description':
       'You have permanent access to all of the following premium features',
-  'setting_premium_favorite':
-      'Bookmark your favorite files or folders, and find what you care about more easily',
+  'setting_premium_favorite': 'Bookmark your favorite files or folders, and find what you care about more easily',
   'setting_premium_recent':
       'Record your recently viewed files, quickly find the last previewed file',
-  'setting_premium_preview':
-      'Displays a preview of the media file, which allows you to visualize the contents of the file',
+  'setting_premium_preview': 'Displays a preview of the media file, which allows you to visualize the contents of the file',
   'setting_premium_advanced': 'Advanced Features',
   'setting_premium_advanced_description':
       'Take your experience to the next level with all the advanced features',
@@ -207,8 +202,7 @@ const Map<String, String> enUs = {
   'setting_premium_forever_description':
       'Access to all new features in future updated versions',
   'setting_premium_support': 'Support for Developers',
-  'setting_premium_support_description':
-      'Help developers to better maintain the software and provide you with a better experience',
+  'setting_premium_support_description': 'Help developers to better maintain the software and provide you with a better experience',
 
   'player_subtitle': 'Subtitle',
   'player_subtitle_close': 'Close subtitles',

@@ -19,29 +19,33 @@ class ObjectRepository extends Repository {
     final url = Get.find<UserStorage>().serverUrl.val;
     final response = await Repository.post(
       '$url/api/fs/get',
-      data: {
-        'path': path,
-        'password': password,
-      },
+      data: {'path': path, 'password': password},
     );
 
     // 未登录
     if (response.data['code'] == 401 && retry < 3) {
       final serverId = Get.find<UserStorage>().serverId.val;
-      final server =
-          await DatabaseService.to.database.serverDao.findServerById(serverId);
+      final server = await DatabaseService.to.database.serverDao.findServerById(
+        serverId,
+      );
       if (server != null) {
         final controller = Get.find<HomepageController>();
         await controller.resetUserToken(server, force: true);
         return await ObjectRepository.get(
-            path: path, password: password, retry: retry + 1);
+          path: path,
+          password: password,
+          retry: retry + 1,
+        );
       }
     }
 
     // 获取失败 重试三次
     if (response.data['code'] != 200 && retry < 3) {
       return await ObjectRepository.get(
-          path: path, password: password, retry: retry + 1);
+        path: path,
+        password: password,
+        retry: retry + 1,
+      );
     }
 
     // 错误信息
@@ -103,7 +107,7 @@ class ObjectRepository extends Repository {
       data: {
         'src_dir': srcDir,
         'dst_dir': dstDir,
-        'names': [name]
+        'names': [name],
       },
     );
 
@@ -125,7 +129,7 @@ class ObjectRepository extends Repository {
       data: {
         'src_dir': srcDir,
         'dst_dir': dstDir,
-        'names': [name]
+        'names': [name],
       },
     );
 
@@ -144,7 +148,7 @@ class ObjectRepository extends Repository {
       '$url/api/fs/remove',
       data: {
         'dir': path,
-        'names': [name]
+        'names': [name],
       },
     );
 
@@ -153,9 +157,7 @@ class ObjectRepository extends Repository {
 
   /// 新建文件夹
   /// [path] 文件路径
-  static Future<dynamic> mkdir({
-    required String path,
-  }) async {
+  static Future<dynamic> mkdir({required String path}) async {
     final url = Get.find<UserStorage>().serverUrl.val;
     final response = await Repository.post(
       '$url/api/fs/mkdir',
@@ -198,11 +200,7 @@ class ObjectRepository extends Repository {
     final url = Get.find<UserStorage>().serverUrl.val;
     final response = await Repository.post(
       '$url/api/fs/dirs',
-      data: {
-        'path': path,
-        'password': password,
-        'force_root': forceRoot,
-      },
+      data: {'path': path, 'password': password, 'force_root': forceRoot},
     );
 
     return response.data;

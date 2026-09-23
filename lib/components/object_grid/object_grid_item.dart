@@ -82,7 +82,7 @@ class _ObjectGridItemState extends State<ObjectGridItem>
     final modified = object.modified == null
         ? ''
         : Jiffy.parseFromDateTime(object.modified!)
-            .format(pattern: 'yyyy/MM/dd');
+              .format(pattern: 'yyyy/MM/dd');
 
     return Column(
       children: [

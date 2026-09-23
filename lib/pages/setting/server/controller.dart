@@ -22,8 +22,8 @@ class ServerController extends GetxController {
     super.onInit();
 
     // 获取服务器信息
-    serverList.value =
-        await DatabaseService.to.database.serverDao.findAllServer();
+    serverList.value = await DatabaseService.to.database.serverDao
+        .findAllServer();
 
     // 加载完成
     isFirstLoading.value = false;
@@ -31,8 +31,8 @@ class ServerController extends GetxController {
 
   /// 获取服务器列表
   void getServerList() async {
-    serverList.value =
-        await DatabaseService.to.database.serverDao.findAllServer();
+    serverList.value = await DatabaseService.to.database.serverDao
+        .findAllServer();
   }
 
   /// 切换服务器
@@ -64,8 +64,10 @@ class ServerController extends GetxController {
       _homepageController.serverId.value = server.id!;
 
       // 用户信息
-      final userInfo =
-          await _homepageController.resetUserToken(server, force: true);
+      final userInfo = await _homepageController.resetUserToken(
+        server,
+        force: true,
+      );
       if (userInfo.id == null) throw 'toast_get_user_info_fail'.tr;
 
       _homepageController.getObjectList();
@@ -124,8 +126,12 @@ class ServerController extends GetxController {
     // 设置页面
     if (_settingController.serverId.value == id) {
       _settingController.serverId.value = 0;
-      _settingController.serverInfo.value =
-          ServerEntity(url: '', type: 0, username: '', password: '');
+      _settingController.serverInfo.value = ServerEntity(
+        url: '',
+        type: 0,
+        username: '',
+        password: '',
+      );
     }
 
     getServerList();

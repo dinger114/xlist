@@ -39,28 +39,30 @@ class Themes {
   // flex_color_scheme 9 的 FlexThemeData 返回的就是 material_ui 版的 ThemeData
   // （其 flex_theme_data_extensions.dart 只 import material_ui + cupertino_ui）。
 
-  static final mui.ThemeData muiLight = FlexThemeData.light(
-    scheme: _scheme,
-    primary: brand,
-    secondary: brandSecondary,
-  ).copyWith(
-    splashColor: Colors.transparent,
-    highlightColor: Colors.transparent,
-  );
+  static final mui.ThemeData muiLight =
+      FlexThemeData.light(
+        scheme: _scheme,
+        primary: brand,
+        secondary: brandSecondary,
+      ).copyWith(
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+      );
 
-  static final mui.ThemeData muiDark = FlexThemeData.dark(
-    scheme: _scheme,
-    primary: brand,
-    secondary: brandSecondary,
-    // 暗色主题里 primary/secondary 只作 seed，需要显式告诉 flex「亮色用的是哪个色」
-    // 才能正确算出 fixed 系列。不设会有 FlexColorScheme WARNING
-    // （primaryLightRef/secondaryLightRef is null）。
-    primaryLightRef: brand,
-    secondaryLightRef: brandSecondary,
-  ).copyWith(
-    splashColor: Colors.transparent,
-    highlightColor: Colors.transparent,
-  );
+  static final mui.ThemeData muiDark =
+      FlexThemeData.dark(
+        scheme: _scheme,
+        primary: brand,
+        secondary: brandSecondary,
+        // 暗色主题里 primary/secondary 只作 seed，需要显式告诉 flex「亮色用的是哪个色」
+        // 才能正确算出 fixed 系列。不设会有 FlexColorScheme WARNING
+        // （primaryLightRef/secondaryLightRef is null）。
+        primaryLightRef: brand,
+        secondaryLightRef: brandSecondary,
+      ).copyWith(
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+      );
 
   // ---------------------------------------------------------------- flutter 侧
 

@@ -30,8 +30,9 @@ class ServerPage extends GetView<ServerController> {
         alignment: Alignment.centerRight,
         child: Text('setting_server_new'.tr),
         onPressed: () async {
-          final result =
-              await BottomSheetHelper.showBottomSheet(AddServerBottomSheet());
+          final result = await BottomSheetHelper.showBottomSheet(
+            AddServerBottomSheet(),
+          );
 
           if (result == null) return;
           if (result is! ServerEntity) return;
@@ -120,7 +121,7 @@ class ServerPage extends GetView<ServerController> {
                       style: Get.textTheme.bodySmall,
                     ),
                   ],
-                )
+                ),
               ],
             ),
           ),

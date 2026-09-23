@@ -73,18 +73,20 @@ class MarkdownStyles {
 
     /// 标题：字号递减 + 上留白大于下留白（GitHub 的节奏）
     TextStyle headingStyle(double size) => TextStyle(
-          fontSize: size,
-          color: heading,
-          fontWeight: FontWeight.w600,
-          height: 1.3,
-        );
+      fontSize: size,
+      color: heading,
+      fontWeight: FontWeight.w600,
+      height: 1.3,
+    );
 
     return MarkdownStyleSheet(
       // ---------------- 正文与行内元素 ----------------
       p: base,
       pPadding: EdgeInsets.only(bottom: 8),
       a: base.copyWith(
-          color: _link(isDark), decoration: TextDecoration.underline),
+        color: _link(isDark),
+        decoration: TextDecoration.underline,
+      ),
       em: base.copyWith(fontStyle: FontStyle.italic),
       strong: base.copyWith(fontWeight: FontWeight.w600),
       del: base.copyWith(decoration: TextDecoration.lineThrough, color: muted),
@@ -165,7 +167,6 @@ class MarkdownStyles {
   ///
   /// 注意：本文件不 import get / screenutil，参数由调用方传入 ——
   /// 这样 [build] 保持纯函数、可直接单测。
-  static MarkdownStyleSheet of(BuildContext context) => build(
-        isDark: Theme.of(context).brightness == Brightness.dark,
-      );
+  static MarkdownStyleSheet of(BuildContext context) =>
+      build(isDark: Theme.of(context).brightness == Brightness.dark);
 }

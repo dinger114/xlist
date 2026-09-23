@@ -29,8 +29,11 @@ void main() {
     });
 
     test('unknownRoute 不进路由表（由 onUnknownRoute 兜底）', () {
-      expect(allPaths.contains(Routes.notfound), isFalse,
-          reason: '/notfound 是 unknownRoute 的页面，应由 onUnknownRoute 兜底');
+      expect(
+        allPaths.contains(Routes.notfound),
+        isFalse,
+        reason: '/notfound 是 unknownRoute 的页面，应由 onUnknownRoute 兜底',
+      );
     });
 
     test('全部 Routes 常量都已注册（防漏注册/多余项）', () {
@@ -103,8 +106,9 @@ void main() {
     });
 
     test('onUnknownRoute 指向 notfound 页面', () {
-      final route =
-          AppRouter.onUnknownRoute(const RouteSettings(name: '/nope'));
+      final route = AppRouter.onUnknownRoute(
+        const RouteSettings(name: '/nope'),
+      );
       expect(route, isA<GetPageRoute>());
     });
 
@@ -113,10 +117,12 @@ void main() {
       // GetObserver 写 args，而 binding 在路由**构建时**就执行了 ——
       // 顺序倒置会让字段初始化里读 Get.arguments 的 controller 全拿到 null。
       Get.routing.args = null;
-      AppRouter.onGenerateRoute(RouteSettings(
-        name: Routes.homepage,
-        arguments: {'path': '/p', 'name': 'n'},
-      ));
+      AppRouter.onGenerateRoute(
+        RouteSettings(
+          name: Routes.homepage,
+          arguments: {'path': '/p', 'name': 'n'},
+        ),
+      );
       expect(Get.routing.args, {'path': '/p', 'name': 'n'});
     });
   });
@@ -126,19 +132,19 @@ void main() {
     tearDown(Get.reset);
 
     Widget appAt(String route) => ScreenUtilInit(
-          // 与 lib/main.dart 一致：页面里大量 `10.r` / `50.sp` 依赖 ScreenUtil
-          // 初始化，缺了会抛 LateInitializationError（不是路由问题）。
-          designSize: const Size(1080, 1920),
-          minTextAdapt: true,
-          splitScreenMode: true,
-          builder: (context, child) => MaterialApp(
-            navigatorKey: Get.key,
-            navigatorObservers: [GetObserver(null, Get.routing)],
-            initialRoute: route,
-            onGenerateRoute: AppRouter.onGenerateRoute,
-            onUnknownRoute: AppRouter.onUnknownRoute,
-          ),
-        );
+      // 与 lib/main.dart 一致：页面里大量 `10.r` / `50.sp` 依赖 ScreenUtil
+      // 初始化，缺了会抛 LateInitializationError（不是路由问题）。
+      designSize: const Size(1080, 1920),
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (context, child) => MaterialApp(
+        navigatorKey: Get.key,
+        navigatorObservers: [GetObserver(null, Get.routing)],
+        initialRoute: route,
+        onGenerateRoute: AppRouter.onGenerateRoute,
+        onUnknownRoute: AppRouter.onUnknownRoute,
+      ),
+    );
 
     testWidgets('splash 能构建', (tester) async {
       await tester.pumpWidget(appAt(Routes.splash));
@@ -160,8 +166,11 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull, reason: 'push 未知路由抛异常了');
-      expect(find.byType(NotfoundPage), findsOneWidget,
-          reason: '未知路由没有落到 notfound 页面');
+      expect(
+        find.byType(NotfoundPage),
+        findsOneWidget,
+        reason: '未知路由没有落到 notfound 页面',
+      );
     });
   });
 }

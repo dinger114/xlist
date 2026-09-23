@@ -82,8 +82,11 @@ void main() {
           .where((e) => e.toString() != 'strm')
           .toList();
       prefs.videoSupportTypes.val = list;
-      expect(prefs.videoSupportTypes.val.contains('strm'), isFalse,
-          reason: '前置条件：此时偏好里已无 strm');
+      expect(
+        prefs.videoSupportTypes.val.contains('strm'),
+        isFalse,
+        reason: '前置条件：此时偏好里已无 strm',
+      );
 
       // 硬编码分支仍返回 true
       expect(PreviewHelper.isVideo('a.strm'), isTrue);
@@ -158,14 +161,17 @@ void main() {
   group('isCode', () {
     test('文档类型表与代码类型表的交集内的扩展名识别为代码', () {
       final prefs = Get.find<PreferencesStorage>();
-      final intersection = prefs.documentSupportTypes.val
-          .toSet()
-          .intersection(kSupportPreviewCodeTypes.toSet());
+      final intersection = prefs.documentSupportTypes.val.toSet().intersection(
+        kSupportPreviewCodeTypes.toSet(),
+      );
       expect(intersection, isNotEmpty, reason: '交集不应为空，否则 Android 上永远无法预览代码');
 
       for (final ext in intersection) {
-        expect(PreviewHelper.isCode('a.$ext'), isTrue,
-            reason: '交集内的 $ext 应识别为代码');
+        expect(
+          PreviewHelper.isCode('a.$ext'),
+          isTrue,
+          reason: '交集内的 $ext 应识别为代码',
+        );
       }
     });
 

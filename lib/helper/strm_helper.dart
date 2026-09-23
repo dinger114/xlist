@@ -40,11 +40,13 @@ class StrmHelper {
     );
 
     final content = (response.data ?? '').replaceFirst('\uFEFF', '');
-    final line =
-        content.split(RegExp(r'[\r\n]+')).map((v) => v.trim()).firstWhere(
-              (v) => v.isNotEmpty && !v.startsWith('#'),
-              orElse: () => '',
-            );
+    final line = content
+        .split(RegExp(r'[\r\n]+'))
+        .map((v) => v.trim())
+        .firstWhere(
+          (v) => v.isNotEmpty && !v.startsWith('#'),
+          orElse: () => '',
+        );
     final playUrl = _normalizeUrl(line);
     if (playUrl.isEmpty) throw Exception('strm 内容为空或格式不正确');
     return playUrl;

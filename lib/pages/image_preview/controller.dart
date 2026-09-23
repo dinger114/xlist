@@ -44,14 +44,17 @@ class ImagePreviewController extends GetxController {
 
     // 获取头信息
     final object = await ObjectRepository.get(path: '$path$name');
-    imageHeaders.value =
-        DriverHelper.getHeaders(object.provider, object.rawUrl);
+    imageHeaders.value = DriverHelper.getHeaders(
+      object.provider,
+      object.rawUrl,
+    );
 
     // 获取图片链接, 115 hack
     if (object.provider!.startsWith(Provider.cloud115)) {
       for (var i = 0; i < objects.length; i++) {
-        final response =
-            await ObjectRepository.get(path: '$path${objects[i].name}');
+        final response = await ObjectRepository.get(
+          path: '$path${objects[i].name}',
+        );
         imageUrls.add(response.rawUrl!);
       }
     } else {
@@ -94,13 +97,15 @@ class ImagePreviewController extends GetxController {
 
   /// 复制链接
   void copyLink() {
-    Clipboard.setData(ClipboardData(
-      text: CommonUtils.getDownloadLink(
-        path,
-        object: objects[currentIndex.value],
-        userInfo: userInfo.value,
+    Clipboard.setData(
+      ClipboardData(
+        text: CommonUtils.getDownloadLink(
+          path,
+          object: objects[currentIndex.value],
+          userInfo: userInfo.value,
+        ),
       ),
-    ));
+    );
     SmartDialog.showToast('toast_copy_success'.tr);
   }
 

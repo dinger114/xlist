@@ -27,8 +27,9 @@ class SplashController extends GetxController {
     // 布局方式
     final layoutType = Get.find<PreferencesStorage>().layoutType.val;
     if (layoutType == LayoutType.unknown) {
-      Get.find<PreferencesStorage>().layoutType.val =
-          CommonUtils.isPad ? LayoutType.grid : LayoutType.list;
+      Get.find<PreferencesStorage>().layoutType.val = CommonUtils.isPad
+          ? LayoutType.grid
+          : LayoutType.list;
     }
 
     // 跳转到首页

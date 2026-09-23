@@ -62,7 +62,11 @@ class PlayerNotificationHandler extends BaseAudioHandler
   final List<StreamSubscription> _subs = [];
 
   void setVideoFunctions(
-      Function play, Function pause, Function seek, Function stop) {
+    Function play,
+    Function pause,
+    Function seek,
+    Function stop,
+  ) {
     _play = play;
     _pause = pause;
     _seek = seek;
@@ -162,7 +166,10 @@ class PlayerNotificationHandler extends BaseAudioHandler
   /// Initialise our stream controller and start listening to player events.
   /// [player] is the XPlayer instance.
   void initializeStreamController(
-      XPlayer player, bool isPlaylist, bool isVideo) {
+    XPlayer player,
+    bool isPlaylist,
+    bool isVideo,
+  ) {
     _isVideo = isVideo;
     _isPlaylist = isPlaylist;
     _player = player;
@@ -208,28 +215,30 @@ class PlayerNotificationHandler extends BaseAudioHandler
       return xToProcessingState[player.state] ?? AudioProcessingState.idle;
     }
 
-    streamController.add(PlaybackState(
-      controls: [
-        _isPlaylist ?? false
-            ? MediaControl.skipToPrevious
-            : MediaControl.rewind,
-        if (player.isPlaying) MediaControl.pause else MediaControl.play,
-        MediaControl.stop,
-        _isPlaylist ?? false
-            ? MediaControl.skipToNext
-            : MediaControl.fastForward,
-      ],
-      systemActions: const {
-        MediaAction.seek,
-        MediaAction.seekForward,
-        MediaAction.seekBackward,
-      },
-      androidCompactActionIndices: const [0, 1, 3],
-      processingState: processingState(),
-      playing: player.isPlaying,
-      updatePosition: player.position,
-      bufferedPosition: player.buffer,
-      speed: 1.0,
-    ));
+    streamController.add(
+      PlaybackState(
+        controls: [
+          _isPlaylist ?? false
+              ? MediaControl.skipToPrevious
+              : MediaControl.rewind,
+          if (player.isPlaying) MediaControl.pause else MediaControl.play,
+          MediaControl.stop,
+          _isPlaylist ?? false
+              ? MediaControl.skipToNext
+              : MediaControl.fastForward,
+        ],
+        systemActions: const {
+          MediaAction.seek,
+          MediaAction.seekForward,
+          MediaAction.seekBackward,
+        },
+        androidCompactActionIndices: const [0, 1, 3],
+        processingState: processingState(),
+        playing: player.isPlaying,
+        updatePosition: player.position,
+        bufferedPosition: player.buffer,
+        speed: 1.0,
+      ),
+    );
   }
 }

@@ -75,9 +75,8 @@ class ImagePreviewPage extends GetView<ImagePreviewController> {
           minScale: PhotoViewComputedScale.contained * 1.0,
           maxScale: PhotoViewComputedScale.covered * 2.0,
           child: Obx(
-            () => Center(
-              child: _buildNetworkImage(controller.imageUrls[index]),
-            ),
+            () =>
+                Center(child: _buildNetworkImage(controller.imageUrls[index])),
           ),
         );
       },

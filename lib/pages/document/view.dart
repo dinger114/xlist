@@ -24,10 +24,12 @@ class DocumentPage extends GetView<DocumentController> {
     List<PullDownMenuEntry> items = [];
 
     // 收藏
-    items.add(PullDownMenuItem(
-      title: 'favorite'.tr,
-      onTap: () => controller.favorite(),
-    ));
+    items.add(
+      PullDownMenuItem(
+        title: 'favorite'.tr,
+        onTap: () => controller.favorite(),
+      ),
+    );
 
     return CupertinoNavigationBar(
       backgroundColor: Get.theme.scaffoldBackgroundColor,
@@ -88,8 +90,15 @@ class DocumentPage extends GetView<DocumentController> {
         final uri = navigationAction.request.url!;
 
         /// 过滤掉不需要跳转的链接
-        if (!['http', 'https', 'file', 'chrome', 'data', 'javascript', 'about']
-            .contains(uri.scheme)) {
+        if (![
+          'http',
+          'https',
+          'file',
+          'chrome',
+          'data',
+          'javascript',
+          'about',
+        ].contains(uri.scheme)) {
           if (await canLaunchUrl(uri)) {
             await launchUrl(uri);
             return NavigationActionPolicy.CANCEL;

@@ -120,8 +120,11 @@ class _FakeXPlayer implements XPlayer {
   XTrackSelection get trackSelection => XTrackSelection();
 
   @override
-  Future<void> open(String url,
-      {Map<String, String>? headers, bool autoPlay = true}) async {}
+  Future<void> open(
+    String url, {
+    Map<String, String>? headers,
+    bool autoPlay = true,
+  }) async {}
   @override
   Future<void> play() async {}
   @override

@@ -29,19 +29,20 @@ void main() {
     test('顶层路由路径正确', () {
       final paths = AppRouter.allPaths;
       expect(
-          paths,
-          containsAll([
-            '/',
-            '/homepage',
-            '/detail',
-            '/search',
-            '/directory',
-            '/document',
-            '/file',
-            '/image/preview',
-            '/video/player',
-            '/audio/player',
-          ]));
+        paths,
+        containsAll([
+          '/',
+          '/homepage',
+          '/detail',
+          '/search',
+          '/directory',
+          '/document',
+          '/file',
+          '/image/preview',
+          '/video/player',
+          '/audio/player',
+        ]),
+      );
     });
 
     test('unknownRoute 不出现在可解析路由表里（由 onUnknownRoute 处理）', () {
@@ -94,8 +95,11 @@ void main() {
       final page = AppRouter.resolve(Routes.detail);
       expect(page, isNotNull);
       expect(page!.middlewares, isNotNull);
-      expect(page.middlewares!.isNotEmpty, isTrue,
-          reason: '详情页的 AuthMiddleware 丢失 —— 未登录也能进');
+      expect(
+        page.middlewares!.isNotEmpty,
+        isTrue,
+        reason: '详情页的 AuthMiddleware 丢失 —— 未登录也能进',
+      );
     });
 
     test('设置页 9 个子路由都能解析到', () {

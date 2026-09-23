@@ -237,8 +237,10 @@ class SettingPage extends GetView<SettingController> {
                 header: Container(
                   padding: EdgeInsets.only(left: 15),
                   alignment: Alignment.centerLeft,
-                  child: Text('settings_backup'.tr,
-                      style: Get.textTheme.bodySmall),
+                  child: Text(
+                    'settings_backup'.tr,
+                    style: Get.textTheme.bodySmall,
+                  ),
                 ),
                 children: [
                   _buildListTile(
@@ -250,13 +252,16 @@ class SettingPage extends GetView<SettingController> {
                         Container(
                           width: 300.w,
                           alignment: Alignment.centerRight,
-                          child: Obx(() => Text(
-                                controller.backupPath.value,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: Get.textTheme.bodySmall?.copyWith(
-                                    color: CupertinoColors.systemGrey),
-                              )),
+                          child: Obx(
+                            () => Text(
+                              controller.backupPath.value,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Get.textTheme.bodySmall?.copyWith(
+                                color: CupertinoColors.systemGrey,
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -302,8 +307,10 @@ class SettingPage extends GetView<SettingController> {
                 header: Container(
                   padding: EdgeInsets.only(left: 15),
                   alignment: Alignment.centerLeft,
-                  child: Text('settings_data_storage'.tr,
-                      style: Get.textTheme.bodySmall),
+                  child: Text(
+                    'settings_data_storage'.tr,
+                    style: Get.textTheme.bodySmall,
+                  ),
                 ),
                 children: [
                   _buildListTile(
@@ -311,7 +318,8 @@ class SettingPage extends GetView<SettingController> {
                     icon: CupertinoIcons.shield_lefthalf_fill,
                     onTap: () {
                       Clipboard.setData(
-                          ClipboardData(text: controller.databasePath.value));
+                        ClipboardData(text: controller.databasePath.value),
+                      );
                       SmartDialog.showToast('toast_copy_success'.tr);
                     },
                     trailing: Row(
@@ -324,13 +332,17 @@ class SettingPage extends GetView<SettingController> {
                             controller.databasePath.value,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: Get.textTheme.bodySmall
-                                ?.copyWith(color: CupertinoColors.systemGrey),
+                            style: Get.textTheme.bodySmall?.copyWith(
+                              color: CupertinoColors.systemGrey,
+                            ),
                           ),
                         ),
                         SizedBox(width: 5.w),
-                        Icon(CupertinoIcons.doc_on_clipboard,
-                            size: 16, color: CupertinoColors.systemGrey),
+                        Icon(
+                          CupertinoIcons.doc_on_clipboard,
+                          size: 16,
+                          color: CupertinoColors.systemGrey,
+                        ),
                       ],
                     ),
                   ),
@@ -338,8 +350,9 @@ class SettingPage extends GetView<SettingController> {
                     title: 'settings_preferences_path'.tr,
                     icon: CupertinoIcons.gear_alt,
                     onTap: () {
-                      Clipboard.setData(ClipboardData(
-                          text: controller.preferencesPath.value));
+                      Clipboard.setData(
+                        ClipboardData(text: controller.preferencesPath.value),
+                      );
                       SmartDialog.showToast('toast_copy_success'.tr);
                     },
                     trailing: Row(
@@ -352,13 +365,17 @@ class SettingPage extends GetView<SettingController> {
                             controller.preferencesPath.value,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: Get.textTheme.bodySmall
-                                ?.copyWith(color: CupertinoColors.systemGrey),
+                            style: Get.textTheme.bodySmall?.copyWith(
+                              color: CupertinoColors.systemGrey,
+                            ),
                           ),
                         ),
                         SizedBox(width: 5.w),
-                        Icon(CupertinoIcons.doc_on_clipboard,
-                            size: 16, color: CupertinoColors.systemGrey),
+                        Icon(
+                          CupertinoIcons.doc_on_clipboard,
+                          size: 16,
+                          color: CupertinoColors.systemGrey,
+                        ),
                       ],
                     ),
                   ),
@@ -374,7 +391,8 @@ class SettingPage extends GetView<SettingController> {
                     icon: Icons.feedback_rounded,
                     onTap: () => launchUrl(
                       Uri.parse(
-                          'mailto:hello@gaozihang.com?subject=${'app_name'.tr}, v${controller.version.value}}'),
+                        'mailto:hello@gaozihang.com?subject=${'app_name'.tr}, v${controller.version.value}}',
+                      ),
                     ),
                   ),
                   _buildListTile(

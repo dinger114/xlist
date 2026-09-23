@@ -120,8 +120,9 @@ class _ObjectListItemState extends State<ObjectListItem>
 
     return Container(
       padding: EdgeInsets.only(
-          top: CommonUtils.isPad ? 5 : 20.r,
-          bottom: CommonUtils.isPad ? 5 : 10.r),
+        top: CommonUtils.isPad ? 5 : 20.r,
+        bottom: CommonUtils.isPad ? 5 : 10.r,
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

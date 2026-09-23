@@ -39,8 +39,11 @@ class DioService extends GetxService {
 
       // HttpClient
       HttpClient httpClient = HttpClient(context: sc);
-      httpClient.badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
+      httpClient.badCertificateCallback = (
+        X509Certificate cert,
+        String host,
+        int port,
+      ) => true;
 
       return httpClient;
     };

@@ -84,7 +84,8 @@ class AudioPlayerController extends GetxController
     if (player.objects.isEmpty) return;
     if (player.playMode.value == PlayMode.shuffle) {
       player.changePlaylist(
-          CommonUtils.randomInt(0, player.objects.length - 1).toInt());
+        CommonUtils.randomInt(0, player.objects.length - 1).toInt(),
+      );
       return;
     }
     player.currentIndex.value == 0
@@ -97,7 +98,8 @@ class AudioPlayerController extends GetxController
     if (player.objects.isEmpty) return;
     if (player.playMode.value == PlayMode.shuffle) {
       player.changePlaylist(
-          CommonUtils.randomInt(0, player.objects.length - 1).toInt());
+        CommonUtils.randomInt(0, player.objects.length - 1).toInt(),
+      );
       return;
     }
     player.currentIndex.value == player.objects.length - 1
@@ -145,25 +147,34 @@ class AudioPlayerController extends GetxController
   /// 收藏
   void favorite() async {
     await CommonUtils.addFavorite(
-        player.object.value, path, player.currentName.value);
+      player.object.value,
+      path,
+      player.currentName.value,
+    );
   }
 
   /// 复制链接
   void copyLink() {
-    Clipboard.setData(ClipboardData(
-      text: CommonUtils.getDownloadLink(
-        path,
-        object: player.object.value,
-        userInfo: userInfo.value,
+    Clipboard.setData(
+      ClipboardData(
+        text: CommonUtils.getDownloadLink(
+          path,
+          object: player.object.value,
+          userInfo: userInfo.value,
+        ),
       ),
-    ));
+    );
     SmartDialog.showToast('toast_copy_success'.tr);
   }
 
   /// 下载文件
   void download() async {
-    DownloadHelper.file(path, player.currentName.value,
-        player.object.value.type!, player.object.value.size!);
+    DownloadHelper.file(
+      path,
+      player.currentName.value,
+      player.object.value.type!,
+      player.object.value.size!,
+    );
   }
 
   @override

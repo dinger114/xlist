@@ -110,8 +110,9 @@ class MiniAudioPlayerBar extends StatelessWidget {
                         CommonUtils.formatFileNme(service.currentName.value),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: Get.textTheme.titleSmall
-                            ?.copyWith(fontWeight: FontWeight.w600),
+                        style: Get.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       SizedBox(height: 8.h),
                       Obx(
@@ -120,8 +121,9 @@ class MiniAudioPlayerBar extends StatelessWidget {
                           ' / '
                           '${PlayerHelper.formatDuration(service.duration.value)}',
                           style: Get.textTheme.bodySmall?.copyWith(
-                            color: Get.textTheme.bodySmall?.color
-                                ?.withValues(alpha: 0.6),
+                            color: Get.textTheme.bodySmall?.color?.withValues(
+                              alpha: 0.6,
+                            ),
                           ),
                         ),
                       ),
@@ -150,8 +152,9 @@ class MiniAudioPlayerBar extends StatelessWidget {
                   child: Icon(
                     CupertinoIcons.xmark,
                     size: CommonUtils.isPad ? 22 : 48.sp,
-                    color:
-                        Get.textTheme.bodySmall?.color?.withValues(alpha: 0.6),
+                    color: Get.textTheme.bodySmall?.color?.withValues(
+                      alpha: 0.6,
+                    ),
                   ),
                 ),
               ],

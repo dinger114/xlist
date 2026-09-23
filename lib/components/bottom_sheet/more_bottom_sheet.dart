@@ -56,8 +56,9 @@ class _MoreBottomSheetState extends State<MoreBottomSheet> {
                 object.name ?? '',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: Get.textTheme.titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold),
+                style: Get.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
@@ -131,8 +132,12 @@ class _MoreBottomSheetState extends State<MoreBottomSheet> {
                     icon: CupertinoIcons.cloud_download,
                     onTap: () {
                       Get.back();
-                      DownloadHelper.file(widget.path, object.name!,
-                          object.type!, object.size!);
+                      DownloadHelper.file(
+                        widget.path,
+                        object.name!,
+                        object.type!,
+                        object.size!,
+                      );
                     },
                   ),
             _buildListItem(
@@ -153,7 +158,10 @@ class _MoreBottomSheetState extends State<MoreBottomSheet> {
               onTap: () async {
                 Get.back();
                 await CommonUtils.addFavorite(
-                    object, widget.path, object.name!);
+                  object,
+                  widget.path,
+                  object.name!,
+                );
               },
             ),
             PermissionHelper.canMove(widget.userInfo)
@@ -162,13 +170,16 @@ class _MoreBottomSheetState extends State<MoreBottomSheet> {
                     icon: CupertinoIcons.folder,
                     onTap: () {
                       Get.back();
-                      Get.toNamed(Routes.directory, arguments: {
-                        'srcDir': widget.path,
-                        'srcObject': object,
-                        'root': true,
-                        'tag': widget.tag,
-                        'source': source,
-                      });
+                      Get.toNamed(
+                        Routes.directory,
+                        arguments: {
+                          'srcDir': widget.path,
+                          'srcObject': object,
+                          'root': true,
+                          'tag': widget.tag,
+                          'source': source,
+                        },
+                      );
                     },
                   )
                 : SizedBox(),
@@ -178,14 +189,17 @@ class _MoreBottomSheetState extends State<MoreBottomSheet> {
                     icon: CupertinoIcons.doc_on_doc,
                     onTap: () {
                       Get.back();
-                      Get.toNamed(Routes.directory, arguments: {
-                        'srcDir': widget.path,
-                        'srcObject': object,
-                        'root': true,
-                        'isCopy': true,
-                        'tag': widget.tag,
-                        'source': source,
-                      });
+                      Get.toNamed(
+                        Routes.directory,
+                        arguments: {
+                          'srcDir': widget.path,
+                          'srcObject': object,
+                          'root': true,
+                          'isCopy': true,
+                          'tag': widget.tag,
+                          'source': source,
+                        },
+                      );
                     },
                   )
                 : SizedBox(),

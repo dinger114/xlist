@@ -51,27 +51,29 @@ class AppRouter {
 
       final name = parent == null ? page.name : '$parent${page.name}';
 
-      out.add(GetPage(
-        name: name,
-        page: page.page,
-        binding: page.binding,
-        bindings: page.bindings,
-        transition: page.transition,
-        transitionDuration: page.transitionDuration,
-        opaque: page.opaque,
-        showCupertinoParallax: page.showCupertinoParallax,
-        middlewares: page.middlewares,
-        maintainState: page.maintainState,
-        fullscreenDialog: page.fullscreenDialog,
-        customTransition: page.customTransition,
-        curve: page.curve,
-        alignment: page.alignment,
-        popGesture: page.popGesture,
-        title: page.title,
-        gestureWidth: page.gestureWidth,
-        // 注意：GetPage 没有 barrier* 参数（那些只在 GetPageRoute 上），
-        // 项目里也没有用到 barrier 配置。
-      ));
+      out.add(
+        GetPage(
+          name: name,
+          page: page.page,
+          binding: page.binding,
+          bindings: page.bindings,
+          transition: page.transition,
+          transitionDuration: page.transitionDuration,
+          opaque: page.opaque,
+          showCupertinoParallax: page.showCupertinoParallax,
+          middlewares: page.middlewares,
+          maintainState: page.maintainState,
+          fullscreenDialog: page.fullscreenDialog,
+          customTransition: page.customTransition,
+          curve: page.curve,
+          alignment: page.alignment,
+          popGesture: page.popGesture,
+          title: page.title,
+          gestureWidth: page.gestureWidth,
+          // 注意：GetPage 没有 barrier* 参数（那些只在 GetPageRoute 上），
+          // 项目里也没有用到 barrier 配置。
+        ),
+      );
 
       // GetPage.children 默认是空列表（非 null），所以直接遍历
       for (final c in page.children) {
@@ -154,9 +156,6 @@ class AppRouter {
 
   /// 未匹配路由：用原 `unknownRoute` 指向的页面。
   static Route<dynamic> onUnknownRoute(RouteSettings settings) {
-    return GetPageRoute(
-      settings: settings,
-      page: AppPages.unknownRoute.page,
-    );
+    return GetPageRoute(settings: settings, page: AppPages.unknownRoute.page);
   }
 }

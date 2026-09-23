@@ -92,7 +92,7 @@ class FilePage extends GetView<FileController> {
                 onPressed: () => controller.copyLink(),
               ),
             ],
-          )
+          ),
         ],
       ),
     );

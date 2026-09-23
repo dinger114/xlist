@@ -19,10 +19,7 @@ class ErrorState extends StatelessWidget {
   });
 
   // 可以共用的架子
-  Widget _buildPublicFrameWidget({
-    required Widget slot,
-    Color? bgColor,
-  }) {
+  Widget _buildPublicFrameWidget({required Widget slot, Color? bgColor}) {
     return Container(
       color: bgColor,
       child: Stack(

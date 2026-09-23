@@ -27,8 +27,10 @@ class DownloadService extends GetxService {
   // 绑定下载回调监听
   void bindBackgroundIsolate(DownloadIsolateCallback callback) {
     final ReceivePort receivePort = ReceivePort();
-    bool isSuccess =
-        IsolateNameServer.registerPortWithName(receivePort.sendPort, port);
+    bool isSuccess = IsolateNameServer.registerPortWithName(
+      receivePort.sendPort,
+      port,
+    );
 
     if (!isSuccess) {
       unbindBackgroundIsolate();

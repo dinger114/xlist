@@ -127,8 +127,12 @@ class _SliderPainter extends CustomPainter {
 
   final XSliderColors colors;
 
-  _SliderPainter(this.v, this.cv, this.dragging,
-      {this.colors = const XSliderColors()});
+  _SliderPainter(
+    this.v,
+    this.cv,
+    this.dragging, {
+    this.colors = const XSliderColors(),
+  });
 
   @override
   void paint(Canvas canvas, Size size) {

@@ -4,8 +4,20 @@ publish_to: 'none'
 version: 1.2.1+1
 
 environment:
-  sdk: '>=2.19.4 <4.0.0'
-  flutter: '>=1.12.0'
+  # 下限用 ^3.13.0 而不是原来的 >=2.19.4：环境约束同时决定本包自己的
+  # language version（原来解析出来是 2.19，低于全部现代依赖，build_runner
+  # 每次 codegen 都会警告 "language version (2.19.0) does not match the
+  # required range ^3.8.0"）。
+  # 提到 3.13 是「零约束代价」——material_ui / cupertino_ui /
+  # flex_color_scheme / flex_seed_scheme 这 4 个直接依赖本就要求 ^3.13.0，
+  # 解析器无论如何都只能给 >=3.13.0 的 SDK，写进 pubspec 只是把既成事实显式化，
+  # 同时把语言版本从 2.19 抬到 3.13。
+  # 不用 >=3.0.0：那会把语言版本钉回 3.0，比现状好但与依赖不匹配。
+  sdk: '^3.13.0'
+  # 原为 '>=1.12.0'（Flutter 1.12 = 2019-02），完全失真且会误导人。
+  # 3.47.0 是依赖树的实际地板（material_ui / cupertino_ui /
+  # flex_color_scheme / flex_seed_scheme 均要求 >=3.47.0）。
+  flutter: '>=3.47.0'
 
 dependencies:
   flutter:

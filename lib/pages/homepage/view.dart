@@ -22,8 +22,9 @@ class Homepage extends GetView<HomepageController> {
   /// NavigationBar
   Widget _buildSliverNavigationBar() {
     return CupertinoSliverNavigationBar(
-      backgroundColor:
-          Get.isDarkMode ? Color.fromARGB(255, 18, 18, 18) : Colors.white,
+      backgroundColor: Get.isDarkMode
+          ? Color.fromARGB(255, 18, 18, 18)
+          : Colors.white,
       border: Border.all(width: 0, color: Colors.transparent),
       leading: CupertinoButton(
         padding: EdgeInsets.zero,
@@ -38,8 +39,9 @@ class Homepage extends GetView<HomepageController> {
             ],
           ),
         ),
-        onPressed: () => Get.toNamed(Routes.setting)
-            ?.then((value) => controller.getObjectList()),
+        onPressed: () =>
+            Get.toNamed(Routes.setting)
+                ?.then((value) => controller.getObjectList()),
       ),
       largeTitle: Text(
         'homepage_title'.tr,
@@ -149,16 +151,18 @@ class Homepage extends GetView<HomepageController> {
         _buildSliverNavigationBar(),
         HeaderLocator.sliver(),
         SliverPadding(
-          padding:
-              EdgeInsets.symmetric(horizontal: CommonUtils.isPad ? 20 : 50.r)
-                  .copyWith(bottom: 30.h),
+          padding: EdgeInsets.symmetric(
+            horizontal: CommonUtils.isPad ? 20 : 50.r,
+          ).copyWith(bottom: 30.h),
           sliver: SliverToBoxAdapter(child: SearchComponent(path: '/')),
         ),
         Obx(
           () => SliverPadding(
-            padding:
-                EdgeInsets.symmetric(horizontal: CommonUtils.isPad ? 15 : 30.r),
-            sliver: controller.serverId.value == 0 &&
+            padding: EdgeInsets.symmetric(
+              horizontal: CommonUtils.isPad ? 15 : 30.r,
+            ),
+            sliver:
+                controller.serverId.value == 0 &&
                     controller.isFirstLoading.isFalse
                 ? SliverToBoxAdapter(child: _buildEmptyServer())
                 : _buildSliverList(),
@@ -176,7 +180,9 @@ class Homepage extends GetView<HomepageController> {
         child: EasyRefresh(
           controller: controller.easyRefreshController,
           header: CupertinoHeader(
-              position: IndicatorPosition.locator, safeArea: false),
+            position: IndicatorPosition.locator,
+            safeArea: false,
+          ),
           footer: CupertinoFooter(position: IndicatorPosition.locator),
           onRefresh: () async {
             await HapticFeedback.selectionClick();

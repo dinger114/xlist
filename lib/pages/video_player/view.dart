@@ -24,27 +24,33 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
     List<PullDownMenuEntry> items = [];
 
     // 收藏
-    items.add(PullDownMenuItem(
-      title: 'favorite'.tr,
-      onTap: () => controller.favorite(),
-    ));
+    items.add(
+      PullDownMenuItem(
+        title: 'favorite'.tr,
+        onTap: () => controller.favorite(),
+      ),
+    );
 
     // 切换字幕
     if (controller.subtitleNameList.isNotEmpty ||
         controller.subtitleTracks.isNotEmpty) {
-      items.add(PullDownMenuItem(
-        title: 'video_switch_subtitle'.tr,
-        onTap: () => controller.changeSubtitle(),
-      ));
+      items.add(
+        PullDownMenuItem(
+          title: 'video_switch_subtitle'.tr,
+          onTap: () => controller.changeSubtitle(),
+        ),
+      );
     }
 
     // 切换音轨
     if (controller.audioTracks.isNotEmpty &&
         controller.audioTracks.length > 1) {
-      items.add(PullDownMenuItem(
-        title: 'video_switch_audio'.tr,
-        onTap: () => controller.changeAudioTrack(),
-      ));
+      items.add(
+        PullDownMenuItem(
+          title: 'video_switch_audio'.tr,
+          onTap: () => controller.changeAudioTrack(),
+        ),
+      );
     }
 
     items.addAll([
@@ -116,7 +122,8 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
             () => controller.thumbnail.isEmpty && imageProvider == null
                 ? SizedBox.shrink()
                 : AnimatedOpacity(
-                    opacity: controller.isPlaying.value ||
+                    opacity:
+                        controller.isPlaying.value ||
                             controller.currentPos.value > Duration.zero
                         ? 0.0
                         : 1.0,
@@ -214,7 +221,7 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
     final modified = controller.object.value.modified == null
         ? '-'
         : Jiffy.parseFromDateTime(controller.object.value.modified!)
-            .format(pattern: 'yyyy/MM/dd');
+              .format(pattern: 'yyyy/MM/dd');
 
     // 挂载类型
     final provider = controller.object.value.provider ?? '-';
@@ -231,8 +238,9 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
               : Container(
                   width: double.infinity,
                   padding: EdgeInsets.symmetric(
-                          horizontal: isLandscape ? 10.w : 35.w, vertical: 30.h)
-                      .copyWith(top: 35.h),
+                    horizontal: isLandscape ? 10.w : 35.w,
+                    vertical: 30.h,
+                  ).copyWith(top: 35.h),
                   child: Text(
                     CommonUtils.formatFileNme(controller.currentName.value),
                     maxLines: 3,
@@ -245,8 +253,9 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
             dividerMargin: 0.w,
             additionalDividerMargin: 0.w,
             margin: EdgeInsets.symmetric(
-                    horizontal: isLandscape ? 10.w : 30.w, vertical: 10.h)
-                .copyWith(bottom: 50.h),
+              horizontal: isLandscape ? 10.w : 30.w,
+              vertical: 10.h,
+            ).copyWith(bottom: 50.h),
             hasLeading: false,
             children: [
               _buildListTile(title: 'directory'.tr, additionalInfo: path),
@@ -255,7 +264,7 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
               _buildListTile(title: 'file_type'.tr, additionalInfo: fileType),
               _buildListTile(title: 'file_size'.tr, additionalInfo: filesize),
             ],
-          )
+          ),
         ],
       ),
     );
@@ -372,12 +381,7 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
           ),
         ),
         Expanded(
-          child: TabBarView(
-            children: [
-              _buildDescription(),
-              _buildPlayList(),
-            ],
-          ),
+          child: TabBarView(children: [_buildDescription(), _buildPlayList()]),
         ),
       ],
     );
@@ -445,8 +449,8 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
         // 全屏和 PiP 都不要导航栏：PiP 窗口很小，标题栏会占掉一条画面
         navigationBar:
             (controller.isFullScreen.value || controller.isInPip.value)
-                ? null
-                : _buildNavigationBar(),
+            ? null
+            : _buildNavigationBar(),
         backgroundColor: CommonUtils.backgroundColor,
         child: Obx(() => _buildPageInfo()),
       ),

@@ -137,8 +137,11 @@ void main() {
         SortType.sizeAsc,
       ]) {
         final r = CommonUtils.sortObjectList(List.of(list), type);
-        expect(r.first.type, FileType.folder,
-            reason: 'sortType=$type 时文件夹未排在前');
+        expect(
+          r.first.type,
+          FileType.folder,
+          reason: 'sortType=$type 时文件夹未排在前',
+        );
         expect(r.last.type, isNot(FileType.folder));
       }
     });
@@ -255,10 +258,7 @@ void main() {
     });
 
     test('名称排序遇到 name 为 null 会抛（当前实现的已知风险）', () {
-      final list = [
-        _file('a'),
-        _file('b')..name = null,
-      ];
+      final list = [_file('a'), _file('b')..name = null];
       expect(
         () => CommonUtils.sortObjectList(list, SortType.nameAsc),
         throwsA(isA<TypeError>()),

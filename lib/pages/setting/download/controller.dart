@@ -42,8 +42,8 @@ class DownloadController extends GetxController {
     tasks.value = taskList.reversed.toList();
 
     // 获取下载列表
-    entities.value =
-        await DatabaseService.to.database.downloadDao.findAllDownload();
+    entities.value = await DatabaseService.to.database.downloadDao
+        .findAllDownload();
 
     // 总大小
     resetTotalSize();
@@ -119,7 +119,8 @@ class DownloadController extends GetxController {
     // 打开文件
     if (!await FlutterDownloader.open(taskId: task.taskId)) {
       SharePlus.instance.share(
-          ShareParams(files: [XFile('${task.savedDir}/${entity.name}')]));
+        ShareParams(files: [XFile('${task.savedDir}/${entity.name}')]),
+      );
     }
   }
 

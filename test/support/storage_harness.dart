@@ -43,9 +43,9 @@ Future<void> setUpTestStorage() async {
   const channel = MethodChannel('plugins.flutter.io/path_provider');
   TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
       .setMockMethodCallHandler(channel, (call) async {
-    // 无论调用哪个方法（documents / support / temp）都返回同一目录
-    return dir.path;
-  });
+        // 无论调用哪个方法（documents / support / temp）都返回同一目录
+        return dir.path;
+      });
 
   await GetStorage.init('PreferencesStorage');
 }

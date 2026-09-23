@@ -36,10 +36,11 @@ class DirectoryController extends GetxController {
   // 批量项 (可选): [{srcDir: String, name: String}]
   final List<Map<String, String>> srcItems =
       (Get.arguments['srcItems'] as List?)
-              ?.map<Map<String, String>>(
-                  (e) => {'srcDir': e['srcDir'] ?? '', 'name': e['name'] ?? ''})
-              .toList() ??
-          const [];
+          ?.map<Map<String, String>>(
+            (e) => {'srcDir': e['srcDir'] ?? '', 'name': e['name'] ?? ''},
+          )
+          .toList() ??
+      const [];
 
   // ScrollController
   final ScrollController scrollController = ScrollController();
@@ -77,8 +78,10 @@ class DirectoryController extends GetxController {
   /// 获取目录列表
   Future<void> getDirectoryList() async {
     try {
-      final response =
-          await ObjectRepository.getDirs(path: path, password: password);
+      final response = await ObjectRepository.getDirs(
+        path: path,
+        password: password,
+      );
 
       // 权限校验
       if (response['code'] == 403) {
@@ -99,8 +102,13 @@ class DirectoryController extends GetxController {
 
         // 更新本地数据库密码
         await DatabaseService.to.database.passwordManagerDao
-            .insertPasswordManager(PasswordManagerEntity(
-                serverId: serverId, path: path, password: text.first));
+            .insertPasswordManager(
+              PasswordManagerEntity(
+                serverId: serverId,
+                path: path,
+                password: text.first,
+              ),
+            );
 
         password = text.first;
         await getDirectoryList();
@@ -124,15 +132,13 @@ class DirectoryController extends GetxController {
 
     return dirs
         .map(
-          (d) => ObjectModel.fromJson(
-            {
-              'name': d.name,
-              'is_dir': true,
-              'type': FileType.folder,
-              'size': 0,
-              'modified': d.modified?.toIso8601String(),
-            },
-          ),
+          (d) => ObjectModel.fromJson({
+            'name': d.name,
+            'is_dir': true,
+            'type': FileType.folder,
+            'size': 0,
+            'modified': d.modified?.toIso8601String(),
+          }),
         )
         .toList();
   }
@@ -159,9 +165,12 @@ class DirectoryController extends GetxController {
           if (resp['code'] == HttpStatus.ok) count++;
         }
         SmartDialog.dismiss();
-        SmartDialog.showToast((isCopy ? 'toast_copy_batch' : 'toast_move_batch')
-            .tr
-            .replaceAll('@count', '$count'));
+        SmartDialog.showToast(
+          (isCopy ? 'toast_copy_batch' : 'toast_move_batch').tr.replaceAll(
+            '@count',
+            '$count',
+          ),
+        );
       } catch (e) {
         SmartDialog.dismiss();
         SmartDialog.showToast(e.toString());

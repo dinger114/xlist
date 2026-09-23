@@ -44,22 +44,28 @@ class ObjectHelper {
 
     // 预览图片
     if (PreviewHelper.isImage(name)) {
-      Get.toNamed(Routes.imagePreview,
-          arguments: {'path': path, 'name': name, 'objects': objects});
+      Get.toNamed(
+        Routes.imagePreview,
+        arguments: {'path': path, 'name': name, 'objects': objects},
+      );
       return;
     }
 
     // 预览视频
     if (PreviewHelper.isVideo(name)) {
-      Get.toNamed(Routes.videoPlayer,
-          arguments: {'path': path, 'name': name, 'objects': objects});
+      Get.toNamed(
+        Routes.videoPlayer,
+        arguments: {'path': path, 'name': name, 'objects': objects},
+      );
       return;
     }
 
     // 预览音频
     if (PreviewHelper.isAudio(name)) {
-      Get.toNamed(Routes.audioPlayer,
-          arguments: {'path': path, 'name': name, 'objects': objects});
+      Get.toNamed(
+        Routes.audioPlayer,
+        arguments: {'path': path, 'name': name, 'objects': objects},
+      );
       return;
     }
 
@@ -129,7 +135,9 @@ class ObjectHelper {
     try {
       SmartDialog.showLoading();
       final response = await ObjectRepository.rename(
-          path: '$path${object.name}', name: data.first);
+        path: '$path${object.name}',
+        name: data.first,
+      );
       if (response['code'] != HttpStatus.ok) {
         throw response['message'];
       }
@@ -157,13 +165,15 @@ class ObjectHelper {
       final serverUrl = Get.find<UserStorage>().serverUrl.val;
       Clipboard.setData(ClipboardData(text: '$serverUrl$path${object.name}'));
     } else {
-      Clipboard.setData(ClipboardData(
-        text: CommonUtils.getDownloadLink(
-          path,
-          object: object,
-          userInfo: userInfo,
+      Clipboard.setData(
+        ClipboardData(
+          text: CommonUtils.getDownloadLink(
+            path,
+            object: object,
+            userInfo: userInfo,
+          ),
         ),
-      ));
+      );
     }
 
     SmartDialog.showToast('toast_copy_success'.tr);
@@ -183,7 +193,10 @@ class ObjectHelper {
     try {
       SmartDialog.showLoading();
       final response = await ObjectRepository.move(
-          srcDir: srcDir, dstDir: dstDir, name: name);
+        srcDir: srcDir,
+        dstDir: dstDir,
+        name: name,
+      );
       if (response['code'] != HttpStatus.ok) {
         throw response['message'];
       }
@@ -215,7 +228,10 @@ class ObjectHelper {
     try {
       SmartDialog.showLoading();
       final response = await ObjectRepository.copy(
-          srcDir: srcDir, dstDir: dstDir, name: name);
+        srcDir: srcDir,
+        dstDir: dstDir,
+        name: name,
+      );
       if (response['code'] != HttpStatus.ok) {
         throw response['message'];
       }
@@ -290,8 +306,9 @@ class ObjectHelper {
     // 新建文件夹
     try {
       SmartDialog.showLoading();
-      final response =
-          await ObjectRepository.mkdir(path: '$path/${data.first}');
+      final response = await ObjectRepository.mkdir(
+        path: '$path/${data.first}',
+      );
       if (response['code'] != HttpStatus.ok) {
         throw response['message'];
       }
@@ -375,7 +392,8 @@ class ObjectHelper {
         SmartDialog.showLoading(msg: 'toast_upload_loading'.tr);
 
         // 文件名称
-        final fileName = DateTime.now().millisecondsSinceEpoch.toString() +
+        final fileName =
+            DateTime.now().millisecondsSinceEpoch.toString() +
             p.extension(pickedFile.name);
 
         // 上传文件

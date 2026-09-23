@@ -97,6 +97,45 @@
   回退 Skia），但属图形后端切换，需真机目视对比渲染效果，本轮无视觉验收
   手段，未动
 
+## [Unreleased]
+
+### Changed
+
+- **SDK 下限 `>=2.19.4 <4.0.0` → `^3.13.0`**，`flutter` 约束 `>=1.12.0` →
+  `>=3.47.0`。环境约束同时决定本包自己的 language version，原来解析出来是
+  **2.19**，低于全部现代依赖，导致 `build_runner` 每次 codegen 都警告
+  `language version (2.19.0) does not match the required range ^3.8.0`
+  （已实测该警告在提高下限后消失）。
+  取 3.13 而非 3.0 是「零约束代价」：`material_ui` / `cupertino_ui` /
+  `flex_color_scheme` / `flex_seed_scheme` 这 4 个直接依赖本就要求
+  `^3.13.0`，解析器无论如何只能给 ≥3.13.0 的 SDK，写进 pubspec 只是把既成
+  事实显式化，同时把语言版本从 2.19 抬到 3.13。`flutter: '>=1.12.0'`（2019-02
+  的 Flutter 1.12）完全失真且会误导人，3.47.0 才是依赖树的实际地板
+- **因语言版本上升，`dart format` 规则改变：91 个文件重新格式化**。
+  Dart 的 tall-style formatter 受 language version 门控（≥3.7 才启用），
+  2.19 → 3.13 会让全仓排版标准变化，`dart format lib test` 一次性重排。
+  属纯排版改动（无逻辑变化），但 `ci.yml` 的
+  `dart format --set-exit-if-changed` 闸门要求必须一并提交，否则 CI 直接红
+- `lib/models/user.g.dart` 因语言版本变化被 `build_runner` 重写：JSON 键与
+  字段映射**逐字未变**（`'sso_id'` 等键原样），仅生成代码的缩进排版变化
+
+#### 依赖与语言版本的核查结论（供后续参考）
+
+- 全仓 `lib/` **未使用任何 Dart 3 特有语法**（records / pattern matching /
+  `sealed`/`base`/`interface class` 均为 0 处），故本次提升不带来语法层面的
+  变化，属「对齐与消噪」，不是「解锁新写法」
+- 依赖树中 **17 个包声明 `<3.0.0`**（`flutter_phoenix 1.1.1`、`get_storage
+  2.1.1`、`highlight`/`flutter_highlight 0.7.0`、`keframe`、`code_text_field`、
+  `audio_wave`、`dismissible_page`、`vivysub_utils` 等），但它们**在 Dart 3 上
+  实际可正常运行**（210 测试全过）。pub 是**证据式**处理：lock 里解析出的版本
+  直接放行，不会因新判定的 SDK 下限去重解析约束 —— 故这些「声明不一致」不构成
+  阻塞，但意味着它们已无法再收到上游更新（上游若仍声明 `<3.0.0`，将来会被新
+  Dart 判为不兼容）
+- 依赖树真实地板：SDK `3.13.0`（`material_ui` 系 4 个包）、Flutter `3.47.0`
+- 锁文件：现有 `pubspec.lock` 被直接沿用，`flutter pub get` **零差异**；
+  仅在删掉 lock 做全新解析时会动 3 个 patch（`cached_network_image`
+  4.0.0 → 4.0.1 及其两个 platform 接口兄弟包）
+
 ## [1.2.1](https://github.com/dinger114/xlist/releases/tag/v1.2.1) - 2026-09-23
 
 ### Bug Fixes

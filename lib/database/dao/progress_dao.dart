@@ -8,7 +8,10 @@ abstract class ProgressDao {
     'SELECT * FROM progress WHERE server_id = :serverId AND path = :path AND name = :name',
   )
   Future<ProgressEntity?> findProgressByServerIdAndPath(
-      int serverId, String path, String name);
+    int serverId,
+    String path,
+    String name,
+  );
 
   @Query('DELETE FROM progress WHERE id = :id')
   Future<void> deleteProgressById(int id);

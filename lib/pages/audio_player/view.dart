@@ -26,10 +26,12 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
     List<PullDownMenuEntry> items = [];
 
     // 收藏
-    items.add(PullDownMenuItem(
-      title: 'favorite'.tr,
-      onTap: () => controller.favorite(),
-    ));
+    items.add(
+      PullDownMenuItem(
+        title: 'favorite'.tr,
+        onTap: () => controller.favorite(),
+      ),
+    );
 
     items.addAll([
       PullDownMenuItem(
@@ -69,8 +71,10 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
       leading: CupertinoButton(
         padding: EdgeInsets.zero,
         alignment: Alignment.centerLeft,
-        child: Icon(CupertinoIcons.chevron_down,
-            size: CommonUtils.isPad ? 25 : 70.sp),
+        child: Icon(
+          CupertinoIcons.chevron_down,
+          size: CommonUtils.isPad ? 25 : 70.sp,
+        ),
         onPressed: () => Get.back(),
       ),
       trailing: _buildPullDownButton(),
@@ -129,7 +133,10 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
     return Container(
       key: PageStorageKey('playlist'),
       padding: EdgeInsets.only(
-          top: CommonUtils.isPad ? 20 : 100.h, left: 50.w, right: 50.w),
+        top: CommonUtils.isPad ? 20 : 100.h,
+        left: 50.w,
+        right: 50.w,
+      ),
       child: Column(
         children: [
           Row(
@@ -246,9 +253,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
             alignment: Alignment.centerLeft,
             padding: EdgeInsets.only(left: 50.w),
             child: Obx(
-              () => Text(
-                PlayerHelper.formatDuration(player.currentPos.value),
-              ),
+              () => Text(PlayerHelper.formatDuration(player.currentPos.value)),
             ),
           ),
           Container(
@@ -256,9 +261,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
             alignment: Alignment.centerRight,
             padding: EdgeInsets.only(right: 50.w),
             child: Obx(
-              () => Text(
-                PlayerHelper.formatDuration(player.duration.value),
-              ),
+              () => Text(PlayerHelper.formatDuration(player.duration.value)),
             ),
           ),
         ],
@@ -371,8 +374,8 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
                               color: controller.isPlaylist.value
                                   ? Get.theme.primaryColor
                                   : Get.isDarkMode
-                                      ? Colors.white
-                                      : Colors.black87,
+                                  ? Colors.white
+                                  : Colors.black87,
                             ),
                             onPressed: () {
                               controller.isPlaylist.value =
@@ -391,8 +394,8 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
                               color: player.timerDuration.value.inSeconds > 0
                                   ? Get.theme.primaryColor
                                   : Get.isDarkMode
-                                      ? Colors.white
-                                      : Colors.black87,
+                                  ? Colors.white
+                                  : Colors.black87,
                             ),
                             onPressed: () => controller.timedShutdown(),
                           ),

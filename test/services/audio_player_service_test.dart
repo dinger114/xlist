@@ -29,7 +29,10 @@ void main() {
 
     test('单曲循环：原地重播（不是 stop）', () {
       final action = nextActionOnCompleted(
-          currentIndex: 3, queueLength: 10, playMode: PlayMode.singleLoop);
+        currentIndex: 3,
+        queueLength: 10,
+        playMode: PlayMode.singleLoop,
+      );
       expect(action.replayInPlace, isTrue);
       expect(action.nextIndex, isNull);
     });
@@ -37,14 +40,18 @@ void main() {
     test('列表循环：顺序前进', () {
       expect(
         nextActionOnCompleted(
-                currentIndex: 0, queueLength: 5, playMode: PlayMode.listLoop)
-            .nextIndex,
+          currentIndex: 0,
+          queueLength: 5,
+          playMode: PlayMode.listLoop,
+        ).nextIndex,
         1,
       );
       expect(
         nextActionOnCompleted(
-                currentIndex: 3, queueLength: 5, playMode: PlayMode.listLoop)
-            .nextIndex,
+          currentIndex: 3,
+          queueLength: 5,
+          playMode: PlayMode.listLoop,
+        ).nextIndex,
         4,
       );
     });
@@ -52,8 +59,10 @@ void main() {
     test('列表循环：最后一首回到第一首', () {
       expect(
         nextActionOnCompleted(
-                currentIndex: 4, queueLength: 5, playMode: PlayMode.listLoop)
-            .nextIndex,
+          currentIndex: 4,
+          queueLength: 5,
+          playMode: PlayMode.listLoop,
+        ).nextIndex,
         0,
       );
     });
@@ -84,21 +93,30 @@ void main() {
 
     test('播完暂停：既不在原地重播，也不切歌（必须真的停住）', () {
       final action = nextActionOnCompleted(
-          currentIndex: 0, queueLength: 5, playMode: PlayMode.playPause);
+        currentIndex: 0,
+        queueLength: 5,
+        playMode: PlayMode.playPause,
+      );
       expect(action.replayInPlace, isFalse);
       expect(action.nextIndex, isNull);
     });
 
     test('未知模式：按停住处理，不抛异常', () {
-      final action =
-          nextActionOnCompleted(currentIndex: 0, queueLength: 5, playMode: 99);
+      final action = nextActionOnCompleted(
+        currentIndex: 0,
+        queueLength: 5,
+        playMode: 99,
+      );
       expect(action.replayInPlace, isFalse);
       expect(action.nextIndex, isNull);
     });
 
     test('空队列：原地重播分支不进，不抛异常', () {
       final action = nextActionOnCompleted(
-          currentIndex: 0, queueLength: 0, playMode: PlayMode.listLoop);
+        currentIndex: 0,
+        queueLength: 0,
+        playMode: PlayMode.listLoop,
+      );
       // queueLength <= 1 走原地重播；调用方会因为 player 没源而自然无事发生
       expect(action.replayInPlace, isTrue);
     });
@@ -106,15 +124,23 @@ void main() {
     test('兼容旧签名的 nextIndexOnCompleted 行为一致', () {
       expect(
         nextIndexOnCompleted(
-            currentIndex: 0, queueLength: 5, playMode: PlayMode.listLoop),
+          currentIndex: 0,
+          queueLength: 5,
+          playMode: PlayMode.listLoop,
+        ),
         nextActionOnCompleted(
-                currentIndex: 0, queueLength: 5, playMode: PlayMode.listLoop)
-            .nextIndex,
+          currentIndex: 0,
+          queueLength: 5,
+          playMode: PlayMode.listLoop,
+        ).nextIndex,
       );
       // 单曲循环在旧签名下同样是 null（调用方需靠 replayInPlace 区分）
       expect(
         nextIndexOnCompleted(
-            currentIndex: 0, queueLength: 5, playMode: PlayMode.singleLoop),
+          currentIndex: 0,
+          queueLength: 5,
+          playMode: PlayMode.singleLoop,
+        ),
         isNull,
       );
     });

@@ -28,23 +28,25 @@ class FavoriteController extends GetxController {
   /// 这里保持原有「按 offset 分页、取到不满一页即结束」的语义。
   late final PagingController<int, FavoriteEntity> pagingController =
       PagingController<int, FavoriteEntity>(
-    getNextPageKey: (state) {
-      final pages = state.pages;
-      // 上一页不满 pageSize，说明已到末页（与原 isLastPage 判断一致）
-      if (pages != null && pages.isNotEmpty && pages.last.length < pageSize) {
-        return null;
-      }
-      // 下一页 key = 已取条数（即 SQL offset），与原 currentIndex 语义一致
-      return (pages ?? const []).fold<int>(0, (sum, p) => sum + p.length);
-    },
-    fetchPage: (offset) async {
-      final list = await DatabaseService.to.database.favoriteDao
-          .findFavoriteByServerId(serverId, pageSize, offset);
-      // 判断是否为空
-      if (offset == 0) isEmpty.value = list.isEmpty;
-      return list;
-    },
-  );
+        getNextPageKey: (state) {
+          final pages = state.pages;
+          // 上一页不满 pageSize，说明已到末页（与原 isLastPage 判断一致）
+          if (pages != null &&
+              pages.isNotEmpty &&
+              pages.last.length < pageSize) {
+            return null;
+          }
+          // 下一页 key = 已取条数（即 SQL offset），与原 currentIndex 语义一致
+          return (pages ?? const []).fold<int>(0, (sum, p) => sum + p.length);
+        },
+        fetchPage: (offset) async {
+          final list = await DatabaseService.to.database.favoriteDao
+              .findFavoriteByServerId(serverId, pageSize, offset);
+          // 判断是否为空
+          if (offset == 0) isEmpty.value = list.isEmpty;
+          return list;
+        },
+      );
 
   /// 删除收藏文件
   /// [entity] 收藏实体
@@ -59,11 +61,13 @@ class FavoriteController extends GetxController {
     if (ok != OkCancelResult.ok) return;
 
     try {
-      await DatabaseService.to.database.favoriteDao
-          .deleteFavoriteById(entity.id!);
+      await DatabaseService.to.database.favoriteDao.deleteFavoriteById(
+        entity.id!,
+      );
       // 5.x 的 items 是 unmodifiable，不能就地 remove，改为过滤后写回 state
-      pagingController.value =
-          pagingController.value.filterItems((e) => e.id != entity.id);
+      pagingController.value = pagingController.value.filterItems(
+        (e) => e.id != entity.id,
+      );
 
       isEmpty.value = favoriteList.isEmpty;
       SmartDialog.showToast('toast_remove_success'.tr);
@@ -85,8 +89,9 @@ class FavoriteController extends GetxController {
 
     try {
       final id = serverId;
-      await DatabaseService.to.database.favoriteDao
-          .deleteFavoriteByServerId(id);
+      await DatabaseService.to.database.favoriteDao.deleteFavoriteByServerId(
+        id,
+      );
 
       // 清空数据：直接 reset state（等价于清空列表并回到首页）
       pagingController.refresh();

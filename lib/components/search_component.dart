@@ -12,8 +12,9 @@ class SearchComponent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor =
-        Get.isDarkMode ? Color.fromARGB(255, 42, 42, 45) : Colors.grey[200];
+    final backgroundColor = Get.isDarkMode
+        ? Color.fromARGB(255, 42, 42, 45)
+        : Colors.grey[200];
     final color = Get.isDarkMode ? Colors.grey[500] : Colors.grey[600];
 
     return GestureDetector(
@@ -36,7 +37,7 @@ class SearchComponent extends StatelessWidget {
             Text(
               'search'.tr,
               style: Get.textTheme.bodyLarge?.copyWith(color: color),
-            )
+            ),
           ],
         ),
       ),

@@ -10,7 +10,7 @@ class TranslationService extends Translations {
 
   @override
   Map<String, Map<String, String>> get keys => {
-        'en_US': enUs,
-        'zh_Hans': zhHans,
-      };
+    'en_US': enUs,
+    'zh_Hans': zhHans,
+  };
 }

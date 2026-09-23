@@ -8,13 +8,19 @@ abstract class FavoriteDao {
     'SELECT * FROM favorite WHERE server_id = :serverId ORDER BY updated_at DESC LIMIT :limit OFFSET :offset',
   )
   Future<List<FavoriteEntity>> findFavoriteByServerId(
-      int serverId, int limit, int offset);
+    int serverId,
+    int limit,
+    int offset,
+  );
 
   @Query(
     'SELECT * FROM favorite WHERE server_id = :serverId AND path = :path AND name = :name',
   )
   Future<FavoriteEntity?> findFavoriteByServerIdAndPath(
-      int serverId, String path, String name);
+    int serverId,
+    String path,
+    String name,
+  );
 
   @Query('DELETE FROM favorite WHERE id = :id')
   Future<void> deleteFavoriteById(int id);

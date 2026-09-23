@@ -30,7 +30,8 @@ class TextFieldHelper {
     );
 
     return Container(
-      padding: padding ??
+      padding:
+          padding ??
           EdgeInsets.only(
             left: CommonUtils.isPad ? 15 : 30.r,
             right: CommonUtils.isPad ? 15 : 30.r,
@@ -47,8 +48,9 @@ class TextFieldHelper {
             decoration: InputDecoration(
               isDense: true,
               hintText: placeholder,
-              hintStyle:
-                  Get.textTheme.bodyLarge?.copyWith(color: Colors.grey[600]!),
+              hintStyle: Get.textTheme.bodyLarge?.copyWith(
+                color: Colors.grey[600]!,
+              ),
               contentPadding: EdgeInsets.only(top: 10.h, bottom: 20.h),
               fillColor: Colors.transparent,
               enabledBorder: InputBorder.none,

@@ -76,9 +76,8 @@ class AboutPage extends GetView<AboutController> {
             title: 'GitHub',
             icon: Icons.code_rounded,
             additionalInfo: 'xlist-io/xlist',
-            onTap: () => BrowserService.to.open(
-              'https://github.com/xlist-io/xlist',
-            ),
+            onTap: () =>
+                BrowserService.to.open('https://github.com/xlist-io/xlist'),
           ),
         ],
       ),
@@ -89,14 +88,14 @@ class AboutPage extends GetView<AboutController> {
   Widget _buildCopyRight() {
     return Container(
       padding: EdgeInsets.only(bottom: 30),
-      child: Column(children: [
-        Text(
-          '© 2023 xlist.io',
-          style: Get.textTheme.bodyLarge?.copyWith(
-            color: Colors.grey,
+      child: Column(
+        children: [
+          Text(
+            '© 2023 xlist.io',
+            style: Get.textTheme.bodyLarge?.copyWith(color: Colors.grey),
           ),
-        ),
-      ]),
+        ],
+      ),
     );
   }
 
@@ -113,7 +112,8 @@ class AboutPage extends GetView<AboutController> {
               children: [
                 SizedBox(height: 100.h),
                 Center(
-                    child: Assets.common.logoTransparent.image(width: 600.w)),
+                  child: Assets.common.logoTransparent.image(width: 600.w),
+                ),
                 _buildInfo(),
                 Expanded(child: Container()),
                 Obx(() => _buildCopyRight()),
@@ -124,7 +124,8 @@ class AboutPage extends GetView<AboutController> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Center(
-                    child: Assets.common.logoTransparent.image(width: 300.w)),
+                  child: Assets.common.logoTransparent.image(width: 300.w),
+                ),
                 _buildInfo(),
                 Expanded(child: Container()),
                 Obx(() => _buildCopyRight()),

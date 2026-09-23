@@ -58,8 +58,11 @@ void main() {
           final pad = entry.value;
           expect(pad, isNotNull, reason: '${entry.key} 缺少 padding');
           final vertical = pad!.top + pad.bottom;
-          expect(vertical, greaterThan(0),
-              reason: '${entry.key} 垂直间距为 0，会与相邻元素挤在一起');
+          expect(
+            vertical,
+            greaterThan(0),
+            reason: '${entry.key} 垂直间距为 0，会与相邻元素挤在一起',
+          );
         }
       });
 
@@ -100,9 +103,13 @@ void main() {
         expect(size, isNotNull);
         // 曾经传 ScreenUtil 的 scaleWidth（≈0.38）相乘 → 实际只有 ~6px。
         // 这里直接钉住下限，防止任何人再引入缩放系数。
-        expect(size!, greaterThanOrEqualTo(15.0),
-            reason: '正文字号 $size 过小；本项目 designSize 与设备逻辑尺寸'
-                '单位不一致，不可用 .r/.sp 缩放');
+        expect(
+          size!,
+          greaterThanOrEqualTo(15.0),
+          reason:
+              '正文字号 $size 过小；本项目 designSize 与设备逻辑尺寸'
+              '单位不一致，不可用 .r/.sp 缩放',
+        );
         expect(size, lessThan(20.0), reason: '正文字号也不该过大');
         expect(s.p?.height, isNotNull);
         expect(s.p?.height, greaterThan(1.2));
@@ -185,14 +192,16 @@ void main() {}
 ---
 ''';
     for (final isDark in [true, false]) {
-      await tester.pumpWidget(MaterialApp(
-        home: Scaffold(
-          body: Markdown(
-            data: md,
-            styleSheet: MarkdownStyles.build(isDark: isDark),
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Markdown(
+              data: md,
+              styleSheet: MarkdownStyles.build(isDark: isDark),
+            ),
           ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull, reason: 'isDark=$isDark');
     }

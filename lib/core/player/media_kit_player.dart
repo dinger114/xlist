@@ -55,14 +55,15 @@ class MediaKitPlayer implements XPlayer {
   final List<StreamSubscription> _subscriptions = [];
 
   MediaKitPlayer({PlayerConfiguration? configuration})
-      : _player = Player(
-          configuration: configuration ??
-              PlayerConfiguration(
-                // 仅在 XLIST_MPV_LOG 打开时提高 mpv 日志级别，
-                // 正常构建保持默认（error），无额外开销。
-                logLevel: _mpvLog ? MPVLogLevel.info : MPVLogLevel.error,
-              ),
-        ) {
+    : _player = Player(
+        configuration:
+            configuration ??
+            PlayerConfiguration(
+              // 仅在 XLIST_MPV_LOG 打开时提高 mpv 日志级别，
+              // 正常构建保持默认（error），无额外开销。
+              logLevel: _mpvLog ? MPVLogLevel.info : MPVLogLevel.error,
+            ),
+      ) {
     _initListeners();
   }
 
@@ -70,80 +71,100 @@ class MediaKitPlayer implements XPlayer {
     // mpv 后端日志（仅 XLIST_MPV_LOG 时输出）。排查播放故障的第一手证据：
     // 「转圈」多数是 hls 缓存/网络层的问题，只有 mpv 自己的日志说得清。
     if (_mpvLog) {
-      _subscriptions.add(_player.stream.log.listen((log) {
-        debugPrint('XLIST_MPV [${log.level}] ${log.prefix}: ${log.text}');
-      }));
+      _subscriptions.add(
+        _player.stream.log.listen((log) {
+          debugPrint('XLIST_MPV [${log.level}] ${log.prefix}: ${log.text}');
+        }),
+      );
     }
 
-    _subscriptions.add(_player.stream.playing.listen((playing) {
-      _isPlaying = playing;
-      _playingController.add(playing);
-      if (playing) {
-        _updateState(XPlayerState.playing);
-      } else if (_state != XPlayerState.completed) {
-        _updateState(XPlayerState.paused);
-      }
-    }));
+    _subscriptions.add(
+      _player.stream.playing.listen((playing) {
+        _isPlaying = playing;
+        _playingController.add(playing);
+        if (playing) {
+          _updateState(XPlayerState.playing);
+        } else if (_state != XPlayerState.completed) {
+          _updateState(XPlayerState.paused);
+        }
+      }),
+    );
 
-    _subscriptions.add(_player.stream.position.listen((pos) {
-      _position = pos;
-      _positionController.add(pos);
-    }));
+    _subscriptions.add(
+      _player.stream.position.listen((pos) {
+        _position = pos;
+        _positionController.add(pos);
+      }),
+    );
 
-    _subscriptions.add(_player.stream.buffer.listen((buf) {
-      _buffer = buf;
-      _bufferController.add(buf);
-    }));
+    _subscriptions.add(
+      _player.stream.buffer.listen((buf) {
+        _buffer = buf;
+        _bufferController.add(buf);
+      }),
+    );
 
-    _subscriptions.add(_player.stream.duration.listen((dur) {
-      _duration = dur;
-      _durationController.add(dur);
-    }));
+    _subscriptions.add(
+      _player.stream.duration.listen((dur) {
+        _duration = dur;
+        _durationController.add(dur);
+      }),
+    );
 
-    _subscriptions.add(_player.stream.buffering.listen((buf) {
-      _isBuffering = buf;
-      _bufferingController.add(buf);
-      if (buf) {
-        _updateState(XPlayerState.buffering);
-      } else if (_isPlaying) {
-        _updateState(XPlayerState.playing);
-      }
-    }));
+    _subscriptions.add(
+      _player.stream.buffering.listen((buf) {
+        _isBuffering = buf;
+        _bufferingController.add(buf);
+        if (buf) {
+          _updateState(XPlayerState.buffering);
+        } else if (_isPlaying) {
+          _updateState(XPlayerState.playing);
+        }
+      }),
+    );
 
-    _subscriptions.add(_player.stream.completed.listen((completed) {
-      _completedController.add(completed);
-      if (completed) _updateState(XPlayerState.completed);
-    }));
+    _subscriptions.add(
+      _player.stream.completed.listen((completed) {
+        _completedController.add(completed);
+        if (completed) _updateState(XPlayerState.completed);
+      }),
+    );
 
-    _subscriptions.add(_player.stream.error.listen((err) {
-      _errorController.add(err);
-      _updateState(XPlayerState.error);
-    }));
+    _subscriptions.add(
+      _player.stream.error.listen((err) {
+        _errorController.add(err);
+        _updateState(XPlayerState.error);
+      }),
+    );
 
-    _subscriptions.add(_player.stream.tracks.listen((tracks) {
-      final all = <XTrack>[
-        ...tracks.audio.map((t) => _convertTrack(t, XTrackType.audio)),
-        ...tracks.video.map((t) => _convertTrack(t, XTrackType.video)),
-        ...tracks.subtitle.map((t) => _convertTrack(t, XTrackType.subtitle)),
-      ].where((t) => !t.isNone).toList();
-      _tracks = all;
-      _tracksController.add(all);
-    }));
+    _subscriptions.add(
+      _player.stream.tracks.listen((tracks) {
+        final all = <XTrack>[
+          ...tracks.audio.map((t) => _convertTrack(t, XTrackType.audio)),
+          ...tracks.video.map((t) => _convertTrack(t, XTrackType.video)),
+          ...tracks.subtitle.map((t) => _convertTrack(t, XTrackType.subtitle)),
+        ].where((t) => !t.isNone).toList();
+        _tracks = all;
+        _tracksController.add(all);
+      }),
+    );
 
-    _subscriptions.add(_player.stream.track.listen((track) {
-      _trackSelection = XTrackSelection(
-        audio: track.audio.id != 'no' && track.audio.id != 'auto'
-            ? _convertTrack(track.audio, XTrackType.audio)
-            : null,
-        video: track.video.id != 'no' && track.video.id != 'auto'
-            ? _convertTrack(track.video, XTrackType.video)
-            : null,
-        subtitle: track.subtitle.id != 'no' && track.subtitle.id != 'auto'
-            ? _convertTrack(track.subtitle, XTrackType.subtitle)
-            : null,
-      );
-      _trackSelectionController.add(_trackSelection);
-    }));
+    _subscriptions.add(
+      _player.stream.track.listen((track) {
+        _trackSelection = XTrackSelection(
+          audio: track.audio.id != 'no' && track.audio.id != 'auto'
+              ? _convertTrack(track.audio, XTrackType.audio)
+              : null,
+          video: track.video.id != 'no' && track.video.id != 'auto'
+              ? _convertTrack(track.video, XTrackType.video)
+              : null,
+          subtitle: track.subtitle.id != 'no' && track.subtitle.id != 'auto'
+              ? _convertTrack(track.subtitle, XTrackType.subtitle)
+              : null,
+        );
+        _trackSelectionController.add(_trackSelection);
+      }),
+    );
   }
 
   void _updateState(XPlayerState newState) {
@@ -156,12 +177,7 @@ class MediaKitPlayer implements XPlayer {
   // media_kit 的私有类型，包外引用不到；公开的 `Track` 是另一个不相关类型。
   // ignore: strict_top_level_inference
   XTrack _convertTrack(t, XTrackType type) {
-    return XTrack(
-      id: t.id,
-      type: type,
-      title: t.title,
-      language: t.language,
-    );
+    return XTrack(id: t.id, type: type, title: t.title, language: t.language);
   }
 
   // ============ Snapshots ============
@@ -213,10 +229,7 @@ class MediaKitPlayer implements XPlayer {
     bool autoPlay = true,
   }) async {
     _updateState(XPlayerState.loading);
-    final media = Media(
-      url,
-      httpHeaders: headers ?? const {},
-    );
+    final media = Media(url, httpHeaders: headers ?? const {});
     await _player.open(media, play: autoPlay);
   }
 
@@ -235,9 +248,10 @@ class MediaKitPlayer implements XPlayer {
 
   @override
   Future<void> setAudioTrack(XTrack track) async {
-    final raw = _player.state.tracks.audio
-        .whereType<AudioTrack>()
-        .firstWhere((t) => t.id == track.id, orElse: () => AudioTrack.no());
+    final raw = _player.state.tracks.audio.whereType<AudioTrack>().firstWhere(
+      (t) => t.id == track.id,
+      orElse: () => AudioTrack.no(),
+    );
     await _player.setAudioTrack(raw);
   }
 
@@ -258,10 +272,7 @@ class MediaKitPlayer implements XPlayer {
   Future<void> setHardwareDecode(bool enabled) async {
     final impl = _player.platform;
     if (impl is! NativePlayer) return;
-    await impl.setProperty(
-      'hwdec',
-      enabled ? 'auto-safe' : 'no',
-    );
+    await impl.setProperty('hwdec', enabled ? 'auto-safe' : 'no');
   }
 
   @override

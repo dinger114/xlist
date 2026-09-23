@@ -43,11 +43,7 @@ class SearchPage extends GetView<SearchController> {
     final lastSlash = parent.lastIndexOf('/');
     final dirPath = lastSlash <= 0 ? '/' : parent.substring(0, lastSlash + 1);
     final dirName = parent.substring(lastSlash + 1);
-    ObjectHelper.click(
-      path: dirPath,
-      type: FileType.folder,
-      name: dirName,
-    );
+    ObjectHelper.click(path: dirPath, type: FileType.folder, name: dirName);
   }
 
   /// 处理点击 (普通模式)
@@ -84,8 +80,9 @@ class SearchPage extends GetView<SearchController> {
                 Center(
                   child: Text(
                     'properties'.tr,
-                    style: Get.textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.bold),
+                    style: Get.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 SizedBox(height: 20.h),
@@ -122,9 +119,12 @@ class SearchPage extends GetView<SearchController> {
         children: [
           SizedBox(
             width: 200.w,
-            child: Text(label,
-                style: Get.textTheme.bodyMedium
-                    ?.copyWith(color: CupertinoColors.systemGrey)),
+            child: Text(
+              label,
+              style: Get.textTheme.bodyMedium?.copyWith(
+                color: CupertinoColors.systemGrey,
+              ),
+            ),
           ),
           Expanded(child: Text(value, style: Get.textTheme.bodyMedium)),
         ],
@@ -160,7 +160,8 @@ class SearchPage extends GetView<SearchController> {
       }
       SmartDialog.dismiss();
       SmartDialog.showToast(
-          'toast_remove_batch'.tr.replaceAll('@count', '$count'));
+        'toast_remove_batch'.tr.replaceAll('@count', '$count'),
+      );
       await controller.refreshList();
     } catch (e) {
       SmartDialog.dismiss();
@@ -179,21 +180,24 @@ class SearchPage extends GetView<SearchController> {
         .map((s) => {'srcDir': s.parent ?? '/', 'name': s.name ?? ''})
         .toList();
 
-    Get.toNamed(Routes.directory, arguments: {
-      'srcItems': srcItems,
-      // 兼容字段
-      'srcDir': items.first.parent ?? '/',
-      'srcObject': ObjectModel.fromJson({
-        'name': items.first.name,
-        'type': items.first.type,
-        'is_dir': items.first.isDir,
-        'size': items.first.size,
-      }),
-      'root': true,
-      'isCopy': isCopy,
-      'tag': 'search',
-      'source': '',
-    })?.then((_) => controller.refreshList());
+    Get.toNamed(
+      Routes.directory,
+      arguments: {
+        'srcItems': srcItems,
+        // 兼容字段
+        'srcDir': items.first.parent ?? '/',
+        'srcObject': ObjectModel.fromJson({
+          'name': items.first.name,
+          'type': items.first.type,
+          'is_dir': items.first.isDir,
+          'size': items.first.size,
+        }),
+        'root': true,
+        'isCopy': isCopy,
+        'tag': 'search',
+        'source': '',
+      },
+    )?.then((_) => controller.refreshList());
   }
 
   /// 重命名 (单个)
@@ -220,8 +224,9 @@ class SearchPage extends GetView<SearchController> {
     SmartDialog.showLoading();
     try {
       final parent = s.parent ?? '/';
-      final fullPath =
-          parent.endsWith('/') ? '$parent${s.name}' : '$parent/${s.name}';
+      final fullPath = parent.endsWith('/')
+          ? '$parent${s.name}'
+          : '$parent/${s.name}';
       final response = await ObjectRepository.rename(
         path: fullPath,
         name: data.first,
@@ -270,23 +275,25 @@ class SearchPage extends GetView<SearchController> {
           title: 'pull_down_name'.tr,
           icon: [SortType.nameDesc, SortType.nameAsc].contains(sortType)
               ? (sortType == SortType.nameDesc
-                  ? CupertinoIcons.chevron_down
-                  : CupertinoIcons.chevron_up)
+                    ? CupertinoIcons.chevron_down
+                    : CupertinoIcons.chevron_up)
               : null,
-          onTap: () => controller.setSortType(sortType == SortType.nameAsc
-              ? SortType.nameDesc
-              : SortType.nameAsc),
+          onTap: () => controller.setSortType(
+            sortType == SortType.nameAsc ? SortType.nameDesc : SortType.nameAsc,
+          ),
         ),
         PullDownMenuItem(
           title: 'pull_down_size'.tr,
           icon: [SortType.sizeDesc, SortType.sizeAsc].contains(sortType)
               ? (sortType == SortType.sizeDesc
-                  ? CupertinoIcons.chevron_down
-                  : CupertinoIcons.chevron_up)
+                    ? CupertinoIcons.chevron_down
+                    : CupertinoIcons.chevron_up)
               : null,
-          onTap: () => controller.setSortType(sortType == SortType.sizeDesc
-              ? SortType.sizeAsc
-              : SortType.sizeDesc),
+          onTap: () => controller.setSortType(
+            sortType == SortType.sizeDesc
+                ? SortType.sizeAsc
+                : SortType.sizeDesc,
+          ),
         ),
         PullDownMenuDivider.large(),
         PullDownMenuItem(
@@ -324,9 +331,11 @@ class SearchPage extends GetView<SearchController> {
                 CupertinoButton(
                   padding: EdgeInsets.zero,
                   onPressed: controller.toggleSelectAll,
-                  child: Text(count == total && total > 0
-                      ? 'unselect_all'.tr
-                      : 'select_all'.tr),
+                  child: Text(
+                    count == total && total > 0
+                        ? 'unselect_all'.tr
+                        : 'select_all'.tr,
+                  ),
                 ),
                 Text(
                   'selected_count'.tr.replaceAll('@count', '$count'),
@@ -363,7 +372,7 @@ class SearchPage extends GetView<SearchController> {
                   child: Text('cancel'.tr),
                   onPressed: () => Get.back(),
                 ),
-              )
+              ),
             ],
           );
         }),
@@ -428,9 +437,10 @@ class SearchPage extends GetView<SearchController> {
           Container(
             padding: EdgeInsets.only(top: 20.r),
             child: Divider(
-                height: 1.r,
-                indent: inSelection ? 280.r : 190.r,
-                endIndent: 15.r),
+              height: 1.r,
+              indent: inSelection ? 280.r : 190.r,
+              endIndent: 15.r,
+            ),
           ),
         ],
       ),
@@ -533,17 +543,22 @@ class SearchPage extends GetView<SearchController> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon,
-                    size: CommonUtils.isPad ? 22 : 50.sp,
+                Icon(
+                  icon,
+                  size: CommonUtils.isPad ? 22 : 50.sp,
+                  color: enabled
+                      ? Get.theme.primaryColor
+                      : CupertinoColors.systemGrey,
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  label,
+                  style: Get.textTheme.bodySmall?.copyWith(
                     color: enabled
                         ? Get.theme.primaryColor
-                        : CupertinoColors.systemGrey),
-                SizedBox(height: 4.h),
-                Text(label,
-                    style: Get.textTheme.bodySmall?.copyWith(
-                        color: enabled
-                            ? Get.theme.primaryColor
-                            : CupertinoColors.systemGrey)),
+                        : CupertinoColors.systemGrey,
+                  ),
+                ),
               ],
             ),
           ),
@@ -555,7 +570,8 @@ class SearchPage extends GetView<SearchController> {
         decoration: BoxDecoration(
           color: CommonUtils.backgroundColor,
           border: Border(
-              top: BorderSide(color: CupertinoColors.separator, width: 0.3)),
+            top: BorderSide(color: CupertinoColors.separator, width: 0.3),
+          ),
         ),
         padding: EdgeInsets.symmetric(horizontal: 5.r, vertical: 5.r),
         child: SafeArea(

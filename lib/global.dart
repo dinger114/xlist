@@ -66,8 +66,9 @@ class Global {
 
     // android 状态栏为透明的沉浸
     if (GetPlatform.isAndroid) {
-      SystemUiOverlayStyle systemUiOverlayStyle =
-          const SystemUiOverlayStyle(statusBarColor: Colors.transparent);
+      SystemUiOverlayStyle systemUiOverlayStyle = const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+      );
       SystemChrome.setSystemUIOverlayStyle(systemUiOverlayStyle);
     }
   }
@@ -81,7 +82,10 @@ class XlistHttpOverrides extends HttpOverrides {
     sc.allowLegacyUnsafeRenegotiation = true;
 
     return super.createHttpClient(sc)
-      ..badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
+      ..badCertificateCallback = (
+        X509Certificate cert,
+        String host,
+        int port,
+      ) => true;
   }
 }

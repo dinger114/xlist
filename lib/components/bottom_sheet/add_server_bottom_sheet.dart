@@ -62,7 +62,11 @@ class _AddServerBottomSheetState extends State<AddServerBottomSheet> {
       if (response.data['code'] == 200) {
         _isUrlValid = true;
         _server = ServerEntity(
-            url: url, type: ServerType.alist, username: 'guest', password: '');
+          url: url,
+          type: ServerType.alist,
+          username: 'guest',
+          password: '',
+        );
       } else {
         _isUrlValid = false;
       }
@@ -131,11 +135,14 @@ class _AddServerBottomSheetState extends State<AddServerBottomSheet> {
 
         // 重新登录
         SmartDialog.showLoading();
-        response = await Dio().post('$url/api/auth/login', data: {
-          'username': username,
-          'password': password,
-          'otp_code': data.first
-        });
+        response = await Dio().post(
+          '$url/api/auth/login',
+          data: {
+            'username': username,
+            'password': password,
+            'otp_code': data.first,
+          },
+        );
 
         // 2FA 验证失败
         if (response.data['code'] == 402) {
@@ -195,8 +202,9 @@ class _AddServerBottomSheetState extends State<AddServerBottomSheet> {
     }
 
     // 保存服务器信息
-    final serverId =
-        await DatabaseService.to.database.serverDao.insertServer(_server!);
+    final serverId = await DatabaseService.to.database.serverDao.insertServer(
+      _server!,
+    );
 
     // 提示信息
     SmartDialog.dismiss();

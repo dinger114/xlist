@@ -53,9 +53,9 @@ class PreviewHelper {
         Get.find<PreferencesStorage>().documentSupportTypes.val;
 
     // 两个数组的交集 kSupportPreviewCodeTypes
-    final intersection = documentSupportTypes
-        .toSet()
-        .intersection(kSupportPreviewCodeTypes.toSet());
+    final intersection = documentSupportTypes.toSet().intersection(
+      kSupportPreviewCodeTypes.toSet(),
+    );
 
     final ext = p.extension(name).replaceAll('.', '').toLowerCase();
     return intersection.contains(ext);

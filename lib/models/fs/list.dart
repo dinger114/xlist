@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+
 import '../object.dart';
 part 'list.g.dart';
 

@@ -73,7 +73,7 @@ class DownloadPage extends GetView<DownloadController> {
                         foregroundColor: Colors.white,
                         icon: CupertinoIcons.share,
                         label: 'setting_other_app_open'.tr,
-                      )
+                      ),
                     ],
                   )
                 : null,
@@ -206,8 +206,9 @@ class DownloadPage extends GetView<DownloadController> {
                       : EdgeInsets.only(left: 80.w, top: 30.h, bottom: 10.h),
                   child: Obx(
                     () => Text(
-                        '${'setting_download_used'.tr} ${CommonUtils.formatFileSize(controller.totalSize.value)}, ${'setting_download_manager_file'.tr}',
-                        style: Get.textTheme.bodySmall),
+                      '${'setting_download_used'.tr} ${CommonUtils.formatFileSize(controller.totalSize.value)}, ${'setting_download_manager_file'.tr}',
+                      style: Get.textTheme.bodySmall,
+                    ),
                   ),
                 )
               : SizedBox(),

@@ -60,8 +60,10 @@ class DocumentController extends GetxController {
     // 获取文档地址
     object.value = await ObjectRepository.get(path: '$path$name');
     userInfo.value = await UserRepository.me(); // 获取用户信息
-    httpHeaders.value =
-        DriverHelper.getHeaders(object.value.provider, object.value.rawUrl);
+    httpHeaders.value = DriverHelper.getHeaders(
+      object.value.provider,
+      object.value.rawUrl,
+    );
 
     // 如果是代码类型文件
     if (PreviewHelper.isCode(name) && !PreviewHelper.isHtml(name)) {
@@ -96,13 +98,15 @@ class DocumentController extends GetxController {
 
   /// 复制链接
   void copyLink() {
-    Clipboard.setData(ClipboardData(
-      text: CommonUtils.getDownloadLink(
-        path,
-        object: object.value,
-        userInfo: userInfo.value,
+    Clipboard.setData(
+      ClipboardData(
+        text: CommonUtils.getDownloadLink(
+          path,
+          object: object.value,
+          userInfo: userInfo.value,
+        ),
       ),
-    ));
+    );
     SmartDialog.showToast('toast_copy_success'.tr);
   }
 

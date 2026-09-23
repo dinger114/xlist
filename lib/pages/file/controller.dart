@@ -37,13 +37,15 @@ class FileController extends GetxController {
 
   /// 复制链接
   void copyLink() {
-    Clipboard.setData(ClipboardData(
-      text: CommonUtils.getDownloadLink(
-        path,
-        object: object.value,
-        userInfo: userInfo.value,
+    Clipboard.setData(
+      ClipboardData(
+        text: CommonUtils.getDownloadLink(
+          path,
+          object: object.value,
+          userInfo: userInfo.value,
+        ),
       ),
-    ));
+    );
     SmartDialog.showToast('toast_copy_success'.tr);
   }
 

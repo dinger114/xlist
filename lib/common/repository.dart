@@ -13,8 +13,11 @@ class Repository {
   }
 
   // Dio.post
-  static Future<Response<T>> post<T>(String path,
-      {dynamic data, Options? options}) {
+  static Future<Response<T>> post<T>(
+    String path, {
+    dynamic data,
+    Options? options,
+  }) {
     return DioService.to.dio.post(path, data: data, options: options);
   }
 }

@@ -17,12 +17,12 @@ UserModel _$UserModelFromJson(Map<String, dynamic> json) => UserModel()
   ..disabled = json['disabled'] as bool?;
 
 Map<String, dynamic> _$UserModelToJson(UserModel instance) => <String, dynamic>{
-      'id': instance.id,
-      'username': instance.username,
-      'password': instance.password,
-      'base_path': instance.basePath,
-      'role': instance.role,
-      'permission': instance.permission,
-      'sso_id': instance.ssoId,
-      'disabled': instance.disabled,
-    };
+  'id': instance.id,
+  'username': instance.username,
+  'password': instance.password,
+  'base_path': instance.basePath,
+  'role': instance.role,
+  'permission': instance.permission,
+  'sso_id': instance.ssoId,
+  'disabled': instance.disabled,
+};

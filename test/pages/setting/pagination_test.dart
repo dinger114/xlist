@@ -26,8 +26,10 @@ void main() {
     if (pages != null && pages.isNotEmpty && pages.last.length < pageSize) {
       return null;
     }
-    return (pages ?? const <List<String>>[])
-        .fold<int>(0, (sum, p) => sum + p.length);
+    return (pages ?? const <List<String>>[]).fold<int>(
+      0,
+      (sum, p) => sum + p.length,
+    );
   }
 
   /// 用 [total] 条假数据构造 controller，记录取过的 offset 序列
@@ -125,8 +127,9 @@ void main() {
     expect(h.ctrl.value.items!.length, 45);
 
     // 删除 item0 与 item44（复刻 deleteFavorite / deleteRecent 的新写法）
-    h.ctrl.value =
-        h.ctrl.value.filterItems((e) => e != 'item0' && e != 'item44');
+    h.ctrl.value = h.ctrl.value.filterItems(
+      (e) => e != 'item0' && e != 'item44',
+    );
 
     final items = h.ctrl.value.items!;
     expect(items.length, 43);

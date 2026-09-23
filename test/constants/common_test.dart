@@ -170,8 +170,11 @@ void main() {
         Routes.settingPreviewVideo,
       ];
       for (final c in children) {
-        expect(c.startsWith(Routes.setting), isTrue,
-            reason: '$c 未以 ${Routes.setting} 开头');
+        expect(
+          c.startsWith(Routes.setting),
+          isTrue,
+          reason: '$c 未以 ${Routes.setting} 开头',
+        );
         expect(c, isNot(Routes.setting), reason: '$c 与父路径重复');
       }
     });

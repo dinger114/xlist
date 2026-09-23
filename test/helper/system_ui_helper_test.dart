@@ -23,15 +23,15 @@ void main() {
     calls.clear();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (call) async {
-      calls.add(call);
-      switch (call.method) {
-        case 'getVolume':
-        case 'getBrightness':
-          return 0.5;
-        default:
-          return null;
-      }
-    });
+          calls.add(call);
+          switch (call.method) {
+            case 'getVolume':
+            case 'getBrightness':
+              return 0.5;
+            default:
+              return null;
+          }
+        });
   });
 
   tearDown(() {

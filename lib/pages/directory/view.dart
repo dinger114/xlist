@@ -27,11 +27,7 @@ class DirectoryPage extends GetView<DirectoryController> {
   DirectoryController get controller => Get.find<DirectoryController>(tag: tag);
 
   /// 构造函数
-  DirectoryPage({
-    super.key,
-    this.tag,
-    this.previousPageTitle,
-  }) {
+  DirectoryPage({super.key, this.tag, this.previousPageTitle}) {
     Get.put<DirectoryController>(DirectoryController(), tag: tag);
   }
 
@@ -112,7 +108,7 @@ class DirectoryPage extends GetView<DirectoryController> {
               alignment: Alignment.centerRight,
               onPressed: controller.moveOrCopy,
               child: Text(controller.isCopy ? 'copy'.tr : 'move'.tr),
-            )
+            ),
           ],
         ),
       ),
@@ -181,7 +177,10 @@ class DirectoryPage extends GetView<DirectoryController> {
                     : Container(
                         padding: EdgeInsets.only(top: 20.r),
                         child: Divider(
-                            height: 1.r, indent: 190.r, endIndent: 15.r),
+                          height: 1.r,
+                          indent: 190.r,
+                          endIndent: 15.r,
+                        ),
                       ),
               ],
             ),
@@ -202,8 +201,9 @@ class DirectoryPage extends GetView<DirectoryController> {
         HeaderLocator.sliver(),
         Obx(
           () => SliverPadding(
-            padding:
-                EdgeInsets.symmetric(horizontal: CommonUtils.isPad ? 15 : 30.r),
+            padding: EdgeInsets.symmetric(
+              horizontal: CommonUtils.isPad ? 15 : 30.r,
+            ),
             sliver: SizeCacheWidget(child: _buildSliverList()),
           ),
         ),
@@ -220,7 +220,9 @@ class DirectoryPage extends GetView<DirectoryController> {
         child: EasyRefresh(
           controller: controller.easyRefreshController,
           header: CupertinoHeader(
-              position: IndicatorPosition.locator, safeArea: false),
+            position: IndicatorPosition.locator,
+            safeArea: false,
+          ),
           footer: CupertinoFooter(position: IndicatorPosition.locator),
           onRefresh: () async {
             await HapticFeedback.selectionClick();

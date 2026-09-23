@@ -32,40 +32,42 @@ void main() {
   /// 复刻 `main.dart` 的壳接线：裸 `MaterialApp` + `navigatorKey: Get.key`
   /// ＋ `GetObserver`。用裸壳而非 `GetMaterialApp` 是本项目的实际形态。
   Widget shell({required Widget child}) => ScreenUtilInit(
-        designSize: const Size(360, 800),
-        builder: (context, child) => MaterialApp(
-          navigatorKey: Get.key,
-          navigatorObservers: [GetObserver(null, Get.routing)],
-          // 必须复刻真机的页面根：`video_player/view.dart` 用的是
-          // `CupertinoPageScaffold` —— 它**不**提供 Material 祖先。
-          // 换成 `Scaffold` 会自带 Material，把本用例要守的 bug 掩盖掉。
-          home: CupertinoPageScaffold(child: child!),
-        ),
-        child: child,
-      );
+    designSize: const Size(360, 800),
+    builder: (context, child) => MaterialApp(
+      navigatorKey: Get.key,
+      navigatorObservers: [GetObserver(null, Get.routing)],
+      // 必须复刻真机的页面根：`video_player/view.dart` 用的是
+      // `CupertinoPageScaffold` —— 它**不**提供 Material 祖先。
+      // 换成 `Scaffold` 会自带 Material，把本用例要守的 bug 掩盖掉。
+      home: CupertinoPageScaffold(child: child!),
+    ),
+    child: child,
+  );
 
   /// 复刻 `pages/video_player/view.dart` 的层级：
   /// `Stack > Positioned.fill > Obx > DefaultPanel(> Stack)`
   /// —— `Obx` 这一层正是原 bug 的触发条件，不能省。
   Widget videoLayer({required XPlayer player, required RxBool inPip}) => Stack(
-        children: [
-          Positioned.fill(
-            // Obx 必须读到真正的可观察对象，否则 GetX 会报
-            // "the improper use of a GetX has been detected"（真代码里是
-            // controller.isInPip.value，这里用等价的 RxBool）。
-            child: Obx(() => inPip.value
-                ? const SizedBox.shrink()
-                : DefaultPanel(
-                    player: player,
-                    playerTitle: '测试视频',
-                    subtitles: const [],
-                    subtitleNameList: const [],
-                    audioTracks: const [],
-                    subtitleTracks: const [],
-                  )),
-          ),
-        ],
-      );
+    children: [
+      Positioned.fill(
+        // Obx 必须读到真正的可观察对象，否则 GetX 会报
+        // "the improper use of a GetX has been detected"（真代码里是
+        // controller.isInPip.value，这里用等价的 RxBool）。
+        child: Obx(
+          () => inPip.value
+              ? const SizedBox.shrink()
+              : DefaultPanel(
+                  player: player,
+                  playerTitle: '测试视频',
+                  subtitles: const [],
+                  subtitleNameList: const [],
+                  audioTracks: const [],
+                  subtitleTracks: const [],
+                ),
+        ),
+      ),
+    ],
+  );
 
   Future<List<FlutterErrorDetails>> captureErrors(
     WidgetTester tester,
@@ -86,7 +88,10 @@ void main() {
     final player = FakeXPlayer();
     final errors = await captureErrors(tester, () async {
       await tester.pumpWidget(
-          shell(child: videoLayer(player: player, inPip: false.obs)));
+        shell(
+          child: videoLayer(player: player, inPip: false.obs),
+        ),
+      );
       await tester.pump(const Duration(milliseconds: 400));
     });
 
@@ -102,7 +107,10 @@ void main() {
     final player = FakeXPlayer();
     final errors = await captureErrors(tester, () async {
       await tester.pumpWidget(
-          shell(child: videoLayer(player: player, inPip: false.obs)));
+        shell(
+          child: videoLayer(player: player, inPip: false.obs),
+        ),
+      );
       await tester.pump();
       player.emitDuration(const Duration(minutes: 5));
       player.emitPosition(const Duration(seconds: 30));
@@ -118,7 +126,10 @@ void main() {
     final player = FakeXPlayer();
     final errors = await captureErrors(tester, () async {
       await tester.pumpWidget(
-          shell(child: videoLayer(player: player, inPip: false.obs)));
+        shell(
+          child: videoLayer(player: player, inPip: false.obs),
+        ),
+      );
       await tester.pump();
       player.emitDuration(Duration.zero);
       player.emitPosition(Duration.zero);
@@ -133,7 +144,10 @@ void main() {
     final player = FakeXPlayer();
     final errors = await captureErrors(tester, () async {
       await tester.pumpWidget(
-          shell(child: videoLayer(player: player, inPip: true.obs)));
+        shell(
+          child: videoLayer(player: player, inPip: true.obs),
+        ),
+      );
       await tester.pump(const Duration(milliseconds: 200));
     });
 
@@ -145,8 +159,11 @@ void main() {
     // 结构性断言：直接检查 build 产物顶层不是 Positioned。
     // 这样即使将来有人把它改回 Positioned.fill，也会在这里被拦住。
     final player = FakeXPlayer();
-    await tester
-        .pumpWidget(shell(child: videoLayer(player: player, inPip: false.obs)));
+    await tester.pumpWidget(
+      shell(
+        child: videoLayer(player: player, inPip: false.obs),
+      ),
+    );
     await tester.pump(const Duration(milliseconds: 400));
 
     final panelFinder = find.byType(DefaultPanel);
@@ -220,8 +237,11 @@ class FakeXPlayer implements XPlayer {
   XTrackSelection get trackSelection => XTrackSelection();
 
   @override
-  Future<void> open(String url,
-      {Map<String, String>? headers, bool autoPlay = true}) async {}
+  Future<void> open(
+    String url, {
+    Map<String, String>? headers,
+    bool autoPlay = true,
+  }) async {}
   @override
   Future<void> play() async {}
   @override

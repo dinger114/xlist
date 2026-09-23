@@ -55,10 +55,12 @@ CompletedAction nextActionOnCompleted({
       return CompletedAction.replay;
     case PlayMode.listLoop:
       return CompletedAction.switchTo(
-          currentIndex >= queueLength - 1 ? 0 : currentIndex + 1);
+        currentIndex >= queueLength - 1 ? 0 : currentIndex + 1,
+      );
     case PlayMode.shuffle:
       return CompletedAction.switchTo(
-          (randomPicker ?? _defaultRandomPick)(queueLength));
+        (randomPicker ?? _defaultRandomPick)(queueLength),
+      );
     default:
       // PLAY_PAUSE 等：播完即停
       return CompletedAction.stop;
@@ -194,8 +196,9 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
     }
 
     // 过滤非音频
-    this.objects.value =
-        objects.where((o) => PreviewHelper.isAudio(o.name!)).toList();
+    this.objects.value = objects
+        .where((o) => PreviewHelper.isAudio(o.name!))
+        .toList();
 
     isLoading.value = true;
     isActive.value = true;
@@ -211,8 +214,10 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
     if (_file.isEmpty) {
       try {
         object.value = await ObjectRepository.get(path: '$path$name');
-        httpHeaders.value =
-            DriverHelper.getHeaders(object.value.provider, object.value.rawUrl);
+        httpHeaders.value = DriverHelper.getHeaders(
+          object.value.provider,
+          object.value.rawUrl,
+        );
       } catch (e) {
         SmartDialog.showToast(e.toString());
         isLoading.value = false;
@@ -237,8 +242,11 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
 
     // 初始化播放器
     _sourceUrl = object.value.rawUrl ?? '';
-    await PlayerHelper.setOption(player,
-        isAudioOnly: true, headers: httpHeaders);
+    await PlayerHelper.setOption(
+      player,
+      isAudioOnly: true,
+      headers: httpHeaders,
+    );
     await player.open(_sourceUrl, headers: httpHeaders, autoPlay: true);
     if (currentPos.value.inMilliseconds > 0) {
       await player.seek(currentPos.value);
@@ -257,10 +265,7 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
     final p = MediaKitPlayer();
     _player = p;
 
-    audioHandler.setQueueMode(
-      isPlaylist: objects.length > 1,
-      isVideo: false,
-    );
+    audioHandler.setQueueMode(isPlaylist: objects.length > 1, isVideo: false);
     audioHandler.initializeStreamController(p, objects.length > 1, false);
     audioHandler.playbackState.addStream(audioHandler.streamController.stream);
     audioHandler.setVideoFunctions(
@@ -275,40 +280,52 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
 
   /// 挂载播放器事件监听
   void _attachPlayerListeners(MediaKitPlayer p) {
-    _subscriptions.add(p.playingStream.listen((playing) {
-      isPlaying.value = playing;
-      Future.delayed(Duration(milliseconds: 1000), () {
-        audioHandler.updatePlaybackState();
-      });
-    }));
+    _subscriptions.add(
+      p.playingStream.listen((playing) {
+        isPlaying.value = playing;
+        Future.delayed(Duration(milliseconds: 1000), () {
+          audioHandler.updatePlaybackState();
+        });
+      }),
+    );
 
-    _subscriptions.add(p.durationStream.listen((dur) {
-      if (dur != duration.value) {
-        duration.value = dur;
-      }
-    }));
+    _subscriptions.add(
+      p.durationStream.listen((dur) {
+        if (dur != duration.value) {
+          duration.value = dur;
+        }
+      }),
+    );
 
-    _subscriptions.add(p.positionStream.listen((pos) {
-      currentPos.value = pos;
-    }));
+    _subscriptions.add(
+      p.positionStream.listen((pos) {
+        currentPos.value = pos;
+      }),
+    );
 
-    _subscriptions.add(p.bufferStream.listen((buf) {
-      bufferPos.value = buf;
-    }));
+    _subscriptions.add(
+      p.bufferStream.listen((buf) {
+        bufferPos.value = buf;
+      }),
+    );
 
-    _subscriptions.add(p.stateStream.listen((state) {
-      if (state == XPlayerState.ready || state == XPlayerState.playing) {
-        _playerNotificationHandler();
-      }
+    _subscriptions.add(
+      p.stateStream.listen((state) {
+        if (state == XPlayerState.ready || state == XPlayerState.playing) {
+          _playerNotificationHandler();
+        }
 
-      if (state == XPlayerState.completed) {
-        _onCompleted();
-      }
-    }));
+        if (state == XPlayerState.completed) {
+          _onCompleted();
+        }
+      }),
+    );
 
-    _subscriptions.add(p.errorStream.listen((err) {
-      SmartDialog.showToast('toast_play_error'.tr);
-    }));
+    _subscriptions.add(
+      p.errorStream.listen((err) {
+        SmartDialog.showToast('toast_play_error'.tr);
+      }),
+    );
   }
 
   /// 播放完成：按播放模式决定下一首
@@ -377,8 +394,9 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
     // 获取文件信息
     SmartDialog.showLoading();
     try {
-      object.value =
-          await ObjectRepository.get(path: '${path.value}${current.name}');
+      object.value = await ObjectRepository.get(
+        path: '${path.value}${current.name}',
+      );
     } catch (e) {
       SmartDialog.dismiss();
       SmartDialog.showToast(e.toString());
@@ -395,8 +413,11 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
 
     // 初始化播放器
     _sourceUrl = object.value.rawUrl ?? '';
-    await PlayerHelper.setOption(player,
-        isAudioOnly: true, headers: httpHeaders);
+    await PlayerHelper.setOption(
+      player,
+      isAudioOnly: true,
+      headers: httpHeaders,
+    );
     await player.open(_sourceUrl, headers: httpHeaders, autoPlay: true);
     if (currentPos.value.inMilliseconds > 0) {
       await player.seek(currentPos.value);
@@ -462,7 +483,7 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
         SheetAction(label: '60分钟', key: 60),
         ...[
           if (hasTimer)
-            SheetAction(label: '关闭定时', key: 0, isDestructiveAction: true)
+            SheetAction(label: '关闭定时', key: 0, isDestructiveAction: true),
         ].whereType<SheetAction>(),
       ],
       cancelLabel: 'cancel'.tr,
@@ -500,15 +521,15 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
       _progressId = progress.id!;
       currentPos.value = Duration(milliseconds: progress.currentPos);
     } else {
-      _progressId =
-          await DatabaseService.to.database.progressDao.insertProgress(
-        ProgressEntity(
-          serverId: serverId,
-          path: path.value,
-          name: currentName.value,
-          currentPos: 0,
-        ),
-      );
+      _progressId = await DatabaseService.to.database.progressDao
+          .insertProgress(
+            ProgressEntity(
+              serverId: serverId,
+              path: path.value,
+              name: currentName.value,
+              currentPos: 0,
+            ),
+          );
     }
 
     // 每五秒记录一下播放进度

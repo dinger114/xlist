@@ -94,17 +94,14 @@ class XlistApp extends StatelessWidget {
           // `Get.arguments['x']` 拿到 null（真机实测：文件夹点击进
           // DetailController 直接 `NoSuchMethodError: [](“path”) on null`）。
           // GetMaterialApp 内部就是 `GetObserver(routingCallback, Get.routing)`。
-          GetObserver(
-            (routing) {
-              currentRoute.value = routing?.current ?? '';
-              if (Global.routeLog) {
-                // 用 debugPrint（非 print）：release 下 print 的输出在 Android
-                // 会被丢掉，debugPrint 才能进 logcat。
-                debugPrint('XLIST_ROUTE >>> ${routing?.current}');
-              }
-            },
-            Get.routing,
-          ),
+          GetObserver((routing) {
+            currentRoute.value = routing?.current ?? '';
+            if (Global.routeLog) {
+              // 用 debugPrint（非 print）：release 下 print 的输出在 Android
+              // 会被丢掉，debugPrint 才能进 logcat。
+              debugPrint('XLIST_ROUTE >>> ${routing?.current}');
+            }
+          }, Get.routing),
         ],
         initialRoute: AppPages.initial,
         onGenerateRoute: AppRouter.onGenerateRoute,
@@ -121,27 +118,28 @@ class XlistApp extends StatelessWidget {
             child: ThemeBridge(
               // 5.3.0 里 `init` 仍挂在 `FlutterSmartDialog` 上（类名没改，
               // 只有 `smart_dialog.dart` 里那个独立类叫 SmartDialog）。
-              child: FlutterSmartDialog.init(
-                toastBuilder: (String msg) => ToastComponent(message: msg),
-              )(
-                context,
-                // 迷你播放条：覆盖在所有页面之上，全屏播放页自身不显示
-                //
-                // 必须用 StackFit.expand（等价于给两个子节点紧约束）：
-                // Stack 默认给非定位子节点**松约束**，app 子树的 Scaffold 会按
-                // 内容大小收缩，表现为「页面不满屏、背景发黑」。
-                //
-                // 注：smart_dialog 的 initState 只在 child 是 Navigator/FocusScope
-                // 时才能拿到 contextNavigator；传 Stack 会拿不到，但实测 toast /
-                // loading / dialog 仍正常显示（它自己那层 Overlay 才是真正的宿主）。
-                Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    child ?? const SizedBox.shrink(),
-                    const MiniPlayerOverlay(),
-                  ],
-                ),
-              ),
+              child:
+                  FlutterSmartDialog.init(
+                    toastBuilder: (String msg) => ToastComponent(message: msg),
+                  )(
+                    context,
+                    // 迷你播放条：覆盖在所有页面之上，全屏播放页自身不显示
+                    //
+                    // 必须用 StackFit.expand（等价于给两个子节点紧约束）：
+                    // Stack 默认给非定位子节点**松约束**，app 子树的 Scaffold 会按
+                    // 内容大小收缩，表现为「页面不满屏、背景发黑」。
+                    //
+                    // 注：smart_dialog 的 initState 只在 child 是 Navigator/FocusScope
+                    // 时才能拿到 contextNavigator；传 Stack 会拿不到，但实测 toast /
+                    // loading / dialog 仍正常显示（它自己那层 Overlay 才是真正的宿主）。
+                    Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        child ?? const SizedBox.shrink(),
+                        const MiniPlayerOverlay(),
+                      ],
+                    ),
+                  ),
             ),
           );
         },

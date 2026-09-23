@@ -17,8 +17,9 @@ void main() {
   setUp(Get.reset);
   tearDown(Get.reset);
 
-  testWidgets('MaterialApp + navigatorKey: Get.key 下 GetX 导航全链路',
-      (tester) async {
+  testWidgets('MaterialApp + navigatorKey: Get.key 下 GetX 导航全链路', (
+    tester,
+  ) async {
     Get.reset();
     ProbeController.lifecycle.clear();
 
@@ -38,17 +39,25 @@ void main() {
     // 1. Get.toNamed 能否跳转
     await tester.tap(find.text('GO'));
     await tester.pumpAndSettle();
-    expect(find.text('PROBE_SECOND'), findsOneWidget,
-        reason: 'Get.toNamed 未生效');
+    expect(
+      find.text('PROBE_SECOND'),
+      findsOneWidget,
+      reason: 'Get.toNamed 未生效',
+    );
 
     // 2. Get.arguments 能否取到
-    expect(find.textContaining('arg=第一次'), findsOneWidget,
-        reason: 'Get.arguments 未传递到新页面');
+    expect(
+      find.textContaining('arg=第一次'),
+      findsOneWidget,
+      reason: 'Get.arguments 未传递到新页面',
+    );
 
     // 3. binding 是否被调用（控制器是否创建）
     expect(Get.isRegistered<ProbeController>(), isTrue, reason: 'binding 未执行');
     expect(
-        ProbeController.lifecycle.any((e) => e.startsWith('onInit')), isTrue);
+      ProbeController.lifecycle.any((e) => e.startsWith('onInit')),
+      isTrue,
+    );
 
     // 4. Get.back 返回后，控制器是否被销毁（关键！）
     await tester.tap(find.text('BACK'));
@@ -58,10 +67,15 @@ void main() {
     debugPrint('>>> 生命周期: ${ProbeController.lifecycle}');
     debugPrint('>>> pop 后是否仍注册: ${Get.isRegistered<ProbeController>()}');
     expect(
-        ProbeController.lifecycle.any((e) => e.startsWith('onClose')), isTrue,
-        reason: 'pop 后控制器未销毁 —— 再次进入会拿到陈旧实例');
-    expect(Get.isRegistered<ProbeController>(), isFalse,
-        reason: 'pop 后控制器仍注册在容器里');
+      ProbeController.lifecycle.any((e) => e.startsWith('onClose')),
+      isTrue,
+      reason: 'pop 后控制器未销毁 —— 再次进入会拿到陈旧实例',
+    );
+    expect(
+      Get.isRegistered<ProbeController>(),
+      isFalse,
+      reason: 'pop 后控制器仍注册在容器里',
+    );
   });
 
   testWidgets('对照：第二次进入应拿到全新实例（不是陈旧实例）', (tester) async {
@@ -88,8 +102,11 @@ void main() {
     // 第二次（带不同参数）
     await tester.tap(find.text('GO2'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('arg=第二次'), findsOneWidget,
-        reason: '第二次进入拿到了陈旧参数/陈旧控制器');
+    expect(
+      find.textContaining('arg=第二次'),
+      findsOneWidget,
+      reason: '第二次进入拿到了陈旧参数/陈旧控制器',
+    );
   });
 }
 

@@ -8,7 +8,9 @@ abstract class PasswordManagerDao {
     'SELECT * FROM password_manager WHERE server_id = :serverId AND path = :path',
   )
   Future<List<PasswordManagerEntity>?> findPasswordManagerByPath(
-      int serverId, String path);
+    int serverId,
+    String path,
+  );
 
   @Query('DELETE FROM password_manager WHERE server_id = :serverId')
   Future<void> deletePasswordManagerByServerId(int serverId);

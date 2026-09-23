@@ -24,49 +24,53 @@ void main() {
   tearDown(Get.reset);
 
   Widget shell({required bool wireRouteSend}) => MaterialApp(
-        navigatorKey: Get.key,
-        navigatorObservers: [
-          if (wireRouteSend) GetObserver(null, Get.routing) else GetObserver(),
-        ],
-        home: Builder(
-          builder: (ctx) => Scaffold(
-            body: Column(
-              children: [
-                // 走 `Get.to(builder, arguments:)` —— 生产里 ObjectHelper.click
-                // 打开文件夹用的就是这个形态（不是命名路由）。
-                TextButton(
-                  onPressed: () => Get.to(
-                    () => const _ArgsProbe(),
-                    routeName: '/detail_xxx',
-                    arguments: {'path': '/a/b', 'name': 'c'},
-                  ),
-                  child: const Text('TO_BUILDER'),
-                ),
-                // 走命名路由 + onGenerateRoute（覆盖另一条路径）
-                TextButton(
-                  onPressed: () => Get.toNamed('/named_probe',
-                      arguments: {'path': '/n', 'name': 'm'}),
-                  child: const Text('TO_NAMED'),
-                ),
-              ],
+    navigatorKey: Get.key,
+    navigatorObservers: [
+      if (wireRouteSend) GetObserver(null, Get.routing) else GetObserver(),
+    ],
+    home: Builder(
+      builder: (ctx) => Scaffold(
+        body: Column(
+          children: [
+            // 走 `Get.to(builder, arguments:)` —— 生产里 ObjectHelper.click
+            // 打开文件夹用的就是这个形态（不是命名路由）。
+            TextButton(
+              onPressed: () => Get.to(
+                () => const _ArgsProbe(),
+                routeName: '/detail_xxx',
+                arguments: {'path': '/a/b', 'name': 'c'},
+              ),
+              child: const Text('TO_BUILDER'),
             ),
-          ),
+            // 走命名路由 + onGenerateRoute（覆盖另一条路径）
+            TextButton(
+              onPressed: () => Get.toNamed(
+                '/named_probe',
+                arguments: {'path': '/n', 'name': 'm'},
+              ),
+              child: const Text('TO_NAMED'),
+            ),
+          ],
         ),
-        onGenerateRoute: (s) => s.name == '/named_probe'
-            ? GetPageRoute(settings: s, page: () => const _ArgsProbe())
-            : null,
-      );
+      ),
+    ),
+    onGenerateRoute: (s) => s.name == '/named_probe'
+        ? GetPageRoute(settings: s, page: () => const _ArgsProbe())
+        : null,
+  );
 
-  testWidgets('Get.to(builder, arguments:) + Get.routing 接线时，Controller 能读到参数',
-      (tester) async {
-    await tester.pumpWidget(shell(wireRouteSend: true));
-    await tester.tap(find.text('TO_BUILDER'));
-    await tester.pumpAndSettle();
+  testWidgets(
+    'Get.to(builder, arguments:) + Get.routing 接线时，Controller 能读到参数',
+    (tester) async {
+      await tester.pumpWidget(shell(wireRouteSend: true));
+      await tester.tap(find.text('TO_BUILDER'));
+      await tester.pumpAndSettle();
 
-    expect(tester.takeException(), isNull, reason: '进页面时抛异常');
-    expect(find.text('path=/a/b'), findsOneWidget);
-    expect(find.text('name=c'), findsOneWidget);
-  });
+      expect(tester.takeException(), isNull, reason: '进页面时抛异常');
+      expect(find.text('path=/a/b'), findsOneWidget);
+      expect(find.text('name=c'), findsOneWidget);
+    },
+  );
 
   testWidgets('命名路由路径同样能读到参数', (tester) async {
     await tester.pumpWidget(shell(wireRouteSend: true));
@@ -78,8 +82,9 @@ void main() {
     expect(find.text('name=m'), findsOneWidget);
   });
 
-  testWidgets('对照：漏传 Get.routing（旧写法）时 Get.arguments 为 null —— 说明此参数必需',
-      (tester) async {
+  testWidgets('对照：漏传 Get.routing（旧写法）时 Get.arguments 为 null —— 说明此参数必需', (
+    tester,
+  ) async {
     await tester.pumpWidget(shell(wireRouteSend: false));
     await tester.tap(find.text('TO_BUILDER'));
     // 控制器在字段初始化里读 Get.arguments，会抛错；这里只观察参数是否为 null

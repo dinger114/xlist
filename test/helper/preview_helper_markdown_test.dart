@@ -26,7 +26,7 @@ void main() {
         'a.mdx',
         'a.dart',
         'a.html',
-        'md'
+        'md',
       ]) {
         expect(PreviewHelper.isMarkdown(n), isFalse, reason: n);
       }

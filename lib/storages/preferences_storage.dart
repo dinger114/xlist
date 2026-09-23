@@ -27,20 +27,28 @@ class PreferencesStorage {
   final isShowPreview = true.val('isShowPreview', getBox: _prefBox);
 
   // 用户自定义的图片支持类型
-  final imageSupportTypes =
-      kSupportPreviewImageTypes.val('imageSupportTypes', getBox: _prefBox);
+  final imageSupportTypes = kSupportPreviewImageTypes.val(
+    'imageSupportTypes',
+    getBox: _prefBox,
+  );
 
   // 用户自定义的视频支持类型
-  final videoSupportTypes =
-      kSupportPreviewVideoTypes.val('videoSupportTypes', getBox: _prefBox);
+  final videoSupportTypes = kSupportPreviewVideoTypes.val(
+    'videoSupportTypes',
+    getBox: _prefBox,
+  );
 
   // 用户自定义的音频支持类型
-  final audioSupportTypes =
-      kSupportPreviewAudioTypes.val('audioSupportTypes', getBox: _prefBox);
+  final audioSupportTypes = kSupportPreviewAudioTypes.val(
+    'audioSupportTypes',
+    getBox: _prefBox,
+  );
 
   // 用户自定义的文档支持类型
-  final documentSupportTypes = kSupportPreviewDocumentTypes
-      .val('documentSupportTypes', getBox: _prefBox);
+  final documentSupportTypes = kSupportPreviewDocumentTypes.val(
+    'documentSupportTypes',
+    getBox: _prefBox,
+  );
 
   // 排序方式 - 按时间降序, 按时间升序, 按名称降序, 按名称升序
   final sortType = 0.val('sortType', getBox: _prefBox);

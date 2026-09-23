@@ -120,22 +120,22 @@ class FavoritePage extends GetView<FavoriteController> {
       controller: controller.pagingController,
       builder: (context, state, fetchNextPage) =>
           PagedSliverList<int, FavoriteEntity>.separated(
-        state: state,
-        fetchNextPage: fetchNextPage,
-        separatorBuilder: (context, index) => SizedBox(height: 30.h),
-        builderDelegate: PagedChildBuilderDelegate<FavoriteEntity>(
-          animateTransitions: false,
-          noItemsFoundIndicatorBuilder: (context) => _buildEmptyData(),
-          firstPageProgressIndicatorBuilder: (context) => _buildLoading(),
-          newPageProgressIndicatorBuilder: (context) => _buildLoading(),
-          itemBuilder: (context, item, index) {
-            return FrameSeparateWidget(
-              index: index,
-              child: _buildItem(item),
-            );
-          },
-        ),
-      ),
+            state: state,
+            fetchNextPage: fetchNextPage,
+            separatorBuilder: (context, index) => SizedBox(height: 30.h),
+            builderDelegate: PagedChildBuilderDelegate<FavoriteEntity>(
+              animateTransitions: false,
+              noItemsFoundIndicatorBuilder: (context) => _buildEmptyData(),
+              firstPageProgressIndicatorBuilder: (context) => _buildLoading(),
+              newPageProgressIndicatorBuilder: (context) => _buildLoading(),
+              itemBuilder: (context, item, index) {
+                return FrameSeparateWidget(
+                  index: index,
+                  child: _buildItem(item),
+                );
+              },
+            ),
+          ),
     );
   }
 
@@ -180,8 +180,8 @@ class FavoritePage extends GetView<FavoriteController> {
           ),
         ),
         SliverPadding(
-          padding:
-              EdgeInsets.symmetric(horizontal: 50.r).copyWith(bottom: 50.h),
+          padding: EdgeInsets.symmetric(horizontal: 50.r)
+              .copyWith(bottom: 50.h),
           sliver: SizeCacheWidget(child: _buildSliverList()),
         ),
       ],

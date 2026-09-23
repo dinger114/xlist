@@ -123,7 +123,7 @@ class _ObjectListComponentState extends State<ObjectListComponent> {
                           foregroundColor: Colors.white,
                           icon: CupertinoIcons.delete,
                           label: 'delete'.tr,
-                        )
+                        ),
                       ],
                     )
                   : null,

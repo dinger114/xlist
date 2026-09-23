@@ -23,20 +23,18 @@ void main() {
   /// `SingleChildScrollView` —— 否则垂直方向拿到无界约束，直接断言失败。
   /// 真机路径里 md 分支也是直接返回，外层没有 scroll view。
   Widget shell(Widget child) => ScreenUtilInit(
-        designSize: const Size(360, 800),
-        builder: (context, _) => MaterialApp(
-          navigatorKey: Get.key,
-          home: CupertinoPageScaffold(child: child),
-        ),
-        child: child,
-      );
+    designSize: const Size(360, 800),
+    builder: (context, _) => MaterialApp(
+      navigatorKey: Get.key,
+      home: CupertinoPageScaffold(child: child),
+    ),
+    child: child,
+  );
 
   testWidgets('markdown 源文本被渲染成真实 widget，而不是原样显示', (tester) async {
     const md = '# 标题\n\n正文**加粗**内容\n\n- 项目一\n- 项目二\n';
 
-    await tester.pumpWidget(shell(
-      Markdown(data: md, selectable: true),
-    ));
+    await tester.pumpWidget(shell(Markdown(data: md, selectable: true)));
     await tester.pumpAndSettle();
 
     // 渲染成功：结构化 widget 出现
@@ -64,9 +62,7 @@ void main() {}
 
 > 引用
 ''';
-    await tester.pumpWidget(shell(
-      Markdown(data: md),
-    ));
+    await tester.pumpWidget(shell(Markdown(data: md)));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });

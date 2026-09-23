@@ -41,8 +41,11 @@ void main() {
     });
 
     test('displayTitle 对 und 语言显示未知', () {
-      const track =
-          XTrack(id: 'sid-2', type: XTrackType.subtitle, title: 'und');
+      const track = XTrack(
+        id: 'sid-2',
+        type: XTrackType.subtitle,
+        title: 'und',
+      );
       expect(track.displayTitle, '未知');
     });
 

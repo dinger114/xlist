@@ -40,7 +40,7 @@ class PlayMode {
     PlayMode.listLoop: CupertinoIcons.repeat,
     PlayMode.singleLoop: CupertinoIcons.repeat_1,
     PlayMode.playPause: CupertinoIcons.stop_circle,
-    PlayMode.shuffle: CupertinoIcons.shuffle
+    PlayMode.shuffle: CupertinoIcons.shuffle,
   };
 
   static IconData? getIcon(int mode) {
@@ -101,11 +101,7 @@ const themeModeMap = {
   'dark': ThemeMode.dark,
 };
 
-const themeModeTextMap = {
-  'system': '跟随系统',
-  'light': '明亮',
-  'dark': '深邃',
-};
+const themeModeTextMap = {'system': '跟随系统', 'light': '明亮', 'dark': '深邃'};
 
 class Provider {
   static const String aliyunDrive = 'Aliyundrive';

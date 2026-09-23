@@ -38,14 +38,17 @@ class HomepageController extends GetxController {
     super.onInit();
 
     // 获取服务器信息
-    final server = await DatabaseService.to.database.serverDao
-        .findServerById(serverId.value);
+    final server = await DatabaseService.to.database.serverDao.findServerById(
+      serverId.value,
+    );
     if (server != null) {
       await resetUserToken(server);
 
       // 获取目录密码
       final passwordManager = await DatabaseService
-          .to.database.passwordManagerDao
+          .to
+          .database
+          .passwordManagerDao
           .findPasswordManagerByPath(server.id!, '/');
       if (passwordManager != null && passwordManager.isNotEmpty) {
         password = passwordManager.last.password;
@@ -87,8 +90,13 @@ class HomepageController extends GetxController {
 
         // 更新本地数据库密码
         await DatabaseService.to.database.passwordManagerDao
-            .insertPasswordManager(PasswordManagerEntity(
-                serverId: serverId.value, path: '/', password: text.first));
+            .insertPasswordManager(
+              PasswordManagerEntity(
+                serverId: serverId.value,
+                path: '/',
+                password: text.first,
+              ),
+            );
 
         // 重新获取数据
         password = text.first;
@@ -100,8 +108,10 @@ class HomepageController extends GetxController {
       final data = FsListModel.fromJson(response['data']);
 
       // 排序
-      final list =
-          CommonUtils.sortObjectList(data.content ?? [], sortType.value);
+      final list = CommonUtils.sortObjectList(
+        data.content ?? [],
+        sortType.value,
+      );
 
       objects.clear(); // 清空数据
       objects.addAll(list);
@@ -162,7 +172,7 @@ class HomepageController extends GetxController {
           data: {
             'username': server.username,
             'password': server.password,
-            'otp_code': data.first
+            'otp_code': data.first,
           },
         );
       }

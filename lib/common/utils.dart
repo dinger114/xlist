@@ -69,11 +69,11 @@ class CommonUtils {
 
   /// 获取导航栏返回按钮
   static Widget get backButton => CupertinoButton(
-        padding: EdgeInsets.zero,
-        alignment: Alignment.centerLeft,
-        child: Icon(CupertinoIcons.chevron_back, size: isPad ? 30 : 80.sp),
-        onPressed: () => Get.back(),
-      );
+    padding: EdgeInsets.zero,
+    alignment: Alignment.centerLeft,
+    child: Icon(CupertinoIcons.chevron_back, size: isPad ? 30 : 80.sp),
+    onPressed: () => Get.back(),
+  );
 
   /// 获取直链下载地址
   ///
@@ -106,7 +106,9 @@ class CommonUtils {
   /// [list] 对象列表
   /// [sortType] 排序方式
   static List<ObjectModel> sortObjectList(
-      List<ObjectModel> list, int sortType) {
+    List<ObjectModel> list,
+    int sortType,
+  ) {
     // 获取所有文件夹 & 文件
     final folders = <ObjectModel>[];
     final files = <ObjectModel>[];
@@ -173,24 +175,28 @@ class CommonUtils {
         if (value['Start'] == null || value['End'] == null) continue;
 
         // 正则表达式 匹配时间
-        final regExp =
-            RegExp(r'(\d{1,2}):(\d{2}):(\d{2})\.(\d+)', caseSensitive: false);
+        final regExp = RegExp(
+          r'(\d{1,2}):(\d{2}):(\d{2})\.(\d+)',
+          caseSensitive: false,
+        );
 
         // 开始时间
         final startTimeMatch = regExp.allMatches(value['Start']).toList().first;
         final startTimeHours = int.parse(startTimeMatch.group(1)!);
         final startTimeMinutes = int.parse(startTimeMatch.group(2)!);
         final startTimeSeconds = int.parse(startTimeMatch.group(3)!);
-        final startTimeMilliseconds =
-            int.parse(startTimeMatch.group(4)!.padRight(3, '0'));
+        final startTimeMilliseconds = int.parse(
+          startTimeMatch.group(4)!.padRight(3, '0'),
+        );
 
         // 结束时间
         final endTimeMatch = regExp.allMatches(value['End']).toList().first;
         final endTimeHours = int.parse(endTimeMatch.group(1)!);
         final endTimeMinutes = int.parse(endTimeMatch.group(2)!);
         final endTimeSeconds = int.parse(endTimeMatch.group(3)!);
-        final endTimeMilliseconds =
-            int.parse(endTimeMatch.group(4)!.padRight(3, '0'));
+        final endTimeMilliseconds = int.parse(
+          endTimeMatch.group(4)!.padRight(3, '0'),
+        );
 
         final startTime = Duration(
           hours: startTimeHours,

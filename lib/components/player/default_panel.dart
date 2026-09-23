@@ -73,28 +73,34 @@ class _DefaultPanelState extends State<DefaultPanel>
     );
 
     // init animation
-    _animation = Tween(begin: Offset(1, 0), end: Offset.zero)
-        .animate(_animationController!);
+    _animation = Tween(
+      begin: Offset(1, 0),
+      end: Offset.zero,
+    ).animate(_animationController!);
 
     // init player state
     _playerState = player.state;
     _currentPos = player.position;
 
     // 监听状态
-    _subs.add(player.stateStream.listen((state) {
-      if (!mounted) return;
-      setState(() => _playerState = state);
-    }));
+    _subs.add(
+      player.stateStream.listen((state) {
+        if (!mounted) return;
+        setState(() => _playerState = state);
+      }),
+    );
 
-    _subs.add(player.positionStream.listen((pos) {
-      if (!mounted) return;
-      _currentPos = pos;
-      // 外层面板只用 position 渲染字幕：节流到 500ms，避免高频整层重绘
-      final now = DateTime.now().millisecondsSinceEpoch;
-      if (now - _lastSubtitleRebuildMs < 500) return;
-      _lastSubtitleRebuildMs = now;
-      setState(() {});
-    }));
+    _subs.add(
+      player.positionStream.listen((pos) {
+        if (!mounted) return;
+        _currentPos = pos;
+        // 外层面板只用 position 渲染字幕：节流到 500ms，避免高频整层重绘
+        final now = DateTime.now().millisecondsSinceEpoch;
+        if (now - _lastSubtitleRebuildMs < 500) return;
+        _lastSubtitleRebuildMs = now;
+        setState(() {});
+      }),
+    );
   }
 
   @override
@@ -201,17 +207,12 @@ class _DefaultPanelState extends State<DefaultPanel>
     }
 
     // 添加关闭字幕
-    subtitleList.add(
-      {'label': 'player_subtitle_close'.tr, 'key': 'close'},
-    );
+    subtitleList.add({'label': 'player_subtitle_close'.tr, 'key': 'close'});
 
     return ListView.separated(
       shrinkWrap: true,
-      separatorBuilder: (context, index) => Divider(
-        height: 0.5,
-        indent: 10,
-        endIndent: 10,
-      ),
+      separatorBuilder: (context, index) =>
+          Divider(height: 0.5, indent: 10, endIndent: 10),
       itemCount: subtitleList.length,
       itemBuilder: (context, index) {
         return CupertinoListTile(
@@ -253,11 +254,8 @@ class _DefaultPanelState extends State<DefaultPanel>
 
     return ListView.separated(
       shrinkWrap: true,
-      separatorBuilder: (context, index) => Divider(
-        height: 0.5,
-        indent: 10,
-        endIndent: 10,
-      ),
+      separatorBuilder: (context, index) =>
+          Divider(height: 0.5, indent: 10, endIndent: 10),
       itemCount: audioList.length,
       itemBuilder: (context, index) {
         return CupertinoListTile(
@@ -265,9 +263,7 @@ class _DefaultPanelState extends State<DefaultPanel>
             audioList[index]['label'] ?? '',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: Get.textTheme.bodyLarge?.copyWith(
-              color: Colors.white,
-            ),
+            style: Get.textTheme.bodyLarge?.copyWith(color: Colors.white),
           ),
           onTap: () async {
             final value = audioList[index]['key'];
@@ -312,7 +308,11 @@ class _DefaultPanelState extends State<DefaultPanel>
             height: 1.3,
             fontFamily: 'PingFang SC',
             shadows: [
-              Shadow(color: Colors.black38, offset: Offset(1, 1), blurRadius: 1)
+              Shadow(
+                color: Colors.black38,
+                offset: Offset(1, 1),
+                blurRadius: 1,
+              ),
             ],
           ),
         ),
@@ -327,10 +327,9 @@ class _DefaultPanelState extends State<DefaultPanel>
     List<Widget> ws = [];
 
     if (_playerState == XPlayerState.error) {
-      ws.add(ErrorState(
-        player: widget.player,
-        playerTitle: widget.playerTitle,
-      ));
+      ws.add(
+        ErrorState(player: widget.player, playerTitle: widget.playerTitle),
+      );
     } else {
       ws.add(_buildSubtitle()); // 字幕
 
@@ -340,17 +339,20 @@ class _DefaultPanelState extends State<DefaultPanel>
       } else if (_audioDrawerState == true && widget.isFullScreen) {
         ws.add(_buildPublicDrawer(_buildAudioList()));
       } else {
-        ws.add(_GestureDetector(
-          player: widget.player,
-          playerTitle: widget.playerTitle,
-          showNextEpisodeBtn: widget.showPlaylist,
-          showSubtitleDrawerBtn: widget.subtitleNameList.isNotEmpty ||
-              widget.subtitleTracks.isNotEmpty,
-          showAudioDrawerBtn: widget.audioTracks.length > 1,
-          isFullScreen: widget.isFullScreen,
-          changeSubtitleDrawerState: changeSubtitleDrawerState,
-          changeAudioDrawerState: changeAudioDrawerState,
-        ));
+        ws.add(
+          _GestureDetector(
+            player: widget.player,
+            playerTitle: widget.playerTitle,
+            showNextEpisodeBtn: widget.showPlaylist,
+            showSubtitleDrawerBtn:
+                widget.subtitleNameList.isNotEmpty ||
+                widget.subtitleTracks.isNotEmpty,
+            showAudioDrawerBtn: widget.audioTracks.length > 1,
+            isFullScreen: widget.isFullScreen,
+            changeSubtitleDrawerState: changeSubtitleDrawerState,
+            changeAudioDrawerState: changeAudioDrawerState,
+          ),
+        );
       }
     }
 
@@ -387,9 +389,7 @@ class _DefaultPanelState extends State<DefaultPanel>
     // 播放器上必须透明，否则会盖住视频画面。
     return Material(
       type: MaterialType.transparency,
-      child: Stack(
-        children: ws,
-      ),
+      child: Stack(children: ws),
     );
   }
 
@@ -483,7 +483,8 @@ class _GestureDetectorState extends State<_GestureDetector> {
     _duration = player.duration;
     _currentPos = player.position;
     _bufferPos = player.buffer;
-    _prepared = player.state != XPlayerState.idle &&
+    _prepared =
+        player.state != XPlayerState.idle &&
         player.state != XPlayerState.loading;
     _playing = player.isPlaying;
     _buffering = player.isBuffering;
@@ -602,8 +603,9 @@ class _GestureDetectorState extends State<_GestureDetector> {
     // 计算进度条的比例
     double durProgCheck = _duration.inMilliseconds.toDouble() / 100;
     int checkTransfrom = (movePropCheck * durProgCheck).toInt();
-    int dragRange =
-        isBefore ? updatePosX! + checkTransfrom : updatePosX! - checkTransfrom;
+    int dragRange = isBefore
+        ? updatePosX! + checkTransfrom
+        : updatePosX! - checkTransfrom;
 
     // 是否溢出 最大
     int lastSecond = _duration.inMilliseconds;
@@ -691,8 +693,9 @@ class _GestureDetectorState extends State<_GestureDetector> {
     // + -, 不满足, 上下滑动合法滑动值，> 3
     if (isBefore && pdy - cdy < 3 || !isBefore && cdy - pdy < 3) return;
     // 区间
-    double dragRange =
-        isBefore ? updateDargVarVal! + 0.03 : updateDargVarVal! - 0.03;
+    double dragRange = isBefore
+        ? updateDargVarVal! + 0.03
+        : updateDargVarVal! - 0.03;
     // 是否溢出
     if (dragRange > 1) {
       dragRange = 1.0;
@@ -767,10 +770,7 @@ class _GestureDetectorState extends State<_GestureDetector> {
           height: 30,
           child: Padding(
             padding: EdgeInsets.only(left: 5, right: 5),
-            child: Icon(
-              iconData,
-              color: Colors.white,
-            ),
+            child: Icon(iconData, color: Colors.white),
           ),
         ),
       ),
@@ -784,8 +784,8 @@ class _GestureDetectorState extends State<_GestureDetector> {
     double currentValue = _seekPos > 0
         ? _seekPos
         : (_isHorizontalMove
-            ? _dargPos.inMilliseconds.toDouble()
-            : _currentPos.inMilliseconds.toDouble());
+              ? _dargPos.inMilliseconds.toDouble()
+              : _currentPos.inMilliseconds.toDouble());
     currentValue = min(currentValue, duration);
     currentValue = max(currentValue, 0);
 
@@ -833,10 +833,7 @@ class _GestureDetectorState extends State<_GestureDetector> {
                       padding: EdgeInsets.only(right: 5.0, left: 5),
                       child: Text(
                         PlayerHelper.formatDuration(_currentPos),
-                        style: TextStyle(
-                          fontSize: 14.0,
-                          color: Colors.white,
-                        ),
+                        style: TextStyle(fontSize: 14.0, color: Colors.white),
                       ),
                     ),
                     // 播放进度
@@ -876,9 +873,11 @@ class _GestureDetectorState extends State<_GestureDetector> {
                                 onChangeEnd: (v) {
                                   setState(() {
                                     player.seek(
-                                        Duration(milliseconds: v.toInt()));
-                                    _currentPos =
-                                        Duration(milliseconds: v.toInt());
+                                      Duration(milliseconds: v.toInt()),
+                                    );
+                                    _currentPos = Duration(
+                                      milliseconds: v.toInt(),
+                                    );
                                     _seekPos = -1;
                                   });
                                 },
@@ -951,7 +950,8 @@ class _GestureDetectorState extends State<_GestureDetector> {
                                 vp.currentIndex.value == vp.objects.length - 1
                                     ? vp.changePlaylist(0)
                                     : vp.changePlaylist(
-                                        vp.currentIndex.value + 1);
+                                        vp.currentIndex.value + 1,
+                                      );
                               },
                               child: Container(
                                 alignment: Alignment.center,
@@ -988,23 +988,17 @@ class _GestureDetectorState extends State<_GestureDetector> {
                           )
                         : Container(),
                     // 按钮 - 画中画
-                    _buildPlayStateBtn(
-                      Icons.picture_in_picture_alt,
-                      () async {
-                        final ok = await PipHelper.enterPip();
-                        if (!ok && mounted) {
-                          SmartDialog.showToast('toast_pip_fail'.tr);
-                        }
-                      },
-                    ),
+                    _buildPlayStateBtn(Icons.picture_in_picture_alt, () async {
+                      final ok = await PipHelper.enterPip();
+                      if (!ok && mounted) {
+                        SmartDialog.showToast('toast_pip_fail'.tr);
+                      }
+                    }),
                     // 按钮 - 全屏/退出全屏
-                    _buildPlayStateBtn(
-                      Icons.fullscreen,
-                      () {
-                        final vp = Get.find<VideoPlayerController>();
-                        vp.toggleFullScreen();
-                      },
-                    ),
+                    _buildPlayStateBtn(Icons.fullscreen, () {
+                      final vp = Get.find<VideoPlayerController>();
+                      vp.toggleFullScreen();
+                    }),
                     SizedBox(width: 7),
                     //
                   ],
@@ -1017,7 +1011,8 @@ class _GestureDetectorState extends State<_GestureDetector> {
             bottom: 0,
             left: 0,
             right: 0,
-            child: (_hideStuff &&
+            child:
+                (_hideStuff &&
                     _duration.inMilliseconds != 0 &&
                     !widget.isFullScreen)
                 ? Container(
@@ -1029,8 +1024,10 @@ class _GestureDetectorState extends State<_GestureDetector> {
                       builder: (context, posMs, _) {
                         final ratio = _duration.inMilliseconds == 0
                             ? 0.0
-                            : (posMs / _duration.inMilliseconds)
-                                .clamp(0.0, 1.0);
+                            : (posMs / _duration.inMilliseconds).clamp(
+                                0.0,
+                                1.0,
+                              );
                         return FractionallySizedBox(
                           alignment: Alignment.centerLeft,
                           widthFactor: ratio,
@@ -1043,7 +1040,7 @@ class _GestureDetectorState extends State<_GestureDetector> {
                     ),
                   )
                 : Container(),
-          )
+          ),
         ],
       ),
     );
@@ -1053,10 +1050,7 @@ class _GestureDetectorState extends State<_GestureDetector> {
   Widget _buildTopBackBtn() {
     return IconButton(
       icon: Icon(CupertinoIcons.chevron_back),
-      padding: EdgeInsets.only(
-        left: 10.0,
-        right: 10.0,
-      ),
+      padding: EdgeInsets.only(left: 10.0, right: 10.0),
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
       color: Colors.white,
@@ -1076,10 +1070,7 @@ class _GestureDetectorState extends State<_GestureDetector> {
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomLeft,
-            colors: [
-              Color.fromRGBO(0, 0, 0, 0.5),
-              Color.fromRGBO(0, 0, 0, 0),
-            ],
+            colors: [Color.fromRGBO(0, 0, 0, 0.5), Color.fromRGBO(0, 0, 0, 0)],
           ),
         ),
         child: SizedBox(
@@ -1095,7 +1086,7 @@ class _GestureDetectorState extends State<_GestureDetector> {
                   textAlign: TextAlign.left,
                   style: TextStyle(color: Colors.white),
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -1143,7 +1134,8 @@ class _GestureDetectorState extends State<_GestureDetector> {
                     child: CircularProgressIndicator(
                       strokeWidth: 3.0,
                       valueColor: AlwaysStoppedAnimation(
-                          Colors.white.withValues(alpha: 0.7)),
+                        Colors.white.withValues(alpha: 0.7),
+                      ),
                     ),
                   ),
                 ],
@@ -1159,19 +1151,14 @@ class _GestureDetectorState extends State<_GestureDetector> {
             height: 40,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.all(
-                Radius.circular(5),
-              ),
+              borderRadius: BorderRadius.all(Radius.circular(5)),
               color: Color.fromRGBO(0, 0, 0, 0.8),
             ),
             child: Padding(
               padding: EdgeInsets.only(left: 10, right: 10),
               child: Text(
                 '${PlayerHelper.formatDuration(_dargPos)} / ${PlayerHelper.formatDuration(_duration)}',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                ),
+                style: TextStyle(color: Colors.white, fontSize: 18),
               ),
             ),
           )
@@ -1258,11 +1245,7 @@ class _GestureDetectorState extends State<_GestureDetector> {
       columnChild.add(
         Padding(
           padding: EdgeInsets.only(top: 5, bottom: 5),
-          child: Container(
-            width: 50,
-            height: 1,
-            color: Colors.white54,
-          ),
+          child: Container(width: 50, height: 1, color: Colors.white54),
         ),
       );
     });
@@ -1305,7 +1288,7 @@ class _GestureDetectorState extends State<_GestureDetector> {
                         // 显示左右滑动快进时间的块
                         _buildDargProgressTime(),
                         // 显示上下滑动音量亮度
-                        _buildDargVolumeAndBrightness()
+                        _buildDargVolumeAndBrightness(),
                       ],
                     ),
                   ),
@@ -1326,9 +1309,7 @@ class _GestureDetectorState extends State<_GestureDetector> {
                             ),
                             child: Padding(
                               padding: EdgeInsets.all(10),
-                              child: Column(
-                                children: _buildSpeedListWidget(),
-                              ),
+                              child: Column(children: _buildSpeedListWidget()),
                             ),
                           )
                         : Container(),

@@ -18,8 +18,12 @@ import 'package:xlist/services/database_service.dart';
 class SettingController extends GetxController {
   final version = ''.obs; // 版本号
   final serverId = Get.find<UserStorage>().serverId.val.obs;
-  final serverInfo =
-      ServerEntity(url: '', type: 0, username: '', password: '').obs;
+  final serverInfo = ServerEntity(
+    url: '',
+    type: 0,
+    username: '',
+    password: '',
+  ).obs;
 
   // 自动播放
   final isAutoPlay = Get.find<PreferencesStorage>().isAutoPlay.val.obs;
@@ -54,8 +58,10 @@ class SettingController extends GetxController {
     version.value = packageInfo.version;
 
     // 获取当前服务器信息
-    serverInfo.value = (await DatabaseService.to.database.serverDao
-            .findServerById(serverId.value)) ??
+    serverInfo.value =
+        (await DatabaseService.to.database.serverDao.findServerById(
+          serverId.value,
+        )) ??
         ServerEntity(url: '', type: 0, username: '无', password: '');
 
     // 获取当前主题模式
@@ -90,10 +96,12 @@ class SettingController extends GetxController {
     try {
       final url = s.url.endsWith('/') ? s.url : '${s.url}/';
       final auth = base64Encode(utf8.encode('${s.username}:${s.password}'));
-      final dio = Dio(BaseOptions(
-        headers: {'Authorization': 'Basic $auth'},
-        connectTimeout: const Duration(seconds: 30),
-      ));
+      final dio = Dio(
+        BaseOptions(
+          headers: {'Authorization': 'Basic $auth'},
+          connectTimeout: const Duration(seconds: 30),
+        ),
+      );
 
       final dbFile = File(databasePath.value);
       final walFile = File('${databasePath.value}-wal');
@@ -117,14 +125,17 @@ class SettingController extends GetxController {
       // 同时备份 WAL 日志（WAL 模式的关键数据）
       if (await walFile.exists()) {
         final walBytes = await walFile.readAsBytes();
-        await dio.put('${url}dav$path/xlist_backup_latest.db-wal',
-            data: walBytes);
+        await dio.put(
+          '${url}dav$path/xlist_backup_latest.db-wal',
+          data: walBytes,
+        );
       }
 
-      final totalKB = ((dbBytes.length +
-                  (await walFile.exists() ? await walFile.length() : 0)) /
-              1024)
-          .toStringAsFixed(0);
+      final totalKB =
+          ((dbBytes.length +
+                      (await walFile.exists() ? await walFile.length() : 0)) /
+                  1024)
+              .toStringAsFixed(0);
       SmartDialog.dismiss();
       SmartDialog.showToast('备份成功 ${totalKB}KB ($ts)');
     } catch (e) {
@@ -160,14 +171,18 @@ class SettingController extends GetxController {
     try {
       final url = s.url.endsWith('/') ? s.url : '${s.url}/';
       final auth = base64Encode(utf8.encode('${s.username}:${s.password}'));
-      final dio = Dio(BaseOptions(
-        headers: {'Authorization': 'Basic $auth'},
-        connectTimeout: const Duration(seconds: 30),
-      ));
+      final dio = Dio(
+        BaseOptions(
+          headers: {'Authorization': 'Basic $auth'},
+          connectTimeout: const Duration(seconds: 30),
+        ),
+      );
 
       final path = dir.startsWith('/') ? dir : '/$dir';
-      final response = await dio.get('${url}dav$path/xlist_backup_latest.db',
-          options: Options(responseType: ResponseType.bytes));
+      final response = await dio.get(
+        '${url}dav$path/xlist_backup_latest.db',
+        options: Options(responseType: ResponseType.bytes),
+      );
 
       // 1. 关闭当前数据库（释放文件锁）
       await DatabaseService.to.close();
@@ -188,8 +203,9 @@ class SettingController extends GetxController {
       // 3b. 恢复 WAL 文件（如果备份中包含）
       try {
         final walResp = await dio.get(
-            '${url}dav$path/xlist_backup_latest.db-wal',
-            options: Options(responseType: ResponseType.bytes));
+          '${url}dav$path/xlist_backup_latest.db-wal',
+          options: Options(responseType: ResponseType.bytes),
+        );
         await walFile.writeAsBytes(walResp.data, flush: true);
       } catch (_) {
         // WAL 文件可能不存在（旧版备份），忽略
@@ -203,7 +219,8 @@ class SettingController extends GetxController {
 
       SmartDialog.dismiss();
       SmartDialog.showToast(
-          '恢复成功(${(writtenSize / 1024).toStringAsFixed(0)}KB)，正在重启...');
+        '恢复成功(${(writtenSize / 1024).toStringAsFixed(0)}KB)，正在重启...',
+      );
       // 5. 硬重启（确保 Floor 重新加载数据库）
       await Future.delayed(const Duration(seconds: 3));
       exit(0);

@@ -155,16 +155,8 @@ class VideoPlayerController extends SuperController {
     try {
       _sourceUrl = await StrmHelper.resolvePlayUrl(object.value, name);
       httpHeaders.value = StrmHelper.getHeaders(object.value, _sourceUrl);
-      await PlayerHelper.setOption(
-        player,
-        headers: httpHeaders,
-        name: name,
-      );
-      await player.open(
-        _sourceUrl,
-        headers: httpHeaders,
-        autoPlay: isAutoPlay,
-      );
+      await PlayerHelper.setOption(player, headers: httpHeaders, name: name);
+      await player.open(_sourceUrl, headers: httpHeaders, autoPlay: isAutoPlay);
       // 续播：open 后立即 seek
       if (currentPos.value.inMilliseconds > 0) {
         await player.seek(currentPos.value);
@@ -189,60 +181,76 @@ class VideoPlayerController extends SuperController {
   }
 
   void _initStreamListeners() {
-    _subscriptions.add(player.stateStream.listen((state) {
-      switch (state) {
-        case XPlayerState.playing:
-          WakelockPlus.enable();
-          break;
-        case XPlayerState.paused:
-          WakelockPlus.disable();
-          break;
-        case XPlayerState.ready:
-          _playerNotificationHandler();
-          _loadTracks();
-          break;
-        case XPlayerState.completed:
-          _onCompleted();
-          break;
-        case XPlayerState.error:
-          SmartDialog.showToast('toast_play_error'.tr);
-          break;
-        default:
-          break;
-      }
-    }));
-
-    _subscriptions.add(player.playingStream.listen((playing) {
-      isPlaying.value = playing;
-    }));
-
-    _subscriptions.add(player.bufferingStream.listen((buffering) {
-      isBuffering.value = buffering;
-    }));
-
-    _subscriptions.add(player.positionStream.listen((pos) {
-      currentPos.value = pos;
-    }));
-
-    _subscriptions.add(player.bufferStream.listen((buf) {
-      bufferPos.value = buf;
-    }));
-
-    _subscriptions.add(player.durationStream.listen((dur) {
-      if (dur != duration.value) {
-        duration.value = dur;
-        if (_mediaItem != null && _mediaItem!.duration != dur) {
-          _playerNotificationHandler();
+    _subscriptions.add(
+      player.stateStream.listen((state) {
+        switch (state) {
+          case XPlayerState.playing:
+            WakelockPlus.enable();
+            break;
+          case XPlayerState.paused:
+            WakelockPlus.disable();
+            break;
+          case XPlayerState.ready:
+            _playerNotificationHandler();
+            _loadTracks();
+            break;
+          case XPlayerState.completed:
+            _onCompleted();
+            break;
+          case XPlayerState.error:
+            SmartDialog.showToast('toast_play_error'.tr);
+            break;
+          default:
+            break;
         }
-      }
-    }));
+      }),
+    );
 
-    _subscriptions.add(player.tracksStream.listen((tracks) {
-      audioTracks.value =
-          tracks.where((t) => t.type == XTrackType.audio).toList();
-      subtitleTracks.value =
-          tracks.where((t) => t.type == XTrackType.subtitle).toList();
-    }));
+    _subscriptions.add(
+      player.playingStream.listen((playing) {
+        isPlaying.value = playing;
+      }),
+    );
+
+    _subscriptions.add(
+      player.bufferingStream.listen((buffering) {
+        isBuffering.value = buffering;
+      }),
+    );
+
+    _subscriptions.add(
+      player.positionStream.listen((pos) {
+        currentPos.value = pos;
+      }),
+    );
+
+    _subscriptions.add(
+      player.bufferStream.listen((buf) {
+        bufferPos.value = buf;
+      }),
+    );
+
+    _subscriptions.add(
+      player.durationStream.listen((dur) {
+        if (dur != duration.value) {
+          duration.value = dur;
+          if (_mediaItem != null && _mediaItem!.duration != dur) {
+            _playerNotificationHandler();
+          }
+        }
+      }),
+    );
+
+    _subscriptions.add(
+      player.tracksStream.listen((tracks) {
+        audioTracks.value = tracks
+            .where((t) => t.type == XTrackType.audio)
+            .toList();
+        subtitleTracks.value = tracks
+            .where((t) => t.type == XTrackType.subtitle)
+            .toList();
+      }),
+    );
   }
 
   /// 加载音轨/字幕轨
@@ -368,10 +376,7 @@ class VideoPlayerController extends SuperController {
 
     // 初始化播放器
     try {
-      _sourceUrl = await StrmHelper.resolvePlayUrl(
-        object.value,
-        current.name!,
-      );
+      _sourceUrl = await StrmHelper.resolvePlayUrl(object.value, current.name!);
       httpHeaders.value = StrmHelper.getHeaders(object.value, _sourceUrl);
       await PlayerHelper.setOption(
         player,
@@ -445,9 +450,7 @@ class VideoPlayerController extends SuperController {
       materialConfiguration: MaterialModalActionSheetConfiguration(),
       title: 'video_switch_subtitle'.tr,
       actions: [
-        ...subtitleNameList.map(
-          (v) => SheetAction(label: v, key: v),
-        ),
+        ...subtitleNameList.map((v) => SheetAction(label: v, key: v)),
         ...subtitleTracks.map(
           (t) => SheetAction(
             label: '${t.displayTitle}(${t.language ?? ''})',
@@ -504,20 +507,24 @@ class VideoPlayerController extends SuperController {
         converted.rawUrl!,
         options: Options(
           headers: httpHeaders,
-          responseDecoder: (List<int> responseBytes, RequestOptions options,
-              ResponseBody responseBody) {
-            String data = '';
-            try {
-              data = hasUtf32Bom(responseBytes)
-                  ? utf32.decode(responseBytes)
-                  : (hasUtf16Bom(responseBytes)
-                      ? utf16.decode(responseBytes)
-                      : utf8.decode(responseBytes));
-            } catch (e) {
-              data = gbk.decode(responseBytes);
-            }
-            return data;
-          },
+          responseDecoder:
+              (
+                List<int> responseBytes,
+                RequestOptions options,
+                ResponseBody responseBody,
+              ) {
+                String data = '';
+                try {
+                  data = hasUtf32Bom(responseBytes)
+                      ? utf32.decode(responseBytes)
+                      : (hasUtf16Bom(responseBytes)
+                            ? utf16.decode(responseBytes)
+                            : utf8.decode(responseBytes));
+                } catch (e) {
+                  data = gbk.decode(responseBytes);
+                }
+                return data;
+              },
         ),
       );
 
@@ -536,8 +543,9 @@ class VideoPlayerController extends SuperController {
       }
 
       // 字幕类型
-      final subtitleType =
-          ext == '.vtt' ? SubtitleType.webvtt : SubtitleType.srt;
+      final subtitleType = ext == '.vtt'
+          ? SubtitleType.webvtt
+          : SubtitleType.srt;
 
       // 解析字幕文件
       final data = await SubtitleDataRepository(
@@ -568,15 +576,15 @@ class VideoPlayerController extends SuperController {
       _progressId = progress.id!;
       currentPos.value = Duration(milliseconds: progress.currentPos);
     } else {
-      _progressId =
-          await DatabaseService.to.database.progressDao.insertProgress(
-        ProgressEntity(
-          serverId: serverId.value,
-          path: path,
-          name: currentName.value,
-          currentPos: 0,
-        ),
-      );
+      _progressId = await DatabaseService.to.database.progressDao
+          .insertProgress(
+            ProgressEntity(
+              serverId: serverId.value,
+              path: path,
+              name: currentName.value,
+              currentPos: 0,
+            ),
+          );
     }
 
     // 每五秒记录一下播放进度
@@ -601,20 +609,26 @@ class VideoPlayerController extends SuperController {
 
   /// 复制链接
   void copyLink() {
-    Clipboard.setData(ClipboardData(
-      text: CommonUtils.getDownloadLink(
-        path,
-        object: object.value,
-        userInfo: userInfo.value,
+    Clipboard.setData(
+      ClipboardData(
+        text: CommonUtils.getDownloadLink(
+          path,
+          object: object.value,
+          userInfo: userInfo.value,
+        ),
       ),
-    ));
+    );
     SmartDialog.showToast('toast_copy_success'.tr);
   }
 
   /// 下载文件
   void download() async {
     DownloadHelper.file(
-        path, currentName.value, object.value.type!, object.value.size!);
+      path,
+      currentName.value,
+      object.value.type!,
+      object.value.size!,
+    );
   }
 
   @override
