@@ -50,3 +50,7 @@ app.*.map.json
 
 # 测试覆盖率产物
 /coverage/
+
+# 包内置 skill（dart run skills@ get 的产物，本地 AI 助手用，非项目代码）
+/.agents/
+/.config/dart_skills/
