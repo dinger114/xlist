@@ -7,8 +7,9 @@
 - `flex_color_scheme` 8.4.0 → **9.0.0**
 - `cached_network_image` 3.4.1 → **4.0.0**
 - `flutter_smart_dialog` 4.9.8+10 → **5.3.0**
-- `dynamic_color` 1.7.0 → **2.1.0**（解除 `dependency_overrides` 里的钉子）
-- `animations` 2.0.11 → **3.0.0**
+- `dynamic_color` 1.7.0 → **2.1.0**，并把 `dependency_overrides` 里的钉子从
+  1.7.0 提到 2.1.0（注：此钉后可**移除** —— 见 [Unreleased]）
+- `animations` 2.0.11 → **3.0.0**，同理该钉亦可移除（见 [Unreleased]）
 - 这 5 个包自以上版本起改用独立的 `material_ui` / `cupertino_ui` 包，此前被
   钉在旧版本无法升级
 
@@ -97,6 +98,23 @@
   手段，未动
 
 ## [Unreleased]
+
+### Changed
+
+- `dependency_overrides` 收敛：`dynamic_color` / `animations` 两个钉子**多余**
+  （它们的版本本来就没被降级过），已移除并实测 `pub get` 照常解析；只剩
+  `uuid: ^4.5.0` 是真必需 —— `syncfusion_flutter_pdfviewer` 要 `uuid ^4.1.0`
+  而 `vivysub_utils 0.2.0` 要 `^3.0.6`，区间不兼容（移除后 `pub get` 直接
+  版本求解失败），已补上原因注释（此前无注释）
+
+### 未做（评估后判定不值得）
+
+- **`pull_down_button` 迁移**：`pub get` 会提示该包已 discontinued、
+  `replacedBy: cupertino_ui`。但实测 `cupertino_ui 1.1.1` **不含**
+  `PullDownButton` / `PullDownMenuItem` 等组件（只有底层的 `menu_anchor` /
+  `context_menu`），即没有对等替代品 —— 迁过去等于用底层 `MenuAnchor` 重写
+  6 个文件里的 12+ 处调用。当前版本 0.10.2 可用且无已知缺陷，属
+  **上游生态问题而非待办**，维持现状
 
 ### Added
 

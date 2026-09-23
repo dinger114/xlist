@@ -105,17 +105,6 @@ flutter:
     - assets/images/
 
 dependency_overrides:
+  # syncfusion_flutter_pdfviewer 要 uuid ^4.1.0，vivysub_utils 0.2.0 要 ^3.0.6，
+  # 区间不兼容（实测移除后 pub get 直接失败），必须保留此钉。
   uuid: ^4.5.0
-  # dynamic_color 2.x 起改用独立的 material_ui 包（其 ColorScheme/Color 与
-  # Flutter 自带的是同名不同类）。
-  #
-  # 历史上这里钉在 1.7.0，因为 adaptive_dialog（仍用 flutter/material）会调用
-  # DynamicColorPlugin.getAccentColor() 并吃下 material_ui 版的 Color —— 当时
-  # 全项目都在 flutter/material 下，属真跨库，只会在运行时炸。
-  #
-  # Phase 3 起不再需要这个钉子：主壳仍是 flutter/material（约 50 个依赖依赖它），
-  # 但已由 `ThemeBridge`（lib/components/theme_bridge.dart）在
-  # MaterialApp.builder 上补了一层 material_ui 主题，两条线各自都有主题可用。
-  # `Color` 本身是 dart:ui 的共享类，跨库传值不涉及类型身份问题。
-  dynamic_color: ^2.1.0
-  animations: ^3.0.0

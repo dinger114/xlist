@@ -34,7 +34,7 @@ packages:
     source: hosted
     version: "2.0.0"
   animations:
-    dependency: "direct overridden"
+    dependency: transitive
     description:
       name: animations
       sha256: "5ec868ffa78851e6f3f32e9377b780c7ae2087a5523d8b5e6df59bd8287ac5dd"
@@ -426,7 +426,7 @@ packages:
     source: hosted
     version: "1.0.2"
   dynamic_color:
-    dependency: "direct overridden"
+    dependency: transitive
     description:
       name: dynamic_color
       sha256: "869b3bce0100eb519768ecd71c0111f0b5ea679f5f62e1f59c49d80067e730c5"
