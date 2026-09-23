@@ -1,4 +1,4 @@
-.PHONY: build help
+.PHONY: build build-watch gen splash icons release-android release-aab help
 
 all: build
 
@@ -16,6 +16,20 @@ splash:
 
 icons:
 	dart run flutter_launcher_icons
+
+# Android 构建需要 JDK 17：
+#  - AGP 9 的 JdkImageTransform 要用 JDK 的 jlink 处理 core-for-system-modules.jar，
+#    本机 PATH 上的 java 若是 26 会直接失败（--disable-plugin system-modules）。
+#  - 用 /usr/libexec/java_home -v 17 解析而不是写死 /opt/homebrew/... 绝对路径，
+#    这样 intel mac / Linux 上只要能解析到 17 就能用。
+# 解析不到时不要覆盖 JAVA_HOME，让 Gradle 用它自己的默认 JVM、由构建报错暴露问题，
+# 而不是在这里静默绑一个错的 JDK。
+ifeq ($(shell uname),Darwin)
+JDK17 := $(shell /usr/libexec/java_home -v 17 2>/dev/null)
+ifneq ($(JDK17),)
+export JAVA_HOME := $(JDK17)
+endif
+endif
 
 # 只出 arm64-v8a 单包（abiFilters 见 android/app/build.gradle）。
 # -Pdisable-abi-filtering=true 是必需的：Flutter Gradle Plugin 默认会用

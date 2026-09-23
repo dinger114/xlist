@@ -27,13 +27,20 @@ android {
     compileSdkVersion 37
     ndkVersion flutter.ndkVersion
 
+    // Java/Kotlin 目标必须 >= 17，不能用 1.8：
+    // 1.8 会让 Gradle 在解析 packageDebug 依赖时抛 MissingValueException
+    //（"Cannot query the value of this property because it has no value available"，
+    // 栈底在 ProviderBackedFileCollection.visitDependencies），整个 APK 构建在配置阶段
+    // 就失败且不给任何有用信息。改成 17 后该问题消失。
+    // 顺带与 android/build.gradle 里给子项目统一设的 17 对齐，避免
+    // AGP 9 的 "Inconsistent JVM Target Compatibility"。
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '17'
     }
 
     sourceSets {
